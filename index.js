@@ -36,44 +36,44 @@ function userident(msg) {
         arg = msg.member;
       }
     return arg;
-  }
+}
   
-  // GET DIFFERENCE BETWEEN TO TIMESTAMPS AS TEXT
-  function timediff(timestamp1ornow, timestamp2, short) {
-    let diff = timestamp1ornow - timestamp2;
+// GET DIFFERENCE BETWEEN TO TIMESTAMPS AS TEXT
+function timediff(timestamp1ornow, timestamp2, short) {
+  let diff = timestamp1ornow - timestamp2;
   
-    let days = Math.floor(diff/1000/60/60/24);
-    diff -= days*1000*60*60*24;
-    let hours = Math.floor(diff/1000/60/60);
-    diff -= hours*1000*60*60;
-    let minutes = Math.floor(diff/1000/60);
-    diff -= minutes*1000*60;
-    let seconds = Math.floor(diff/1000);
+  let days = Math.floor(diff/1000/60/60/24);
+  diff -= days*1000*60*60*24;
+  let hours = Math.floor(diff/1000/60/60);
+  diff -= hours*1000*60*60;
+  let minutes = Math.floor(diff/1000/60);
+  diff -= minutes*1000*60;
+  let seconds = Math.floor(diff/1000);
   
-    if (short) return `${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
-    else return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
-  }
+  if (short) return `${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
+  else return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
+}
   
-  // LOAD THE DB FROM db.json
-  function loadDB() {
+// LOAD THE DB FROM db.json
+function loadDB() {
     let stuff = fs.readFileSync("./db.json", "utf8");
     db = JSON.parse(stuff);
     userData = db[0];
     clanData = db[1];
-  }
-  
-  // SAVE THE DB TO db.json
-  function saveDB() {
+}
+
+// SAVE THE DB TO db.json
+function saveDB() {
     fs.writeFileSync("./db.json", JSON.stringify(db), "utf8", (err) => {
       if (err) {
         console.log(`Error writing file: ${err}`);
       } else {
       }
     });
-  }
+}
   
-  // FINDS A USER IN THE DB AND RETURNS THE OBJECT
-  function finduser(usrid) {
+// FINDS A USER IN THE DB AND RETURNS THE OBJECT
+function finduser(usrid) {
     let result;
     let found = false;
     let i = 0;
@@ -87,9 +87,9 @@ function userident(msg) {
     }
     if (found) return result;
     else return undefined;
-  }
+}
 
-  //// SUCC CLASSES
+//// SUCC CLASSES
 class Poll {
     constructor(name, expiry, messageID, jumplink, hasEnded) {
       this.name = name;
@@ -834,7 +834,7 @@ client.on('message', message => {
             .setAuthor("Transaction confirmed!", embedPB)
             .setDescription("This is your balance now:")
             .addFields(
-              { name: "Kontostand", value: usr.money.toFixed(2) + "€", inline: true },
+              { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
               { name: "Ethereum", value: usr.eth + " (ca. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
             )
             .setTimestamp()
@@ -918,7 +918,7 @@ client.on('message', message => {
             .setAuthor("Transaction confirmed!", embedPB)
             .setDescription("This is your balance now:")
             .addFields(
-              { name: "Kontostand", value: usr.money.toFixed(2) + "€", inline: true },
+              { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
               { name: "Ethereum", value: usr.eth + " (ca. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
             )
             .setTimestamp()
@@ -1003,6 +1003,50 @@ client.on('message', message => {
     }
     message.channel.send(msg);
   }
+
+  // LEADERBOARD
+  else if (message.content.startsWith(`${prefix}leaderboard`)) {
+    message.channel.send(
+      new Discord.MessageEmbed()
+      .setColor("#8C8C8C")
+      .setAuthor("Leaderboard - Top 25", embedPB)
+      .setTitle("Fetching Data...")
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`)
+    ).then(sent => {
+      let yeet = new Map();
+      userData.forEach(shit => {
+        let sus = client.users.cache.get(shit.u);
+        if (!sus) console.log("[WARN] USER ID " + shit.u + " HAS DB ENTRY BUT COULD NOT BE FOUND. SKIPPING...");
+        else {
+          sus = sus.tag;
+          let amogus = parseFloat(shit.money + (shit.eth*price)).toFixed(2);
+          yeet.set(sus, amogus);
+        }
+      });
+      let lmao = new Map([...yeet.entries()].sort((a, b) => b[1] - a[1]));
+    
+      let meme = 1;
+      let xd = [];
+      lmao.forEach((value, key, map ) => {
+        if (meme <= 25) {
+          xd.push(new EzField(meme + ". - " + key, value));
+          meme++;
+        }
+      });
+
+      sent.edit(
+        new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("Leaderboard - Top " + xd.length, embedPB)
+        .setTitle("Cash and ETH combined")
+        .addFields(xd)
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      )
+    });
+  }
+
 
   saveDB();
 });
