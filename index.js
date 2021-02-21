@@ -16,6 +16,7 @@ const embedPB = "https://i.ryzetech.live/arctic-mission-control.png";
 var messageCounter = 0;
 var joinCounter = 0;
 
+var market;
 var price = 0;
 
 var currentPolls = [];
@@ -89,38 +90,23 @@ function finduser(usrid) {
     else return undefined;
 }
 
-//// SUCC CLASSES
-class Poll {
-    constructor(name, expiry, messageID, jumplink, hasEnded) {
-      this.name = name;
-      this.expiry = expiry;
-      this.messageID = messageID;
-      this.jumplink = jumplink;
-      this.hasEnded = hasEnded;
-    }
+function fetchdata() {
+  CoinGeckoClient.coins.fetch('ethereum', {}).then(d => {
+    market = d.data.market_data;
+    price = market.current_price.eur;
+  })
+  .catch(error => {
+    console.log("--- ERR DUMP ---\nFailed: [TIMED] CoinGecko Data Fetch\nError: " + error.message + "\n--- ERR DUMP END ---");
+  });
 }
-  
+
+//// SUCC CLASSES
 class EzField {
   constructor(name, value, inline) {
     this.name = name;
     this.value = value;
     this.inline = inline;
     }
-}
-  
-class Verifier {
-  constructor(member) {
-    this.member = member;
-    this.id = (Math.floor((Math.random() * 9999-1000) + 1000)).toString();
-    this.resolved = false;
-    this.message = undefined;
-  }
-  setMessage(message) {
-    this.message = message;
-  }
-  resolve() {
-    this.resolved = true;
-  }
 }
   
 class User {
@@ -140,25 +126,18 @@ client.on('ready', () => {
   client.user.setActivity(prefix + "help | made by ryzetech.live | I love you <3");
   loadDB();
   console.log(`Logged in as ${client.user.tag}!`);
-  CoinGeckoClient.coins.fetch('ethereum', {}).then(d => {
-    price = d.data.market_data.current_price.eur;
-  });
-  setInterval(function() {
-    CoinGeckoClient.coins.fetch('ethereum', {})
-    .then(d => {
-      price = d.data.market_data.current_price.eur;
-    })
-    .catch(error => {
-      console.log("--- ERR DUMP ---\nFailed: [TIMED] CoinGecko Data Fetch\nError: " + error.message + "\n--- ERR DUMP END ---");
-    })
-  }, 60000)
+
+  fetchdata();
+
+  setInterval(fetchdata(), 60000);
 });
 
+// WELCOME MESSAGE
 client.on('guildMemberAdd', member => {
   joinCounter++;
 
   let channel = member.guild.channels.cache.get(welcomeChannelID);
-  channel.send(`Hey ${member}, welcome on our little spaceship!`).then(sent => {
+  channel.send(`Hey ${member}, welcome on our little spaceship! 🚀`).then(sent => {
     sent.delete({timeout: autodelete});
   });
 });
@@ -736,7 +715,7 @@ client.on('message', message => {
   // ETH
   else if (message.content.startsWith(`${prefix}eth`)) {
     CoinGeckoClient.coins.fetch('ethereum', {}).then(d => {
-      let stuff = d.data.market_data;
+      let stuff = market;
       let args = message.content.slice(5);
 
       let usr = finduser(message.author.id);
@@ -793,7 +772,7 @@ client.on('message', message => {
             .setDescription("This is your balance now:")
             .addFields(
               { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
-              { name: "Ethereum", value: usr.eth + " (ca. " + ((price*usr.eth).toFixed(2)) + "€)", inline: true }
+              { name: "Ethereum", value: usr.eth + " (approx. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
             )
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`);
@@ -835,7 +814,7 @@ client.on('message', message => {
             .setDescription("This is your balance now:")
             .addFields(
               { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
-              { name: "Ethereum", value: usr.eth + " (ca. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
+              { name: "Ethereum", value: usr.eth + " (approx. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
             )
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`);
@@ -873,11 +852,11 @@ client.on('message', message => {
             
             msg = new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
-            .setAuthor("Transaction completed!", embedPB)
+            .setAuthor("Transaction confirmed!", embedPB)
             .setDescription("This is your balance now:")
             .addFields(
               { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
-              { name: "Ethereum", value: usr.eth + " (ca. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
+              { name: "Ethereum", value: usr.eth + " (approx. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
             )
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`);
@@ -919,7 +898,7 @@ client.on('message', message => {
             .setDescription("This is your balance now:")
             .addFields(
               { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
-              { name: "Ethereum", value: usr.eth + " (ca. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
+              { name: "Ethereum", value: usr.eth + " (approx. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
             )
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`);
@@ -962,7 +941,7 @@ client.on('message', message => {
       .setTitle(argument.user.tag + "'s Account")
       .addFields(
         { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
-        { name: "Ethereum", value: usr.eth + " (ca. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
+        { name: "Ethereum", value: usr.eth + " (approx. " + (price*usr.eth).toFixed(2) + "€)", inline: true }
       )
       .setTimestamp()
       .setFooter(`Requested by ${message.author.tag}`)
@@ -985,7 +964,7 @@ client.on('message', message => {
         .setDescription("You've got " + amount + " Euros today!")
         .addFields(
           { name: "Balance", value: user.money.toFixed(2) + "€", inline: true },
-          { name: "Ethereum", value: user.eth + " (ca. " + (price * user.eth).toFixed(2) + "€)", inline: true }
+          { name: "Ethereum", value: user.eth + " (approx. " + (price * user.eth).toFixed(2) + "€)", inline: true }
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
@@ -1047,6 +1026,10 @@ client.on('message', message => {
     });
   }
 
+  else {
+    // random reward for chatting
+    if (Math.round(Math.random()*4+1) === 5) finduser(message.author.id).money += (Math.round(Math.random()*8+1)/100);
+  }
 
   saveDB();
 });
