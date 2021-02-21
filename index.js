@@ -129,7 +129,7 @@ client.on('ready', () => {
 
   fetchdata();
 
-  setInterval(fetchdata(), 60000);
+  setInterval(function(){fetchdata();}, 60000);
 });
 
 // WELCOME MESSAGE
