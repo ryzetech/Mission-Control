@@ -5,7 +5,7 @@ const CoinGecko = require('coingecko-api');
 const CoinGeckoClient = new CoinGecko();
 const fs = require("fs");
 const fetch = require("node-fetch");
-const { prefix, welcomeChannelID, muteChannelID, modChannelID, autodelete, modroles } = require("./config.json");
+const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown } = require("./config.json");
 const { token } = require("./token.json");
 
 const embedColorStandard = "#75d3fc";
@@ -135,7 +135,7 @@ client.on('ready', () => {
 // WELCOME MESSAGE
 client.on('guildMemberAdd', member => {
   joinCounter++;
-
+  
   let channel = member.guild.channels.cache.get(welcomeChannelID);
   channel.send(`Hey ${member}, welcome on our little spaceship! 🚀`).then(sent => {
     sent.delete({timeout: autodelete});
@@ -925,7 +925,6 @@ client.on('message', message => {
           .setFooter(`Requested by ${message.author.tag}`)
         );
       }
-
     });
   }
 
@@ -953,7 +952,7 @@ client.on('message', message => {
     let user = finduser(message.author.id);
     let msg;
     
-    if (user.lastearnstamp < new Date().getTime() - 86400000) {
+    if (user.lastearnstamp < new Date().getTime() - p_cooldown) {
       let amount = Math.round(Math.random() * 950 + 50);
       user.lastearnstamp = new Date().getTime();
       user.money += amount;
@@ -976,7 +975,7 @@ client.on('message', message => {
         .setAuthor("Coin System", embedPB)
         .setTitle("❌ Payout failed!")
         .setDescription("You can't get salary at the moment!")
-        .addField("Next salary:", timediff(user.lastearnstamp + 86400000, new Date().getTime(), true))
+        .addField("Next salary:", timediff(user.lastearnstamp + p_cooldown, new Date().getTime(), true))
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }
@@ -1028,7 +1027,10 @@ client.on('message', message => {
 
   else {
     // random reward for chatting
-    if (Math.round(Math.random()*4+1) === 5) finduser(message.author.id).money += (Math.round(Math.random()*8+1)/100);
+    if (Math.round(Math.random()*4+1) === 5 && !message.author.bot) {
+	    let usr = finduser(message.author.id);
+	    usr.money += (Math.round(Math.random()*8+1)/100);
+    }
   }
 
   saveDB();
