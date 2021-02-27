@@ -981,6 +981,10 @@ client.on('message', message => {
     const pattern = /#send <@(\d+)> (\d+)/;
     const regres = pattern.exec(message.content);
 
+    // FIXME: Debugging info
+    console.log(`[DBG]: SEND command invoked - ${message.content}`)
+    console.dir(regres)
+
     // handle case where pattern fails
     // handle case match is not len 3
     if (regres == null || regres.length !== 3) {
@@ -989,8 +993,8 @@ client.on('message', message => {
         .setAuthor("Coin System", embedPB)
         .setTitle("❌ Syntax mistake!")
         .setDescription("Sytntax is `#send @<user_to_send_to> <amount>`")
-        .addField("`user_to_send_to`:", "This should be the user you want the transaction to go to", true)
-        .addField("`amount`:", "The amount you want to send to that user", true)
+        .addField("`user_to_send_to`:", "This should be the user you want the transaction to go to")
+        .addField("`amount`:", "The amount you want to send to that user")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
       );
@@ -1023,7 +1027,7 @@ client.on('message', message => {
         .setFooter(`Requested by ${message.author.tag}`)
       );
     }
-    
+
     // calc fee
     const fee = Math.round(amount * 0.05);
     // transaction
