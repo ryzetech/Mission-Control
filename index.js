@@ -978,7 +978,7 @@ client.on('message', message => {
   else if (message.content.startsWith(`${prefix}send`)) {
     // Tests for the following pattern and returns search results
     // #send <@273...132> 123
-    const pattern = /#send <@(\d+)> (\d+)/;
+    const pattern = /#send <@!(\d+)> (\d+)/;
     const regres = pattern.exec(message.content);
 
     // FIXME: Debugging info
