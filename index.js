@@ -976,9 +976,73 @@ client.on('message', message => {
 
   // SEND
   else if (message.content.startsWith(`${prefix}send`)) {
-    let args = message.content.slice(6);
-    let usrment = message.mentions.members.first();
+    // Tests for the following pattern and returns search results
+    // #send <@273...132> 123
+    const pattern = /#send <@(\d+)> (\d+)/;
+    const regres = pattern.exec(message.content);
 
+    // handle case where pattern fails
+    // handle case match is not len 3
+    if (regres == null || regres.length !== 3) {
+      return message.channel.send(new Discord.MessageEmbed()
+        .setColor(embedColorFail)
+        .setAuthor("Coin System", embedPB)
+        .setTitle("❌ Syntax mistake!")
+        .setDescription("Sytntax is `#send @<user_to_send_to> <amount>`")
+        .addField("`user_to_send_to`:", "This should be the user you want the transaction to go to", true)
+        .addField("`amount`:", "The amount you want to send to that user", true)
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+
+    // extract the values
+    const [, userid, amount] = regres;
+    // get users from db
+    const userFrom = finduser(message.author.id);
+    const userTo = finduser(userid);
+    // Check if any value is not initilized
+    if (!userTo || !amount || !userFrom) {
+      return message.channel.send(new Discord.MessageEmbed()
+        .setColor(embedColorFail)
+        .setAuthor("Coin System", embedPB)
+        .setTitle("❌ Transaction failed!")
+        .setDescription("We couldnt process your transaction, please contact our support if you think this is a mistake")
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+    // check if balance is ok
+    if (userFrom.money < amount) {
+      return message.channel.send(new Discord.MessageEmbed()
+        .setColor(embedColorFail)
+        .setAuthor("Coin System", embedPB)
+        .setTitle("❌ Transaction failed!")
+        .setDescription("You dont have the balance to cover for that transaction!")
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+    
+    // calc fee
+    const fee = Math.round(amount * 0.05);
+    // transaction
+    userFrom.money -= amount;
+    userTo.money += amount - fee;
+    // message after transaction is done
+    new Discord.MessageEmbed()
+      .setColor(embedColorConfirm)
+      .setAuthor("Coin System", embedPB)
+      .setTitle("✅ Transaction successfull!")
+      .setDescription("You've sent " + amount + " Euros! Please be aware of our 5% fee")
+      .addFields(
+        { name: "Amount", value: amount + "€" },
+        { name: "Fee   ", value: fee + "€" }
+      )
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`);
+    // Save changes to database to persist
+    saveDB();
   }
 
   // WORK
