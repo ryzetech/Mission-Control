@@ -981,10 +981,6 @@ client.on('message', message => {
     const pattern = /#send <@!(\d+)> (\d+)/;
     const regres = pattern.exec(message.content);
 
-    // FIXME: Debugging info
-    console.log(`[DBG]: SEND command invoked - ${message.content}`)
-    console.dir(regres)
-
     // handle case where pattern fails
     // handle case match is not len 3
     if (regres == null || regres.length !== 3) {
@@ -1034,7 +1030,7 @@ client.on('message', message => {
     userFrom.money -= amount;
     userTo.money += amount - fee;
     // message after transaction is done
-    new Discord.MessageEmbed()
+    message.channel.send(new Discord.MessageEmbed()
       .setColor(embedColorConfirm)
       .setAuthor("Coin System", embedPB)
       .setTitle("✅ Transaction successfull!")
@@ -1044,7 +1040,8 @@ client.on('message', message => {
         { name: "Fee   ", value: fee + "€" }
       )
       .setTimestamp()
-      .setFooter(`Requested by ${message.author.tag}`);
+      .setFooter(`Requested by ${message.author.tag}`)
+    );
     // Save changes to database to persist
     saveDB();
   }
