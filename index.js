@@ -974,6 +974,13 @@ client.on('message', message => {
     );
   }
 
+  // SEND
+  else if (message.content.startsWith(`${prefix}send`)) {
+    let args = message.content.slice(6);
+    let usrment = message.mentions.members.first();
+
+  }
+
   // WORK
   else if (message.content.startsWith(`${prefix}work`)) {
     let user = finduser(message.author.id);
