@@ -1042,8 +1042,6 @@ client.on('message', message => {
       .setTimestamp()
       .setFooter(`Requested by ${message.author.tag}`)
     );
-    // Save changes to database to persist
-    saveDB();
   }
 
   // WORK
