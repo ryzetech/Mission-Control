@@ -1,3 +1,9 @@
+/*
+  Mission Control
+    by ArcticSpaceFox and ryzetech
+    made with 🍺 and ❤ in Germany
+*/
+
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const si = require("systeminformation");
@@ -9,8 +15,10 @@ const axios = require("axios");
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown } = require("./config.json");
 const { token } = require("./token.json");
 
+const embedColorProcessing = "#8c8c8c";
 const embedColorStandard = "#75d3fc";
 const embedColorConfirm = "#16c60c";
+const embedColorWarn = "#ff9600";
 const embedColorFail = "#f03a17";
 const embedPB = "https://i.ryzetech.live/arctic-mission-control.png";
 
@@ -20,10 +28,6 @@ var joinCounter = 0;
 var market;
 var price = 0;
 
-var currentPolls = [];
-var currentVerifications = [];
-var jackpotRound;
-
 var userData = [];
 var clanData = [];
 var db = [];
@@ -31,7 +35,7 @@ var db = [];
 const startDate = new Date();
 
 //// HELP METHODS
-// GET USER FROM MENTIONS
+// get user from mentions or return sender
 function userident(msg) {
   let arg = msg.mentions.members.first();
   if (typeof (arg) === "undefined") {
@@ -40,7 +44,7 @@ function userident(msg) {
   return arg;
 }
 
-// GET DIFFERENCE BETWEEN TO TIMESTAMPS AS TEXT
+// get difference between to timestamps as text
 function timediff(timestamp1ornow, timestamp2, short) {
   let diff = timestamp1ornow - timestamp2;
 
@@ -56,7 +60,7 @@ function timediff(timestamp1ornow, timestamp2, short) {
   else return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
 }
 
-// LOAD THE DB FROM db.json
+// load the db from db.json
 function loadDB() {
   let stuff = fs.readFileSync("./db.json", "utf8");
   db = JSON.parse(stuff);
@@ -64,7 +68,7 @@ function loadDB() {
   clanData = db[1];
 }
 
-// SAVE THE DB TO db.json
+// save the db to db.json
 function saveDB() {
   fs.writeFileSync("./db.json", JSON.stringify(db), "utf8", (err) => {
     if (err) {
@@ -74,23 +78,26 @@ function saveDB() {
   });
 }
 
-// FINDS A USER IN THE DB AND RETURNS THE OBJECT
+// finds a user in the db and returns the object
 function finduser(usrid) {
   let result;
   let found = false;
   let i = 0;
+
+  // loop trough array until the user id is found or the end is reached
   while (found === false && i < userData.length) {
     if (userData[i].u == usrid) {
-      // console.log("MATCH")
       found = true;
       result = userData[i];
     }
     else i++;
   }
   if (found) return result;
-  else return undefined;
+  // this should never happen... i think
+  else console.log("shit went wrong"); return undefined;
 }
 
+// timed task executor for fetching market data from the CoinGecko API
 function fetchdata() {
   CoinGeckoClient.coins.fetch('ethereum', {}).then(d => {
     market = d.data.market_data;
@@ -101,7 +108,8 @@ function fetchdata() {
     });
 }
 
-//// SUCC CLASSES
+//// CLASSES
+// help class for easily creating more complex embed fields
 class EzField {
   constructor(name, value, inline) {
     this.name = name;
@@ -110,6 +118,7 @@ class EzField {
   }
 }
 
+// user class for the db system, will probably be replaced by prisma soon
 class User {
   constructor(user) {
     this.u = user.id;
@@ -124,12 +133,14 @@ class User {
 //// BOT MANAGEMENT
 // READY EVENT
 client.on('ready', () => {
+  // set status and info stuffz
   client.user.setActivity(prefix + "help | made by ryzetech.live | I love you <3");
+
   loadDB();
   console.log(`Logged in as ${client.user.tag}!`);
 
+  // start timed tasks
   fetchdata();
-
   setInterval(function () { fetchdata(); }, 60000);
 });
 
@@ -139,20 +150,27 @@ client.on('guildMemberAdd', member => {
 
   let channel = member.guild.channels.cache.get(welcomeChannelID);
 
+  // ask Virgin Slayer if the user is banned on the global network
   axios.post('https://dvs.stefftek.de/api/bans', { data: { userID: member.user.id } })
     .then(function (response) {
       let res = response.data;
 
+      // if the user is unknown to Virgin Slayer:
       if (res.status === "error" && res.msg === "api.error.notBanned") {
-        channel.send(`Hey ${member}, welcome on our little spaceship! 🚀`).then(sent => {
-          sent.delete({ timeout: autodelete });
+        channel.send(`Hey ${member}, welcome on our little spaceship! 🚀`).then(sent => { // post the regular welcome message...
+          sent.delete({ timeout: autodelete }); // ...and delete it after "autodelete" seconds to keep the chat clean
         });
       }
+
+      // if the user is known to Virgin Slayer:
       else if (res.status === "success") {
+        // get the current time to calculate the amount of time the user is banned
         let date = new Date(res.data.Timestamp);
+
+        // send a message with the provided data
         channel.send(
           new Discord.MessageEmbed()
-            .setColor(embedColorFail)
+            .setColor(embedColorWarn)
             .setAuthor("Banned User Alert", embedPB)
             .setTitle("Virgin Slayer Global DB Match")
             .setDescription("An user known for inappropriate behaviour joined.\nYou can view the details down below.")
@@ -168,16 +186,19 @@ client.on('guildMemberAdd', member => {
       }
     });
 });
+// thx stftk <3
 
 // MESSAGE HANDLER
 client.on('message', message => {
 
+  // preventing database checks on bots
   if (!message.author.bot) {
     messageCounter++;
+
+    // if the user doesn't have an account yet...
     if (!finduser(message.author)) {
+      // create one! it will automagically get pushed into the db
       new User(message.author);
-      console.log(userData.length)
-      console.log("new user created u stupid fuk")
     }
   }
 
@@ -214,6 +235,7 @@ client.on('message', message => {
 
   // PING
   else if (message.content.startsWith(`${prefix}ping`)) {
+    // TODO: rework this section, maybe by reusing the old embed object
     let timestamp = message.createdTimestamp;
 
     message.channel.send(
@@ -254,6 +276,7 @@ client.on('message', message => {
   else if (message.content.startsWith(`${prefix}info`)) {
     let load, temp, memuse, ping;
 
+    // asking systeminformation about a bunch of server data
     si.cpuCurrentSpeed().then(data => {
       load = data.avg;
 
@@ -268,6 +291,8 @@ client.on('message', message => {
 
             si.cpuTemperature().then(data => {
               temp = data.main;
+
+              // failsafe because temp read may fail on windows (fck wndws)
               if (typeof (temp) != "undefined" && temp != -1) temp = temp.toFixed(1) + "°C";
               else temp = "(READ FAILED)";
 
@@ -287,8 +312,9 @@ client.on('message', message => {
                     { name: "RAM Use", value: memuse },
                     { name: "Ping to Cloudflare", value: ping },
                     { name: "\u200b", value: "\u200b" },
-                    { name: "Forked from", value: "Schrödinger by ryzetech\nhttps://schroedinger.ryzetech.live/" },
-                    { name: "Made by ryzetech", value: "https://ryzetech.live/ | I love you! <3" }
+                    { name: "GitHub Repo", value: "https://github.com/ryzetech/Mission-Control", inline: true },
+                    { name: "Forked from", value: "Schrödinger by ryzetech\nhttps://schroedinger.ryzetech.live/", inline: true },
+                    { name: "Made by ryzetech and ArcticSpaceFox", value: "https://ryzetech.live/ | We love you! <3" }
                   )
                   .setTimestamp()
                   .setFooter(`Requested by ${message.author.tag}`)
@@ -302,7 +328,9 @@ client.on('message', message => {
 
   // AVATAR
   else if (message.content.startsWith(`${prefix}avatar`)) {
+    // identify user
     let argument = userident(message);
+
     message.channel.send(
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
@@ -316,12 +344,13 @@ client.on('message', message => {
   }
 
   // SRA SECTION
+  // note: all the endpoints pretty much work the same: argument handling, fetching from GET endpoint and displaying the data + some error handling
   // ANIMAL
   else if (message.content.startsWith(`${prefix}animal`)) {
-    let animals = ["dog", "cat", "panda", "fox", "koala", "birb"];
+    let animals = ["dog", "cat", "panda", "fox", "koala", "birb"]; // birb is not a typo, it's the actual name of the endpoint
     let arg = message.content.slice(8).toLocaleLowerCase();
 
-    if (animals.slice(0, 7).includes(arg)) {
+    if (animals.includes(arg)) {
       message.channel.startTyping();
       fetch("https://some-random-api.ml/animal/" + arg)
         .then(res => res.json())
@@ -339,7 +368,7 @@ client.on('message', message => {
       message.channel.stopTyping();
     }
 
-    else if (arg.startsWith("red panda")) {
+    else if (arg.startsWith("red panda")) { // handling red panda seperately because i'm stupid
       message.channel.startTyping();
       fetch("https://some-random-api.ml/img/red_panda")
         .then(res => res.json())
@@ -371,12 +400,13 @@ client.on('message', message => {
       );
     }
 
+    // people are idiots
     else {
       message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Animal Fetch", embedPB)
-          .setTitle("Error")
+          .setTitle("❌ Error")
           .setDescription("That animal isn't available in our database (yet)\nCheck **" + prefix + "animal list** for a list of all animals!")
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
@@ -387,9 +417,11 @@ client.on('message', message => {
   // MEME
   else if (message.content.startsWith(`${prefix}meme`)) {
     message.channel.startTyping();
+
     fetch("https://some-random-api.ml/meme")
       .then(res => res.json())
       .then(json => {
+
         message.channel.send(
           new Discord.MessageEmbed()
             .setColor(embedColorStandard)
@@ -406,13 +438,15 @@ client.on('message', message => {
   // POKEDEX / POKEMON
   else if (message.content.startsWith(`${prefix}pokedex`) || message.content.startsWith(`${prefix}pokemon`)) {
     let arg = message.content.slice(9);
-    message.channel.startTyping();
+    message.channel.startTyping(); // because this might take a while, people hate it when the bot is sitting around doing seemingly nothing
     fetch("https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg))
       .then(res => res.json())
       .then(json => {
+        // hoping the request doesn't fail
         if (!json.error) {
           let typelist = "", genderlist = "", evoLine = "", abilities = "", eggGroups = "", species = "";
 
+          // processing information into a somewhat pretty format
           for (let i in json.type) typelist += (i == 0) ? json.type[i] : ", " + json.type[i];
           for (let i in json.gender) genderlist += (i == 0) ? json.gender[i] : " / " + json.gender[i];
           for (let i in json.species) species += (i == 0) ? json.species[i] : " " + json.species[i];
@@ -424,6 +458,7 @@ client.on('message', message => {
           for (let i in json.abilities) abilities += (i == 0) ? json.abilities[i] : ", " + json.abilities[i];
           for (let i in json.egg_groups) eggGroups += (i == 0) ? json.egg_groups[i] : ", " + json.egg_groups[i];
 
+          // sending the stuffz
           message.channel.send(
             new Discord.MessageEmbed()
               .setColor(embedColorStandard)
@@ -455,12 +490,12 @@ client.on('message', message => {
           );
         }
 
-        else {
+        else { // api error handling
           message.channel.send(
             new Discord.MessageEmbed()
               .setColor(embedColorFail)
               .setAuthor("Pokédex", embedPB)
-              .setTitle("An error occured! :(")
+              .setTitle("❌ An error occured! :(")
               .setThumbnail("https://static.wikia.nocookie.net/nintendo/images/8/85/MissingNoNormal.png/revision/latest?cb=20131114211037&path-prefix=en")
               .setDescription("Error Message: *" + json.error + "*")
               .setTimestamp()
@@ -468,7 +503,7 @@ client.on('message', message => {
           );
         }
 
-      }).catch(error => {
+      }).catch(error => { // fetch error handling
         message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
         console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
       });
@@ -482,10 +517,13 @@ client.on('message', message => {
     fetch("https://some-random-api.ml/mc?username=" + encodeURIComponent(arg))
       .then(res => res.json())
       .then(json => {
+
+        // hoping the request doesn't fail
         if (!json.error) {
           let namelist = [];
           for (let i in json.name_history) namelist.push(new EzField(json.name_history[i].name, json.name_history[i].changedToAt, false));
 
+          // displaying the data
           message.channel.send(
             new Discord.MessageEmbed()
               .setColor(embedColorStandard)
@@ -500,12 +538,13 @@ client.on('message', message => {
           );
         }
 
+        // api error handling
         else {
           message.channel.send(
             new Discord.MessageEmbed()
               .setColor(embedColorFail)
               .setAuthor("MC Fetch", embedPB)
-              .setTitle("An error occured! :(")
+              .setTitle("❌ An error occured! :(")
               .setDescription("Error Message: *" + json.error + "*")
               .setTimestamp()
               .setFooter(`Requested by ${message.author.tag}`)
@@ -513,12 +552,17 @@ client.on('message', message => {
         }
 
         message.channel.stopTyping();
-      })
+
+      // fetch error handling
+      }).catch(error => {
+        message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
+        console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/mc?username=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
+      });
   }
 
   // AVATAR MOD
   else if (message.content.startsWith(`${prefix}avmod`)) {
-    let msg = "error lmao";
+    let msg;
     let usr = userident(message);
     let args = message.content.slice(7);
 
@@ -544,6 +588,7 @@ client.on('message', message => {
         .setFooter(`Requested by ${message.author.tag}`)
     }
 
+    // filter handling
     else if (args.startsWith("glass")) {
       msg = new Discord.MessageEmbed()
         .setColor(embedColorStandard)
@@ -688,6 +733,7 @@ client.on('message', message => {
         .setFooter(`Requested by ${message.author.tag}`);
     }
 
+    // special attachment treatment for the last two because sra is kinda slow on these endpoints and discord has a timeout on embed image requests
     else if (args.startsWith("triggered")) {
       message.channel.startTyping();
 
@@ -726,10 +772,11 @@ client.on('message', message => {
       message.channel.stopTyping();
     }
 
+    // arg error handling
     else {
       msg = new Discord.MessageEmbed()
         .setColor(embedColorFail)
-        .setAuthor("Option missing or undefined", embedPB)
+        .setAuthor("❌ Syntax mistake!", embedPB)
         .setDescription("Either you didn't specify a filter, or the one specified wasn't found.\n**To get a list with all filters, type '" + prefix + "avmod filters'.**\n\n*Usage: " + prefix + "avatarmod <filter> [User Ping]*")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
@@ -740,223 +787,252 @@ client.on('message', message => {
 
   //// CASINO SECTION
   // ETH
+  // note: this is pretty much a "command subcommand" section because i need some subcommands again later for future item buying and selling
   else if (message.content.startsWith(`${prefix}eth`)) {
-    CoinGeckoClient.coins.fetch('ethereum', {}).then(d => {
-      let stuff = market;
-      let args = message.content.slice(5);
+    let stuff = market;
+    let args = message.content.slice(5);
 
-      let usr = finduser(message.author.id);
+    let usr = finduser(message.author.id);
 
-      // CURRENT STATS
-      if (args.startsWith("stats")) {
-        message.channel.send(
-          new Discord.MessageEmbed()
-            .setColor(embedColorStandard)
-            .setAuthor("Coin System", embedPB)
-            .setTitle("Ethereum Stats")
-            .setThumbnail("http://www.vectorico.com/download/cryptocurrency/ethereum-icon.png")
-            .setDescription("*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*")
-            .addFields(
-              { name: "Current value", value: stuff.current_price.eur + "€" },
-              { name: "Highest value (24h)", value: stuff.high_24h.eur + "€", inline: true },
-              { name: "Lowest value (24h)", value: stuff.low_24h.eur + "€", inline: true },
-              { name: "Change (24h)", value: stuff.price_change_percentage_24h.toFixed(2) + "%" }
-            )
-            .setTimestamp()
-            .setFooter(`Requested by ${message.author.tag}`)
-        )
+    // CURRENT STATS
+    if (args.startsWith("stats")) {
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorStandard)
+          .setAuthor("Coin System", embedPB)
+          .setTitle("Ethereum Stats")
+          .setThumbnail("http://www.vectorico.com/download/cryptocurrency/ethereum-icon.png")
+          .setDescription("*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*")
+          .addFields(
+            { name: "Current value", value: stuff.current_price.eur + "€" },
+            { name: "Highest value (24h)", value: stuff.high_24h.eur + "€", inline: true },
+            { name: "Lowest value (24h)", value: stuff.low_24h.eur + "€", inline: true },
+            { name: "Change (24h)", value: stuff.price_change_percentage_24h.toFixed(2) + "%" }
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      )
+    }
+
+    // BUY FOR AMOUNT
+    else if (args.startsWith("buyfor")) {
+      let msg;
+
+      // parse amount
+      let amount = parseFloat(args.slice(7).replace(',', '.'));
+
+      // check if amount is valid
+      if (isNaN(amount) || amount <= 0) {
+        msg = new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("❌ Invalid amount!", embedPB)
+          .setDescription("The specified amount is not a number or invalid.\nPlease try again.")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`);
       }
-
-      // BUY FOR AMOUNT
-      else if (args.startsWith("buyfor")) {
-        let amount = parseFloat(args.slice(7).replace(',', '.'));
-        let msg;
-
-        if (isNaN(amount) || amount <= 0) {
-          msg = new Discord.MessageEmbed()
-            .setColor(embedColorFail)
-            .setAuthor("Invalid amount", embedPB)
-            .setDescription("The specified amount is not a number or invalid.\nPlease try again.")
-            .setTimestamp()
-            .setFooter(`Requested by ${message.author.tag}`);
-        }
-        else {
-          if ((amount) > usr.money) {
-            msg = new Discord.MessageEmbed()
-              .setColor(embedColorFail)
-              .setAuthor("Invalid amount", embedPB)
-              .setDescription("The specified amount is too high or your balance is to low.")
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`);
-          }
-          else {
-            usr.money -= amount;
-            usr.eth += amount / price;
-
-            msg = new Discord.MessageEmbed()
-              .setColor(embedColorConfirm)
-              .setAuthor("Transaction confirmed!", embedPB)
-              .setDescription("This is your balance now:")
-              .addFields(
-                { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
-                { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
-              )
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`);
-          }
-        }
-
-        message.channel.send(msg);
-      }
-
-      // BUY AMOUNT
-      else if (args.startsWith("buy")) {
-        let amount = parseFloat(args.slice(4).replace(',', '.'));
-        let msg;
-
-        if (isNaN(amount) || amount <= 0) {
-          msg = new Discord.MessageEmbed()
-            .setColor(embedColorFail)
-            .setAuthor("Invalid amount", embedPB)
-            .setDescription("The specified amount is not a number or invalid.\nPlease try again.")
-            .setTimestamp()
-            .setFooter(`Requested by ${message.author.tag}`);
-        }
-        else {
-          if ((amount * price) > usr.money) {
-            msg = new Discord.MessageEmbed()
-              .setColor(embedColorFail)
-              .setAuthor("Invalid amount", embedPB)
-              .setDescription("The specified amount is too high or your balance is to low.")
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`);
-          }
-          else {
-            usr.money -= amount * price;
-            usr.eth += amount;
-
-            msg = new Discord.MessageEmbed()
-              .setColor(embedColorConfirm)
-              .setAuthor("Transaction confirmed!", embedPB)
-              .setDescription("This is your balance now:")
-              .addFields(
-                { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
-                { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
-              )
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`);
-          }
-        }
-
-        message.channel.send(msg);
-      }
-
-      // SELL FOR AMOUNT
-      else if (args.startsWith("sellfor")) {
-        let amount = parseFloat(args.slice(8).replace(',', '.'));
-        let msg;
-
-        if (isNaN(amount) || amount <= 0) {
-          msg = new Discord.MessageEmbed()
-            .setColor(embedColorFail)
-            .setAuthor("Invalid amount", embedPB)
-            .setDescription("The specified amount is not a number or invalid.\nPlease try again.")
-            .setTimestamp()
-            .setFooter(`Requested by ${message.author.tag}`);
-        }
-        else {
-          if ((amount / price) > usr.eth) {
-            msg = new Discord.MessageEmbed()
-              .setColor(embedColorFail)
-              .setAuthor("Invalid amount", embedPB)
-              .setDescription("The specified amount is too high or your balance is to low.")
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`);
-          }
-          else {
-            usr.money += amount;
-            usr.eth -= amount / price;
-
-            msg = new Discord.MessageEmbed()
-              .setColor(embedColorConfirm)
-              .setAuthor("Transaction confirmed!", embedPB)
-              .setDescription("This is your balance now:")
-              .addFields(
-                { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
-                { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
-              )
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`);
-          }
-        }
-
-        message.channel.send(msg);
-      }
-
-      // SELL AMOUNT
-      else if (args.startsWith("sell")) {
-        let amount = parseFloat(args.slice(5).replace(',', '.'));
-        let msg;
-
-        if (isNaN(amount) || amount <= 0) {
-          msg = new Discord.MessageEmbed()
-            .setColor(embedColorFail)
-            .setAuthor("Invalid amount", embedPB)
-            .setDescription("The specified amount is not a number or invalid.\nPlease try again.")
-            .setTimestamp()
-            .setFooter(`Requested by ${message.author.tag}`);
-        }
-        else {
-          if ((amount) > usr.eth) {
-            msg = new Discord.MessageEmbed()
-              .setColor(embedColorFail)
-              .setAuthor("Invalid amount", embedPB)
-              .setDescription("The specified amount is too high or your balance is to low.")
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`);
-          }
-          else {
-            usr.money += amount * price;
-            usr.eth -= amount;
-
-            msg = new Discord.MessageEmbed()
-              .setColor(embedColorConfirm)
-              .setAuthor("Transaction confirmed!", embedPB)
-              .setDescription("This is your balance now:")
-              .addFields(
-                { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
-                { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
-              )
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`);
-          }
-        }
-
-        message.channel.send(msg);
-      }
-
       else {
-        message.channel.send(
-          new Discord.MessageEmbed()
-            .setColor(embedColorStandard)
-            .setAuthor("Argument missing", embedPB)
-            .setDescription("There are multiple subcommands:")
+
+        // check if user has enough money to perform this action
+        if ((amount) > usr.money) {
+          msg = new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("❌ Invalid amount!", embedPB)
+            .setDescription("The specified amount is too high or your balance is to low.")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`);
+        }
+
+        // execute order
+        else {
+          usr.money -= amount;
+          usr.eth += amount / price;
+
+          msg = new Discord.MessageEmbed()
+            .setColor(embedColorConfirm)
+            .setAuthor("✅ Transaction confirmed!", embedPB)
+            .setDescription("This is your balance now:")
             .addFields(
-              { name: "eth stats", value: "Displays the current Ethereum stats" },
-              { name: "eth buy <amount>", value: "Buy the amount of ETH specified with 'amount'." },
-              { name: "eth buyfor <amount>", value: "Buy ETH FOR the amount of money specified with 'amount'." },
-              { name: "eth sell <amount>", value: "Sell the amount of ETH specified with 'amount'." },
-              { name: "eth sellfor <amount>", value: "Sell ETH FOR the amount of money specified with 'amount'." }
+              { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
+              { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
             )
             .setTimestamp()
-            .setFooter(`Requested by ${message.author.tag}`)
-        );
+            .setFooter(`Requested by ${message.author.tag}`);
+        }
       }
-    });
+
+      message.channel.send(msg);
+    }
+
+    // BUY AMOUNT
+    else if (args.startsWith("buy")) {
+      let msg;
+
+      // parse amount
+      let amount = parseFloat(args.slice(4).replace(',', '.'));
+
+      // check if amount is valid
+      if (isNaN(amount) || amount <= 0) {
+        msg = new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("❌ Invalid amount", embedPB)
+          .setDescription("The specified amount is not a number or invalid.\nPlease try again.")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`);
+      }
+      else {
+
+        // check if has enough money to perform this action
+        if ((amount * price) > usr.money) {
+          msg = new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("❌ Invalid amount", embedPB)
+            .setDescription("The specified amount is too high or your balance is to low.")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`);
+        }
+
+        // execute order
+        else {
+          usr.money -= amount * price;
+          usr.eth += amount;
+
+          msg = new Discord.MessageEmbed()
+            .setColor(embedColorConfirm)
+            .setAuthor("✅ Transaction confirmed!", embedPB)
+            .setDescription("This is your balance now:")
+            .addFields(
+              { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
+              { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
+            )
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`);
+        }
+      }
+
+      message.channel.send(msg);
+    }
+
+    // SELL FOR AMOUNT
+    else if (args.startsWith("sellfor")) {
+      let msg;
+
+      // parse amount
+      let amount = parseFloat(args.slice(8).replace(',', '.'));
+
+      // check if amount is valid
+      if (isNaN(amount) || amount <= 0) {
+        msg = new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("❌ Invalid amount", embedPB)
+          .setDescription("The specified amount is not a number or invalid.\nPlease try again.")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`);
+      }
+      else {
+
+        // check if user has enough eth to perform this action
+        if ((amount / price) > usr.eth) {
+          msg = new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("❌ Invalid amount", embedPB)
+            .setDescription("The specified amount is too high or your balance is to low.")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`);
+        }
+
+        // execute order
+        else {
+          usr.money += amount;
+          usr.eth -= amount / price;
+
+          msg = new Discord.MessageEmbed()
+            .setColor(embedColorConfirm)
+            .setAuthor("✅ Transaction confirmed!", embedPB)
+            .setDescription("This is your balance now:")
+            .addFields(
+              { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
+              { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
+            )
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`);
+        }
+      }
+
+      message.channel.send(msg);
+    }
+
+    // SELL AMOUNT
+    else if (args.startsWith("sell")) {
+      let msg;
+
+      // parse amount
+      let amount = parseFloat(args.slice(5).replace(',', '.'));
+
+      // check if amount is valid
+      if (isNaN(amount) || amount <= 0) {
+        msg = new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("❌ Invalid amount", embedPB)
+          .setDescription("The specified amount is not a number or invalid.\nPlease try again.")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`);
+      }
+      else {
+
+        // check if user has enough eth to perform this action
+        if ((amount) > usr.eth) {
+          msg = new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("❌ Invalid amount", embedPB)
+            .setDescription("The specified amount is too high or your balance is to low.")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`);
+        }
+
+        // execute order
+        else {
+          usr.money += amount * price;
+          usr.eth -= amount;
+
+          msg = new Discord.MessageEmbed()
+            .setColor(embedColorConfirm)
+            .setAuthor("✅ Transaction confirmed!", embedPB)
+            .setDescription("This is your balance now:")
+            .addFields(
+              { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
+              { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
+            )
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`);
+        }
+      }
+
+      message.channel.send(msg);
+    }
+
+    else {
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorStandard)
+          .setAuthor("❌ Syntax error!", embedPB)
+          .setDescription("There are multiple subcommands:")
+          .addFields(
+            { name: "eth stats", value: "Displays the current Ethereum stats" },
+            { name: "eth buy <amount>", value: "Buy the amount of ETH specified with 'amount'." },
+            { name: "eth buyfor <amount>", value: "Buy ETH FOR the amount of money specified with 'amount'." },
+            { name: "eth sell <amount>", value: "Sell the amount of ETH specified with 'amount'." },
+            { name: "eth sellfor <amount>", value: "Sell ETH FOR the amount of money specified with 'amount'." }
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
   }
 
   // BALANCE
   else if (message.content.startsWith(`${prefix}balance`)) {
+
+    // identify user and get it from the db
     let argument = userident(message);
     let usr = finduser(argument.user.id);
 
@@ -1037,22 +1113,31 @@ client.on('message', message => {
       .setDescription("You've sent " + amount + " Euros! Please be aware of our 5% fee")
       .addFields(
         { name: "Amount", value: amount + "€" },
-        { name: "Fee   ", value: fee + "€" }
+        { name: "Fee", value: fee + "€" }
       )
       .setTimestamp()
       .setFooter(`Requested by ${message.author.tag}`)
     );
-  }
+  } // thx arctic
 
   // WORK
   else if (message.content.startsWith(`${prefix}work`)) {
-    let user = finduser(message.author.id);
     let msg;
 
+    // identify user
+    let user = finduser(message.author.id);
+
+    // check if user is in cooldown defined by "p_cooldown"
     if (user.lastearnstamp < new Date().getTime() - p_cooldown) {
+
+      // calc amount
       let amount = Math.round(Math.random() * 950 + 50);
+
+      // cooldown the user and calculate new amount
       user.lastearnstamp = new Date().getTime();
       user.money += amount;
+
+      // display the data
       msg = new Discord.MessageEmbed()
         .setColor(embedColorConfirm)
         .setAuthor("Coin System", embedPB)
@@ -1066,6 +1151,8 @@ client.on('message', message => {
         .setFooter(`Requested by ${message.author.tag}`);
       saveDB();
     }
+
+    // display error message on cooldown
     else {
       msg = new Discord.MessageEmbed()
         .setColor(embedColorFail)
@@ -1083,39 +1170,51 @@ client.on('message', message => {
   else if (message.content.startsWith(`${prefix}leaderboard`)) {
     message.channel.send(
       new Discord.MessageEmbed()
-        .setColor("#8C8C8C")
+        .setColor(embedColorProcessing)
         .setAuthor("Leaderboard - Top 25", embedPB)
         .setTitle("Fetching Data...")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     ).then(sent => {
-      let yeet = new Map();
-      userData.forEach(shit => {
-        let sus = client.users.cache.get(shit.u);
-        if (!sus) console.log("[WARN] USER ID " + shit.u + " HAS DB ENTRY BUT COULD NOT BE FOUND. SKIPPING...");
+
+      // preprocess the user db
+      let preprocess = new Map();
+      userData.forEach(dbusr => {
+        // get the discord user object by id
+        let discordUser = client.users.cache.get(dbusr.u);
+        // handling case: user left the server and could not be found
+        if (!discordUser) console.log("[WARN] User ID " + dbusr.u + " has a DB entry but could not be found! Skipping...");
+
         else {
-          sus = sus.tag;
-          let amogus = parseFloat(shit.money + (shit.eth * price)).toFixed(2);
-          yeet.set(sus, amogus);
+          // creating map entry
+          discordUser = discordUser.tag;
+          let value = parseFloat(dbusr.money + (dbusr.eth * price)).toFixed(2);
+          preprocess.set(discordUser, value);
         }
       });
-      let lmao = new Map([...yeet.entries()].sort((a, b) => b[1] - a[1]));
+      
+      // sort map
+      let sorted = new Map([...preprocess.entries()].sort((a, b) => b[1] - a[1]));
 
-      let meme = 1;
-      let xd = [];
-      lmao.forEach((value, key, map) => {
-        if (meme <= 25) {
-          xd.push(new EzField(meme + ". - " + key, value));
-          meme++;
+      // process display data
+      let i = 1;
+      let lbdata = [];
+      sorted.forEach((value, key, map) => {
+
+        // stop @ 25 users because discord set a max field amount
+        if (i <= 25) {
+          lbdata.push(new EzField(i + ". - " + key, value));
+          i++;
         }
       });
 
+      // push content
       sent.edit(
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
-          .setAuthor("Leaderboard - Top " + xd.length, embedPB)
+          .setAuthor("Leaderboard - Top " + lbdata.length, embedPB)
           .setTitle("Cash and ETH combined")
-          .addFields(xd)
+          .addFields(lbdata)
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
       )
@@ -1133,4 +1232,5 @@ client.on('message', message => {
   saveDB();
 });
 
+// go
 client.login(token);
