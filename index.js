@@ -14,6 +14,7 @@ const fetch = require("node-fetch");
 const axios = require("axios");
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
+const { url } = require("inspector");
 
 var messageCounter = 0;
 var joinCounter = 0;
@@ -777,6 +778,58 @@ client.on('message', message => {
     }
 
     message.channel.send(msg);
+  }
+
+  // HACKER NEWS
+  else if (message.content.startsWith(`${prefix}news`)) {
+
+    // [Guide](https://discordjs.guide/ 'optional hovertext')
+
+    fetch("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty")
+      .then(res => res.json())
+      .then(json => {
+        // thats probably the most ugly solution
+        let i = 0;
+        let fields = [];
+        let link;
+
+        /* not working, don't ask me
+        while(i < 5) {
+          link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[i]) + ".json?print=pretty";
+          console.log(i)
+          fetch(link)
+          .then(res => res.json())
+          .then(data => {
+            console.log(data)
+            fields.push(new EzField("[" + data.title +"](" + data.url + " '')"), "by " + data.by + " - " + data.type);
+          }).catch(error => {
+            message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
+            console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: " + link + "\n--- ERR DUMP END ---");
+          });
+          i++;
+        }
+        */
+
+        fetch("https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[0]) + ".json?print=pretty")
+          .then(res => res.json())
+          .then(data => {
+            fields.push(new EzField(data.title, "by " + data.by + " - [Link](" + data.url + ")"));
+
+            message.channel.send(
+              new Discord.MessageEmbed()
+              .setColor(embedColorStandard)
+              .setAuthor("HackerNews", embedPB)
+              .setTitle("Top Stories")
+              .setThumbnail("https://www.ycombinator.com/assets/ycdc/ycombinator-logo-b603b0a270e12b1d42b7cca9d4527a9b206adf8293a77f9f3e8b6cb542fcbfa7.png")
+              .addFields(fields)
+              .setTimestamp()
+              .setFooter(`Requested by ${message.author.tag}`)
+            );
+          });
+      }).catch(error => {
+        message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
+        console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty" + "\n--- ERR DUMP END ---");
+      });
   }
 
   //// CASINO SECTION
