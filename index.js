@@ -294,7 +294,7 @@ client.on('message', message => {
                 new Discord.MessageEmbed()
                   .setColor(embedColorStandard)
                   .setAuthor("Info and Credits", embedPB)
-                  .setTitle("Mission Control by ryzetech")
+                  .setTitle("Mission Control by ryzetech and ArcticSpaceFox")
                   .setDescription("Information about the bot and server health")
                   .addFields(
                     { name: "\u200b", value: "\u200b" },
