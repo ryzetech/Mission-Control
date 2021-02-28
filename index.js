@@ -12,15 +12,8 @@ const CoinGeckoClient = new CoinGecko();
 const fs = require("fs");
 const fetch = require("node-fetch");
 const axios = require("axios");
-const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown } = require("./config.json");
+const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
-
-const embedColorProcessing = "#8c8c8c";
-const embedColorStandard = "#75d3fc";
-const embedColorConfirm = "#16c60c";
-const embedColorWarn = "#ff9600";
-const embedColorFail = "#f03a17";
-const embedPB = "https://i.ryzetech.live/arctic-mission-control.png";
 
 var messageCounter = 0;
 var joinCounter = 0;
@@ -74,6 +67,7 @@ function saveDB() {
     if (err) {
       console.log(`Error writing file: ${err}`);
     } else {
+      // dafuq i have planned something here but i'm not sure what
     }
   });
 }

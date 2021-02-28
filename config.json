@@ -6,5 +6,12 @@
         "810183197065347103",
         "810183144576778281"
     ],
-    "p_cooldown": 43200000
+    "p_cooldown": 43200000,
+
+    "embedColorStandard": "#75d3fc",
+    "embedColorProcessing": "#8c8c8c",
+    "embedColorConfirm": "#16c60c",
+    "embedColorWarn": "#ff9600",
+    "embedColorFail": "#f03a17",
+    "embedPB": "https://i.ryzetech.live/arctic-mission-control.png"
 }
