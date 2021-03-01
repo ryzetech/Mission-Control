@@ -184,7 +184,7 @@ client.on('guildMemberAdd', member => {
 // thx stftk <3
 
 // MESSAGE HANDLER
-client.on('message', message => {
+client.on('message', async (message) => {
 
   // preventing database checks on bots
   if (!message.author.bot) {
@@ -793,23 +793,20 @@ client.on('message', message => {
         let fields = [];
         let link;
 
-        /* not working, don't ask me
         while(i < 5) {
           link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[i]) + ".json?print=pretty";
           console.log(i)
-          fetch(link)
-          .then(res => res.json())
-          .then(data => {
-            console.log(data)
-            fields.push(new EzField("[" + data.title +"](" + data.url + " '')"), "by " + data.by + " - " + data.type);
-          }).catch(error => {
-            message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
-            console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: " + link + "\n--- ERR DUMP END ---");
-          });
+          let data = await fetch(link).json();
+          
+          fields.push(new EzField(data.title, "by " + data.by + " - [Link](" + data.url + ")"));
+          
           i++;
         }
-        */
+        console.log(fields);
+      });
 
+        // top 1 combinator lmao
+        /*
         fetch("https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[0]) + ".json?print=pretty")
           .then(res => res.json())
           .then(data => {
@@ -826,10 +823,7 @@ client.on('message', message => {
               .setFooter(`Requested by ${message.author.tag}`)
             );
           });
-      }).catch(error => {
-        message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
-        console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty" + "\n--- ERR DUMP END ---");
-      });
+          */
   }
 
   //// CASINO SECTION
