@@ -4,7 +4,6 @@
     made with 🍺 and ❤ in Germany
 */
 
-const util = require("util");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const si = require("systeminformation");
@@ -13,9 +12,8 @@ const CoinGeckoClient = new CoinGecko();
 const fs = require("fs");
 const fetch = require("node-fetch");
 const axios = require("axios");
-const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
+const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
-const { url } = require("inspector");
 
 var messageCounter = 0;
 var joinCounter = 0;
@@ -102,8 +100,6 @@ function fetchdata() {
       console.log("--- ERR DUMP ---\nFailed: [TIMED] CoinGecko Data Fetch\nError: " + error.message + "\n--- ERR DUMP END ---");
     });
 }
-
-const awfetch = util.promisify(fetch); // steffs shit
 
 //// CLASSES
 // help class for easily creating more complex embed fields
@@ -784,18 +780,17 @@ client.on('message', async (message) => {
 
   // HACKER NEWS
   else if (message.content.startsWith(`${prefix}news`)) {
-    let res = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
-    let json = await res.json();
-
     let i = 0;
     let fields = [];
     let link;
 
-    while (i < 5) {
+    let res = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
+    let json = await res.json();
+
+    while (i < ycomb_story_amount) {
       link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[i]) + ".json?print=pretty";
       let data = await fetch(link);
       data = await data.json()
-
       fields.push(new EzField(data.title, "by " + data.by + " - [Link](" + data.url + ")"));
 
       i++;
