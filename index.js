@@ -806,7 +806,7 @@ client.on('message', async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
-  }
+  } // thx stftk (again <3)
 
   //// CASINO SECTION
   // ETH
