@@ -89,8 +89,7 @@ function finduser(usrid) {
     else i++;
   }
   if (found) return result;
-  // this should never happen... i think
-  else console.log("shit went wrong"); return undefined;
+  else return undefined;
 }
 
 // timed task executor for fetching market data from the CoinGecko API
@@ -104,7 +103,7 @@ function fetchdata() {
     });
 }
 
-fetch = util.promisify(fetch); // steffs shit
+const awfetch = util.promisify(fetch); // steffs shit
 
 //// CLASSES
 // help class for easily creating more complex embed fields
@@ -551,7 +550,7 @@ client.on('message', async (message) => {
 
         message.channel.stopTyping();
 
-      // fetch error handling
+        // fetch error handling
       }).catch(error => {
         message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
         console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/mc?username=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
@@ -785,48 +784,33 @@ client.on('message', async (message) => {
 
   // HACKER NEWS
   else if (message.content.startsWith(`${prefix}news`)) {
+    let res = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
+    let json = await res.json();
 
-    // [Guide](https://discordjs.guide/ 'optional hovertext')
+    let i = 0;
+    let fields = [];
+    let link;
 
-    fetch("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty")
-      .then(res => res.json())
-      .then(json => {
-        // thats probably the most ugly solution
-        let i = 0;
-        let fields = [];
-        let link;
+    while (i < 5) {
+      link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[i]) + ".json?print=pretty";
+      let data = await fetch(link);
+      data = await data.json()
 
-        while(i < 5) {
-          link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[i]) + ".json?print=pretty";
-          console.log(i)
-          let data = await fetch(link); // steffs shit
-          
-          fields.push(new EzField(data.title, "by " + data.by + " - [Link](" + data.url + ")"));
-          
-          i++;
-        }
-        console.log(fields);
-      });
+      fields.push(new EzField(data.title, "by " + data.by + " - [Link](" + data.url + ")"));
 
-        // top 1 combinator lmao
-        /*
-        fetch("https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[0]) + ".json?print=pretty")
-          .then(res => res.json())
-          .then(data => {
-            fields.push(new EzField(data.title, "by " + data.by + " - [Link](" + data.url + ")"));
+      i++;
+    }
 
-            message.channel.send(
-              new Discord.MessageEmbed()
-              .setColor(embedColorStandard)
-              .setAuthor("HackerNews", embedPB)
-              .setTitle("Top Stories")
-              .setThumbnail("https://www.ycombinator.com/assets/ycdc/ycombinator-logo-b603b0a270e12b1d42b7cca9d4527a9b206adf8293a77f9f3e8b6cb542fcbfa7.png")
-              .addFields(fields)
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`)
-            );
-          });
-          */
+    message.channel.send(
+      new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("HackerNews", embedPB)
+        .setTitle("Top Stories")
+        .setThumbnail("https://www.ycombinator.com/assets/ycdc/ycombinator-logo-b603b0a270e12b1d42b7cca9d4527a9b206adf8293a77f9f3e8b6cb542fcbfa7.png")
+        .addFields(fields)
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+    );
   }
 
   //// CASINO SECTION
@@ -1236,7 +1220,7 @@ client.on('message', async (message) => {
           preprocess.set(discordUser, value);
         }
       });
-      
+
       // sort map
       let sorted = new Map([...preprocess.entries()].sort((a, b) => b[1] - a[1]));
 
