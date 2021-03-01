@@ -4,6 +4,7 @@
     made with 🍺 and ❤ in Germany
 */
 
+const util = require("util");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const si = require("systeminformation");
@@ -102,6 +103,8 @@ function fetchdata() {
       console.log("--- ERR DUMP ---\nFailed: [TIMED] CoinGecko Data Fetch\nError: " + error.message + "\n--- ERR DUMP END ---");
     });
 }
+
+fetch = util.promisify(fetch); // steffs shit
 
 //// CLASSES
 // help class for easily creating more complex embed fields
@@ -796,7 +799,7 @@ client.on('message', async (message) => {
         while(i < 5) {
           link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[i]) + ".json?print=pretty";
           console.log(i)
-          let data = await fetch(link).json();
+          let data = await fetch(link); // steffs shit
           
           fields.push(new EzField(data.title, "by " + data.by + " - [Link](" + data.url + ")"));
           
