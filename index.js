@@ -780,23 +780,39 @@ client.on('message', async (message) => {
 
   // HACKER NEWS
   else if (message.content.startsWith(`${prefix}news`)) {
+    // displaying procesing message due to long fetch times
+    let msg = await message.channel.send(
+      new Discord.MessageEmbed()
+      .setColor(embedColorProcessing)
+      .setAuthor("HackerNews", embedPB)
+      .setTitle("Hold on!")
+      .setDescription("I'm fetching data right now, give me a second...")
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`)
+    );
+
     let i = 0;
     let fields = [];
     let link;
 
+    // get the top stories list
     let res = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
     let json = await res.json();
 
+    // get the first "ycomb_story_amount" stories and add them to the ezfield array
     while (i < ycomb_story_amount) {
       link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[i]) + ".json?print=pretty";
       let data = await fetch(link);
-      data = await data.json()
-      fields.push(new EzField(data.title, "by " + data.by + " - [Link](" + data.url + ")"));
+      data = await data.json();
+      let url = data.url ? "[Link](" + data.url + ")" : "no url available"; // some stories have no url because they are internal
+
+      fields.push(new EzField(data.title, "by " + data.by + " - " + url));
 
       i++;
     }
 
-    message.channel.send(
+    // edit the processing message to display the news
+    msg.edit(
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("HackerNews", embedPB)
