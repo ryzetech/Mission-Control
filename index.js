@@ -12,7 +12,7 @@ const CoinGeckoClient = new CoinGecko();
 const fs = require("fs");
 const fetch = require("node-fetch");
 const axios = require("axios");
-const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
+const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
 
 var messageCounter = 0;
@@ -87,8 +87,7 @@ function finduser(usrid) {
     else i++;
   }
   if (found) return result;
-  // this should never happen... i think
-  else console.log("shit went wrong"); return undefined;
+  else return undefined;
 }
 
 // timed task executor for fetching market data from the CoinGecko API
@@ -183,7 +182,7 @@ client.on('guildMemberAdd', member => {
 // thx stftk <3
 
 // MESSAGE HANDLER
-client.on('message', message => {
+client.on('message', async (message) => {
 
   // preventing database checks on bots
   if (!message.author.bot) {
@@ -547,7 +546,7 @@ client.on('message', message => {
 
         message.channel.stopTyping();
 
-      // fetch error handling
+        // fetch error handling
       }).catch(error => {
         message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
         console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/mc?username=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
@@ -778,6 +777,52 @@ client.on('message', message => {
 
     message.channel.send(msg);
   }
+
+  // HACKER NEWS
+  else if (message.content.startsWith(`${prefix}news`)) {
+    // displaying procesing message due to long fetch times
+    let msg = await message.channel.send(
+      new Discord.MessageEmbed()
+      .setColor(embedColorProcessing)
+      .setAuthor("HackerNews", embedPB)
+      .setTitle("Hold on!")
+      .setDescription("I'm fetching data right now, give me a second...")
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`)
+    );
+
+    let i = 0;
+    let fields = [];
+    let link;
+
+    // get the top stories list
+    let res = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
+    let json = await res.json();
+
+    // get the first "ycomb_story_amount" stories and add them to the ezfield array
+    while (i < ycomb_story_amount) {
+      link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[i]) + ".json?print=pretty";
+      let data = await fetch(link);
+      data = await data.json();
+      let url = data.url ? "[Link](" + data.url + ")" : "no url available"; // some stories have no url because they are internal
+
+      fields.push(new EzField(data.title, "by " + data.by + " - " + url));
+
+      i++;
+    }
+
+    // edit the processing message to display the news
+    msg.edit(
+      new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("HackerNews", embedPB)
+        .setTitle("Top Stories")
+        .setThumbnail("https://www.ycombinator.com/assets/ycdc/ycombinator-logo-b603b0a270e12b1d42b7cca9d4527a9b206adf8293a77f9f3e8b6cb542fcbfa7.png")
+        .addFields(fields)
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+    );
+  } // thx stftk (again <3)
 
   //// CASINO SECTION
   // ETH
@@ -1186,7 +1231,7 @@ client.on('message', message => {
           preprocess.set(discordUser, value);
         }
       });
-      
+
       // sort map
       let sorted = new Map([...preprocess.entries()].sort((a, b) => b[1] - a[1]));
 

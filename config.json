@@ -6,7 +6,9 @@
         "810183197065347103",
         "810183144576778281"
     ],
+
     "p_cooldown": 43200000,
+    "ycomb_story_amount": 5,
 
     "embedColorStandard": "#75d3fc",
     "embedColorProcessing": "#8c8c8c",
