@@ -138,46 +138,43 @@ client.on('ready', () => {
 });
 
 // WELCOME MESSAGE
-client.on('guildMemberAdd', member => {
+client.on('guildMemberAdd', async (member) => {
   joinCounter++;
 
   let channel = member.guild.channels.cache.get(welcomeChannelID);
 
   // ask Virgin Slayer if the user is banned on the global network
-  axios.post('https://dvs.stefftek.de/api/bans', { data: { userID: member.user.id } })
-    .then(function (response) {
-      let res = response.data;
+  let response = await axios.post('https://dvs.stefftek.de/api/bans', { data: { userID: member.user.id } });
+  let res = await response.data;
 
-      // if the user is unknown to Virgin Slayer:
-      if (res.status === "error" && res.msg === "api.error.notBanned") {
-        channel.send(`Hey ${member}, welcome on our little spaceship! 🚀`).then(sent => { // post the regular welcome message...
-          sent.delete({ timeout: autodelete }); // ...and delete it after "autodelete" seconds to keep the chat clean
-        });
-      }
+  // if the user is unknown to Virgin Slayer:
+  if (res.status === "error" && res.msg === "api.error.notBanned") {
+    let sent = await channel.send(`Hey ${member}, welcome on our little spaceship! 🚀`);
+    await sent.delete({ timeout: autodelete }); // ...and delete it after "autodelete" seconds to keep the chat clean
+  }
 
-      // if the user is known to Virgin Slayer:
-      else if (res.status === "success") {
-        // get the current time to calculate the amount of time the user is banned
-        let date = new Date(res.data.Timestamp);
+  // if the user is known to Virgin Slayer:
+  else if (res.status === "success") {
+    // get the current time to calculate the amount of time the user is banned
+    let date = new Date(res.data.Timestamp);
 
-        // send a message with the provided data
-        channel.send(
-          new Discord.MessageEmbed()
-            .setColor(embedColorWarn)
-            .setAuthor("Banned User Alert", embedPB)
-            .setTitle("Virgin Slayer Global DB Match")
-            .setDescription("An user known for inappropriate behaviour joined.\nYou can view the details down below.")
-            .addFields(
-              { name: "UserID", value: res.data.UserID },
-              { name: "Ban Reason", value: res.data.Reason },
-              { name: "User Tag at Ban", value: res.data.DisplayName },
-              { name: "Ban Timestamp", value: date + "\n(" + timediff(Date.now(), date.getTime()) + " ago)" },
-            )
-            .setTimestamp()
-            .setFooter(`This Message was sent automagically`)
+    // send a message with the provided data
+    channel.send(
+      new Discord.MessageEmbed()
+        .setColor(embedColorWarn)
+        .setAuthor("Banned User Alert", embedPB)
+        .setTitle("Virgin Slayer Global DB Match")
+        .setDescription("An user known for inappropriate behaviour joined.\nYou can view the details down below.")
+        .addFields(
+          { name: "UserID", value: res.data.UserID },
+          { name: "Ban Reason", value: res.data.Reason },
+          { name: "User Tag at Ban", value: res.data.DisplayName },
+          { name: "Ban Timestamp", value: date + "\n(" + timediff(Date.now(), date.getTime()) + " ago)" },
         )
-      }
-    });
+        .setTimestamp()
+        .setFooter(`This Message was sent automagically`)
+    )
+  }
 });
 // thx stftk <3
 
@@ -231,7 +228,7 @@ client.on('message', async (message) => {
     // TODO: rework this section, maybe by reusing the old embed object
     let timestamp = message.createdTimestamp;
 
-    message.channel.send(
+    let sent = await message.channel.send(
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("Mission Control Info", embedPB)
@@ -245,78 +242,69 @@ client.on('message', async (message) => {
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    ).then(sent => {
-      let diff = sent.createdTimestamp - timestamp;
-      sent.edit(
-        new Discord.MessageEmbed()
-          .setColor(embedColorStandard)
-          .setAuthor("Mission Control Info", embedPB)
-          .setTitle("🏓 Pong!")
-          .addFields(
-            { name: "Response Time", value: `${diff}ms`, inline: true },
-            { name: "Status", value: "Service is healthy", inline: true },
-            { name: "Bot Uptime", value: timediff(new Date().getTime(), startDate.getTime()) },
-            { name: "Messages since bot start", value: `${messageCounter} Messages` },
-            { name: "Joins since bot start", value: `${joinCounter} Users` }
-          )
-          .setTimestamp()
-          .setFooter(`Requested by ${message.author.tag}`)
-      )
-    });
+    );
+
+    let diff = sent.createdTimestamp - timestamp;
+    sent.edit(
+      new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("Mission Control Info", embedPB)
+        .setTitle("🏓 Pong!")
+        .addFields(
+          { name: "Response Time", value: `${diff}ms`, inline: true },
+          { name: "Status", value: "Service is healthy", inline: true },
+          { name: "Bot Uptime", value: timediff(new Date().getTime(), startDate.getTime()) },
+          { name: "Messages since bot start", value: `${messageCounter} Messages` },
+          { name: "Joins since bot start", value: `${joinCounter} Users` }
+        )
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+    );
   }
 
   // SYS INFO
   else if (message.content.startsWith(`${prefix}info`)) {
-    let load, temp, memuse, ping;
 
     // asking systeminformation about a bunch of server data
-    si.cpuCurrentSpeed().then(data => {
-      load = data.avg;
+    let load = await si.cpuCurrentSpeed();
+    load = await load.avg;
 
-      si.mem().then(data => {
-        memuse = ((data.used / data.total) * 100).toFixed(1) + "%";
+    let memuse = await si.mem();
+    memuse = await ((memuse.used / memuse.total) * 100).toFixed(1) + "%";
 
-        si.mem().then(data => {
-          swapuse = ((data.used / data.total) * 100).toFixed(1) + "%";
+    let ping = await si.inetLatency("1.1.1.1");
+    ping = await Math.floor(ping) + "ms";
 
-          si.inetLatency("1.1.1.1").then(data => {
-            ping = Math.floor(data) + "ms";
+    let temp = si.cpuTemperature();
+    temp = await temp.main;
 
-            si.cpuTemperature().then(data => {
-              temp = data.main;
+    // failsafe because temp read may fail on windows (fck wndws)
+    if (typeof (temp) != "undefined" && temp != -1) temp = temp.toFixed(1) + "°C";
+    else temp = "(READ FAILED)";
 
-              // failsafe because temp read may fail on windows (fck wndws)
-              if (typeof (temp) != "undefined" && temp != -1) temp = temp.toFixed(1) + "°C";
-              else temp = "(READ FAILED)";
-
-              message.channel.send(
-                new Discord.MessageEmbed()
-                  .setColor(embedColorStandard)
-                  .setAuthor("Info and Credits", embedPB)
-                  .setTitle("Mission Control by ryzetech and ArcticSpaceFox")
-                  .setDescription("Information about the bot and server health")
-                  .addFields(
-                    { name: "\u200b", value: "\u200b" },
-                    { name: "Special Thanks", value: "some-random-api.ml\ncrafatar.com" },
-                    { name: "\u200b", value: "\u200b" },
-                    { name: "Hosted by ZAP-Hosting", value: "Use promocode 'ryzetech-a-4247' to get 20% discount on the entire runtime of your next product!" },
-                    { name: "CPU Usage", value: load, inline: true },
-                    { name: "CPU Temp", value: temp, inline: true },
-                    { name: "RAM Use", value: memuse },
-                    { name: "Ping to Cloudflare", value: ping },
-                    { name: "\u200b", value: "\u200b" },
-                    { name: "GitHub Repo", value: "https://github.com/ryzetech/Mission-Control", inline: true },
-                    { name: "Forked from", value: "Schrödinger by ryzetech\nhttps://schroedinger.ryzetech.live/", inline: true },
-                    { name: "Made by ryzetech and ArcticSpaceFox", value: "https://ryzetech.live/ | We love you! <3" }
-                  )
-                  .setTimestamp()
-                  .setFooter(`Requested by ${message.author.tag}`)
-              );
-            });
-          });
-        });
-      });
-    });
+    message.channel.send(
+      new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("Info and Credits", embedPB)
+        .setTitle("Mission Control by ryzetech and ArcticSpaceFox")
+        .setDescription("Information about the bot and server health")
+        .addFields(
+          { name: "\u200b", value: "\u200b" },
+          { name: "Special Thanks", value: "some-random-api.ml\ncrafatar.com" },
+          { name: "\u200b", value: "\u200b" },
+          { name: "Hosted by ZAP-Hosting", value: "Use promocode 'ryzetech-a-4247' to get 20% discount on the entire runtime of your next product!" },
+          { name: "CPU Usage", value: load, inline: true },
+          { name: "CPU Temp", value: temp, inline: true },
+          { name: "RAM Use", value: memuse },
+          { name: "Ping to Cloudflare", value: ping },
+          { name: "\u200b", value: "\u200b" },
+          { name: "GitHub Repo", value: "https://github.com/ryzetech/Mission-Control", inline: true },
+          { name: "Forked from", value: "Schrödinger by ryzetech\nhttps://schroedinger.ryzetech.live/", inline: true },
+          { name: "Made by ryzetech and ArcticSpaceFox", value: "https://ryzetech.live/ | We love you! <3" }
+        )
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+    );
   }
 
   // AVATAR
@@ -345,36 +333,32 @@ client.on('message', async (message) => {
 
     if (animals.includes(arg)) {
       message.channel.startTyping();
-      fetch("https://some-random-api.ml/animal/" + arg)
-        .then(res => res.json())
-        .then(json => {
-          message.channel.send(
-            new Discord.MessageEmbed()
-              .setColor(embedColorStandard)
-              .setAuthor("Animal Fetch: " + arg, embedPB)
-              .setDescription(json.fact)
-              .setImage(json.image)
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`)
-          );
-        });
+      let res = await fetch("https://some-random-api.ml/animal/" + arg);
+      let json = await res.json();
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorStandard)
+          .setAuthor("Animal Fetch: " + arg, embedPB)
+          .setDescription(json.fact)
+          .setImage(json.image)
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
       message.channel.stopTyping();
     }
 
     else if (arg.startsWith("red panda")) { // handling red panda seperately because i'm stupid
       message.channel.startTyping();
-      fetch("https://some-random-api.ml/img/red_panda")
-        .then(res => res.json())
-        .then(json => {
-          message.channel.send(
-            new Discord.MessageEmbed()
-              .setColor(embedColorStandard)
-              .setAuthor("Animal Fetch: red panda", embedPB)
-              .setImage(json.link)
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`)
-          );
-        });
+      let res = await fetch("https://some-random-api.ml/img/red_panda");
+      let json = await res.json();
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorStandard)
+          .setAuthor("Animal Fetch: red panda", embedPB)
+          .setImage(json.link)
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
       message.channel.stopTyping();
     }
 
@@ -411,95 +395,97 @@ client.on('message', async (message) => {
   else if (message.content.startsWith(`${prefix}meme`)) {
     message.channel.startTyping();
 
-    fetch("https://some-random-api.ml/meme")
-      .then(res => res.json())
-      .then(json => {
-
-        message.channel.send(
-          new Discord.MessageEmbed()
-            .setColor(embedColorStandard)
-            .setAuthor("a random meme", embedPB)
-            .setTitle(json.caption)
-            .setImage(json.image)
-            .setTimestamp()
-            .setFooter(`Requested by ${message.author.tag}`)
-        );
-        message.channel.stopTyping();
-      });
+    let res = await fetch("https://some-random-api.ml/meme");
+    let json = await res.json();
+    message.channel.send(
+      new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("a random meme", embedPB)
+        .setTitle(json.caption)
+        .setImage(json.image)
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+    );
+    message.channel.stopTyping();
   }
 
   // POKEDEX / POKEMON
   else if (message.content.startsWith(`${prefix}pokedex`) || message.content.startsWith(`${prefix}pokemon`)) {
     let arg = message.content.slice(9);
     message.channel.startTyping(); // because this might take a while, people hate it when the bot is sitting around doing seemingly nothing
-    fetch("https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg))
-      .then(res => res.json())
-      .then(json => {
-        // hoping the request doesn't fail
-        if (!json.error) {
-          let typelist = "", genderlist = "", evoLine = "", abilities = "", eggGroups = "", species = "";
 
-          // processing information into a somewhat pretty format
-          for (let i in json.type) typelist += (i == 0) ? json.type[i] : ", " + json.type[i];
-          for (let i in json.gender) genderlist += (i == 0) ? json.gender[i] : " / " + json.gender[i];
-          for (let i in json.species) species += (i == 0) ? json.species[i] : " " + json.species[i];
-          for (let i in json.family.evolutionLine) {
-            evoLine += (i == 0) ? "" : " => ";
-            evoLine += (json.family.evolutionLine[i] === (json.name.charAt(0).toUpperCase() + json.name.slice(1))) ? ("**" + json.family.evolutionLine[i] + "**") : json.family.evolutionLine[i];
-          }
-          if (json.family.evolutionLine.length == 0) evoLine = "N/A";
-          for (let i in json.abilities) abilities += (i == 0) ? json.abilities[i] : ", " + json.abilities[i];
-          for (let i in json.egg_groups) eggGroups += (i == 0) ? json.egg_groups[i] : ", " + json.egg_groups[i];
+    try {
+      let res = await fetch("https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg));
+      let json = await res.json();
 
-          // sending the stuffz
-          message.channel.send(
-            new Discord.MessageEmbed()
-              .setColor(embedColorStandard)
-              .setAuthor("Pokédex", embedPB)
-              .setTitle(json.name.charAt(0).toUpperCase() + json.name.slice(1))
-              .setDescription("**" + species + "**\n" + json.description)
-              .setThumbnail(json.sprites.animated)
-              .addFields(
-                { name: "Type(s)", value: typelist, inline: true },
-                { name: "ID", value: json.id, inline: true },
-                { name: "Generation", value: json.generation, inline: true },
-                { name: "Height", value: json.height, inline: true },
-                { name: "Weight", value: json.weight, inline: true },
-                { name: "Base Experience", value: json.base_experience, inline: true },
-                { name: "Gender distribution", value: genderlist, inline: false },
-                { name: "HP", value: json.stats.hp, inline: true },
-                { name: "Attack", value: json.stats.attack, inline: true },
-                { name: "Defense", value: json.stats.defense, inline: true },
-                { name: "Speed", value: json.stats.defense, inline: true },
-                { name: "Special Attack", value: json.stats.sp_atk, inline: true },
-                { name: "Special Defense", value: json.stats.sp_def, inline: true },
-                { name: "TOTAL", value: json.stats.total, inline: false },
-                { name: "Abilities", value: abilities, inline: true },
-                { name: "Egg Groups", value: eggGroups, inline: true },
-                { name: "Evolution Line", value: evoLine, inline: true }
-              )
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`)
-          );
+      // hoping the request doesn't fail
+      if (!json.error) {
+        let typelist = "", genderlist = "", evoLine = "", abilities = "", eggGroups = "", species = "";
+
+        // processing information into a somewhat pretty format
+        for (let i in json.type) typelist += (i == 0) ? json.type[i] : ", " + json.type[i];
+        for (let i in json.gender) genderlist += (i == 0) ? json.gender[i] : " / " + json.gender[i];
+        for (let i in json.species) species += (i == 0) ? json.species[i] : " " + json.species[i];
+        for (let i in json.family.evolutionLine) {
+          evoLine += (i == 0) ? "" : " => ";
+          evoLine += (json.family.evolutionLine[i] === (json.name.charAt(0).toUpperCase() + json.name.slice(1))) ? ("**" + json.family.evolutionLine[i] + "**") : json.family.evolutionLine[i];
         }
+        if (json.family.evolutionLine.length == 0) evoLine = "N/A";
+        for (let i in json.abilities) abilities += (i == 0) ? json.abilities[i] : ", " + json.abilities[i];
+        for (let i in json.egg_groups) eggGroups += (i == 0) ? json.egg_groups[i] : ", " + json.egg_groups[i];
 
-        else { // api error handling
-          message.channel.send(
-            new Discord.MessageEmbed()
-              .setColor(embedColorFail)
-              .setAuthor("Pokédex", embedPB)
-              .setTitle("❌ An error occured! :(")
-              .setThumbnail("https://static.wikia.nocookie.net/nintendo/images/8/85/MissingNoNormal.png/revision/latest?cb=20131114211037&path-prefix=en")
-              .setDescription("Error Message: *" + json.error + "*")
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`)
-          );
-        }
+        // sending the stuffz
+        message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorStandard)
+            .setAuthor("Pokédex", embedPB)
+            .setTitle(json.name.charAt(0).toUpperCase() + json.name.slice(1))
+            .setDescription("**" + species + "**\n" + json.description)
+            .setThumbnail(json.sprites.animated)
+            .addFields(
+              { name: "Type(s)", value: typelist, inline: true },
+              { name: "ID", value: json.id, inline: true },
+              { name: "Generation", value: json.generation, inline: true },
+              { name: "Height", value: json.height, inline: true },
+              { name: "Weight", value: json.weight, inline: true },
+              { name: "Base Experience", value: json.base_experience, inline: true },
+              { name: "Gender distribution", value: genderlist, inline: false },
+              { name: "HP", value: json.stats.hp, inline: true },
+              { name: "Attack", value: json.stats.attack, inline: true },
+              { name: "Defense", value: json.stats.defense, inline: true },
+              { name: "Speed", value: json.stats.defense, inline: true },
+              { name: "Special Attack", value: json.stats.sp_atk, inline: true },
+              { name: "Special Defense", value: json.stats.sp_def, inline: true },
+              { name: "TOTAL", value: json.stats.total, inline: false },
+              { name: "Abilities", value: abilities, inline: true },
+              { name: "Egg Groups", value: eggGroups, inline: true },
+              { name: "Evolution Line", value: evoLine, inline: true }
+            )
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
 
-      }).catch(error => { // fetch error handling
-        message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
-        console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
-      });
+      // api error handling
+      else {
+        message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("Pokédex", embedPB)
+            .setTitle("❌ An error occured! :(")
+            .setThumbnail("https://static.wikia.nocookie.net/nintendo/images/8/85/MissingNoNormal.png/revision/latest?cb=20131114211037&path-prefix=en")
+            .setDescription("Error Message: *" + json.error + "*")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+    }
+
+    // fetch error handling
+    catch (error) {
+      message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
+      console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
+    }
     message.channel.stopTyping();
   }
 
@@ -507,50 +493,51 @@ client.on('message', async (message) => {
   else if (message.content.startsWith(`${prefix}mc`)) {
     let arg = message.content.slice(4);
     message.channel.startTyping();
-    fetch("https://some-random-api.ml/mc?username=" + encodeURIComponent(arg))
-      .then(res => res.json())
-      .then(json => {
 
-        // hoping the request doesn't fail
-        if (!json.error) {
-          let namelist = [];
-          for (let i in json.name_history) namelist.push(new EzField(json.name_history[i].name, json.name_history[i].changedToAt, false));
+    try {
+      let res = await fetch("https://some-random-api.ml/mc?username=" + encodeURIComponent(arg));
+      let json = await res.json();
 
-          // displaying the data
-          message.channel.send(
-            new Discord.MessageEmbed()
-              .setColor(embedColorStandard)
-              .setAuthor("MC Fetch", embedPB)
-              .setTitle(json.username)
-              .setDescription(`${json.uuid}\n\n**Name History (old to new):**`)
-              .setThumbnail("https://crafatar.com/avatars/" + json.uuid)
-              .setImage("https://crafatar.com/renders/body/" + json.uuid)
-              .addFields(namelist)
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`)
-          );
-        }
+      // hoping the request doesn't fail
+      if (!json.error) {
+        let namelist = [];
+        for (let i in json.name_history) namelist.push(new EzField(json.name_history[i].name, json.name_history[i].changedToAt, false));
 
-        // api error handling
-        else {
-          message.channel.send(
-            new Discord.MessageEmbed()
-              .setColor(embedColorFail)
-              .setAuthor("MC Fetch", embedPB)
-              .setTitle("❌ An error occured! :(")
-              .setDescription("Error Message: *" + json.error + "*")
-              .setTimestamp()
-              .setFooter(`Requested by ${message.author.tag}`)
-          );
-        }
+        // displaying the data
+        message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorStandard)
+            .setAuthor("MC Fetch", embedPB)
+            .setTitle(json.username)
+            .setDescription(`${json.uuid}\n\n**Name History (old to new):**`)
+            .setThumbnail("https://crafatar.com/avatars/" + json.uuid)
+            .setImage("https://crafatar.com/renders/body/" + json.uuid)
+            .addFields(namelist)
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
 
-        message.channel.stopTyping();
+      // api error handling
+      else {
+        message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("MC Fetch", embedPB)
+            .setTitle("❌ An error occured! :(")
+            .setDescription("Error Message: *" + json.error + "*")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+    }
 
-        // fetch error handling
-      }).catch(error => {
-        message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
-        console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/mc?username=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
-      });
+    // fetch error handling
+    catch (error) {
+      message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
+      console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/mc?username=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
+    }
+    message.channel.stopTyping();
   }
 
   // AVATAR MOD
@@ -783,12 +770,12 @@ client.on('message', async (message) => {
     // displaying procesing message due to long fetch times
     let msg = await message.channel.send(
       new Discord.MessageEmbed()
-      .setColor(embedColorProcessing)
-      .setAuthor("HackerNews", embedPB)
-      .setTitle("Hold on!")
-      .setDescription("I'm fetching data right now, give me a second...")
-      .setTimestamp()
-      .setFooter(`Requested by ${message.author.tag}`)
+        .setColor(embedColorProcessing)
+        .setAuthor("HackerNews", embedPB)
+        .setTitle("Hold on!")
+        .setDescription("I'm fetching data right now, give me a second...")
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
     );
 
     let i = 0;
@@ -1207,68 +1194,67 @@ client.on('message', async (message) => {
 
   // LEADERBOARD
   else if (message.content.startsWith(`${prefix}leaderboard`)) {
-    message.channel.send(
+    let sent = await message.channel.send(
       new Discord.MessageEmbed()
         .setColor(embedColorProcessing)
         .setAuthor("Leaderboard - Top 25", embedPB)
         .setTitle("Fetching Data...")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    ).then(sent => {
+    );
 
-      // preprocess the user db
-      let preprocess = new Map();
-      userData.forEach(dbusr => {
-        // get the discord user object by id
-        let discordUser = client.users.cache.get(dbusr.u);
-        // handling case: user left the server and could not be found
-        if (!discordUser) console.log("[WARN] User ID " + dbusr.u + " has a DB entry but could not be found! Skipping...");
+    // preprocess the user db
+    let preprocess = new Map();
+    userData.forEach(dbusr => {
+      // get the discord user object by id
+      let discordUser = client.users.cache.get(dbusr.u);
+      // handling case: user left the server and could not be found
+      if (!discordUser) console.log("[WARN] User ID " + dbusr.u + " has a DB entry but could not be found! Skipping...");
 
-        else {
-          // creating map entry
-          discordUser = discordUser.tag;
-          let value = parseFloat(dbusr.money + (dbusr.eth * price)).toFixed(2);
-          preprocess.set(discordUser, value);
-        }
-      });
-
-      // sort map
-      let sorted = new Map([...preprocess.entries()].sort((a, b) => b[1] - a[1]));
-
-      // process display data
-      let i = 1;
-      let lbdata = [];
-      sorted.forEach((value, key, map) => {
-
-        // stop @ 25 users because discord set a max field amount
-        if (i <= 25) {
-          lbdata.push(new EzField(i + ". - " + key, value));
-          i++;
-        }
-      });
-
-      // push content
-      sent.edit(
-        new Discord.MessageEmbed()
-          .setColor(embedColorStandard)
-          .setAuthor("Leaderboard - Top " + lbdata.length, embedPB)
-          .setTitle("Cash and ETH combined")
-          .addFields(lbdata)
-          .setTimestamp()
-          .setFooter(`Requested by ${message.author.tag}`)
-      )
+      else {
+        // creating map entry
+        discordUser = discordUser.tag;
+        let value = parseFloat(dbusr.money + (dbusr.eth * price)).toFixed(2);
+        preprocess.set(discordUser, value);
+      }
     });
+
+    // sort map
+    let sorted = new Map([...preprocess.entries()].sort((a, b) => b[1] - a[1]));
+
+    // process display data
+    let i = 1;
+    let lbdata = [];
+    sorted.forEach((value, key, map) => {
+
+      // stop @ 25 users because discord set a max field amount
+      if (i <= 25) {
+        lbdata.push(new EzField(i + ". - " + key, value));
+        i++;
+      }
+    });
+
+    // push content
+    sent.edit(
+      new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("Leaderboard - Top " + lbdata.length, embedPB)
+        .setTitle("Cash and ETH combined")
+        .addFields(lbdata)
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+    )
   }
 
   else {
-    // random reward for chatting
-    if (Math.round(Math.random() * 4 + 1) === 5 && !message.author.bot) {
-      let usr = finduser(message.author.id);
-      usr.money += (Math.round(Math.random() * 8 + 1) / 100);
-    }
+  // random reward for chatting
+  if (Math.round(Math.random() * 4 + 1) === 5 && !message.author.bot) {
+    let usr = finduser(message.author.id);
+    usr.money += (Math.round(Math.random() * 8 + 1) / 100);
   }
+}
 
-  saveDB();
+saveDB();
 });
 
 // go
