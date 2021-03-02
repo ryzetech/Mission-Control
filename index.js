@@ -213,7 +213,9 @@ client.on('message', async (message) => {
           { name: "avmod <filter> [user ping]", value: "Modifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with **avatarmod filters**." },
           { name: "\u200b", value: "\u200b" },
           { name: "balance [user ping]", value: "Shows how much money is in your pocket (or in the pocket of the pinged user)." },
+          { name: "leaderboard", value: "Shows the current leaderboard of all users by net value (cash and eth combined)." },
           { name: "work", value: "You can get free money every 24 hours!" },
+          { name: "send <user ping> <amount>", value: "Send the specified amount to the specified user.\n**Note: A fee of 5% per trancaction is applied!**" },
           { name: "eth", value: "You can trade Ethereum in a simulated environment. Execute this command to get more info on what you can do with it." },
           { name: "\u200b", value: "\u200b" },
           { name: "info", value: "Shows some information on the bot" }
@@ -811,7 +813,7 @@ client.on('message', async (message) => {
     );
   } // thx stftk (again <3)
 
-  //// CASINO SECTION
+  //// ECONOMY SECTION
   // ETH
   // note: this is pretty much a "command subcommand" section because i need some subcommands again later for future item buying and selling
   else if (message.content.startsWith(`${prefix}eth`)) {
@@ -1246,15 +1248,92 @@ client.on('message', async (message) => {
     )
   }
 
-  else {
-  // random reward for chatting
-  if (Math.round(Math.random() * 4 + 1) === 5 && !message.author.bot) {
-    let usr = finduser(message.author.id);
-    usr.money += (Math.round(Math.random() * 8 + 1) / 100);
-  }
-}
+  //// MOD SECTION
+  // VS CHECK
+  else if (message.content.startsWith(`${prefix}vscheck`)) {
+    let usrid;
 
-saveDB();
+    // check whether user has the permissions to run this command
+    if (message.member.roles.cache.some((role) => modroles.includes(role.id))) {
+
+      // gets the id from the arguments while determining if a user is mentioned or not
+      if (typeof (message.mentions.members.first()) === "undefined") usrid = message.content.slice(9);
+      else usrid = message.mentions.members.first().user.id;
+
+      // send processing message
+      let sent = await message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorProcessing)
+          .setAuthor("VS Check", embedPB)
+          .setTitle("Hold on!")
+          .setDescription("I'm asking Virgin Slayer about the ban status of this user, give me a second...")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+
+      // ask Virgin Slayer if the user is banned on the global network
+      let response = await axios.post('https://dvs.stefftek.de/api/bans', { data: { userID: usrid } });
+      let res = await response.data;
+
+      // if the user is unknown to Virgin Slayer:
+      if (res.status === "error" && res.msg === "api.error.notBanned") {
+        sent.edit(
+          new Discord.MessageEmbed()
+          .setColor(embedColorConfirm)
+            .setAuthor("VS Check", embedPB)
+            .setTitle("User is not banned!")
+            .setDescription("This user is unknown to our global database.")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+
+      // if the user is known to Virgin Slayer:
+      else if (res.status === "success") {
+        // get the current time to calculate the amount of time the user is banned
+        let date = new Date(res.data.Timestamp);
+
+        // send a message with the provided data
+        sent.edit(
+          new Discord.MessageEmbed()
+            .setColor(embedColorWarn)
+            .setAuthor("VS Check", embedPB)
+            .setTitle("User is banned!")
+            .setDescription("This user is known to us for inappropriate behaviour.")
+            .addFields(
+              { name: "UserID", value: res.data.UserID },
+              { name: "Ban Reason", value: res.data.Reason },
+              { name: "User Tag at Ban", value: res.data.DisplayName },
+              { name: "Ban Timestamp", value: date + "\n(" + timediff(Date.now(), date.getTime()) + " ago)" },
+            )
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        )
+      }
+    }
+
+    else {
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("VS Check", embedPB)
+          .setTitle("❌ Insufficent Permissions!")
+          .setDescription("This command is reserved for mods and admins!")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+  }
+
+  else {
+    // random reward for chatting
+    if (Math.round(Math.random() * 4 + 1) === 5 && !message.author.bot) {
+      let usr = finduser(message.author.id);
+      usr.money += (Math.round(Math.random() * 8 + 1) / 100);
+    }
+  }
+
+  saveDB();
 });
 
 // go
