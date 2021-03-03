@@ -155,6 +155,10 @@ client.on('guildMemberAdd', async (member) => {
 
   // if the user is known to Virgin Slayer:
   else if (res.status === "success") {
+    // instantly mute the detected user
+    let muterole = member.guild.roles.cache.get("810189970920570961");
+    member.roles.add(muterole);
+
     // get the current time to calculate the amount of time the user is banned
     let date = new Date(res.data.Timestamp);
 
@@ -164,7 +168,7 @@ client.on('guildMemberAdd', async (member) => {
         .setColor(embedColorWarn)
         .setAuthor("Banned User Alert", embedPB)
         .setTitle("Virgin Slayer Global DB Match")
-        .setDescription("An user known for inappropriate behaviour joined.\nYou can view the details down below.")
+        .setDescription("An user known for inappropriate behaviour joined!\nYou can view the details down below.")
         .addFields(
           { name: "UserID", value: res.data.UserID },
           { name: "Ban Reason", value: res.data.Reason },
@@ -173,7 +177,7 @@ client.on('guildMemberAdd', async (member) => {
         )
         .setTimestamp()
         .setFooter(`This Message was sent automagically`)
-    )
+    );
   }
 });
 // thx stftk <3
@@ -1279,7 +1283,7 @@ client.on('message', async (message) => {
       if (res.status === "error" && res.msg === "api.error.notBanned") {
         sent.edit(
           new Discord.MessageEmbed()
-          .setColor(embedColorConfirm)
+            .setColor(embedColorConfirm)
             .setAuthor("VS Check", embedPB)
             .setTitle("User is not banned!")
             .setDescription("This user is unknown to our global database.")
