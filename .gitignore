@@ -1,3 +1,4 @@
 db.json
 token.json
 dvs.js
+prisma/server.db
