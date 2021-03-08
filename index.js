@@ -12,6 +12,9 @@ const CoinGeckoClient = new CoinGecko();
 const fs = require("fs");
 const fetch = require("node-fetch");
 const axios = require("axios");
+//const prisma = require("prisma");
+const {PrismaClient} = require("@prisma/client");
+const prisma = new PrismaClient();
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
 
@@ -1327,6 +1330,86 @@ client.on('message', async (message) => {
           .setFooter(`Requested by ${message.author.tag}`)
       );
     }
+  }
+
+  // Command for buying tickets
+  else if (message.content.startsWith(`${prefix}lotto buy`)) {
+    // retrieve the user
+    const user = finduser(message.author.id);
+    // Check Balance
+    if (user.money < 10) return message.channel.send(new Discord.MessageEmbed()
+      .setColor(embedColorFail)
+      .setAuthor("Lotto System", embedPB)
+      .setTitle("❌ Not enough balance!")
+      .setDescription("We couldnt process your transaction, please contact our support if you think this is a mistake")
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`)
+    );
+    // extract numbers
+    const pattern = /#lotto buy (\d+) (\d+) (\d+) (\d+) (\d+)/;
+    const regres = pattern.exec(message.content);
+    // check for right syntax
+    if (regres == null || regres.length !== 6) {
+      return message.channel.send(new Discord.MessageEmbed()
+        .setColor(embedColorFail)
+        .setAuthor("Lotto System", embedPB)
+        .setTitle("❌ Syntax mistake!")
+        .setDescription("Sytntax is `#lotto buy <number1> <number2> <number3> <number4> <number5>`")
+        .addField("`number1..5`:", "The numbers you choose for your lotto ticket. Can be between `01` to  `50`. Notice a number can only be choosen **once**!")
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+    const [,n1,n2,n3,n4,n5] = regres;
+    // Check if numbers are not the same
+    const numberset = new Set([n1, n2, n3, n4, n5]);
+    const duplicates = [n1, n2, n3, n4, n5].filter(n => !numberset.has(n))
+    if (numberset.size !== 5) {
+      return message.channel.send(new Discord.MessageEmbed()
+        .setColor(embedColorFail)
+        .setAuthor("Lotto System", embedPB)
+        .setTitle("❌ Syntax mistake! Duplicate numbers found")
+        .setDescription("Sytntax is `#lotto buy <number1> <number2> <number3> <number4> <number5>`")
+        .addField("`number1..5`:", "The numbers you choose for your lotto ticket. Can be between `01` to  `50`. Notice a number can only be choosen **once**!")
+        .addField("Duplicates:", duplicates.toString())
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+    // take money from user
+    user.money -= 10;
+    // save user number choices in db
+    prisma.lottoTicket.create(
+      {
+        data: {
+          userId: message.author.id,
+          numberOne: n1,
+          numberTwo: n2,
+          numberThree: n3,
+          numberFour: n4,
+          numberFive: n5,
+        }
+      }
+    ).then(
+      message.channel.send(new Discord.MessageEmbed()
+        .setColor(embedColorConfirm)
+        .setAuthor("Lotto System", embedPB)
+        .setTitle("✅ Transaction successfull!")
+        .setDescription("You've bought a ticket! Hope you get lucky this time")
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      )
+    ).catch(error => {
+      console.error("(error) lotto: unexpected error - check prisma db conn");
+      message.channel.send(new Discord.MessageEmbed()
+        .setColor(embedColorFail)
+        .setAuthor("Lotto System", embedPB)
+        .setTitle("❌ Unexpected error!")
+        .setDescription("Please try again later or contact an admin")
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+    });
   }
 
   else {
