@@ -7,3 +7,6 @@ token.json
 dvs.js
 
 node_modules/
+
+# yarn stuff
+yarn.lock
