@@ -803,15 +803,26 @@ client.on('message', async (message) => {
       let success = botCacheStorage.set("news", json, 2*60*60*1000);
       // error log message
       if (!success) {
-        console.error("(news) ERROR - cache error!");
+        console.error("(news) ERROR - cache error! Failed to get hackernews top stories");
       }
     }
 
     // get the first "ycomb_story_amount" stories and add them to the ezfield array
     while (i < ycomb_story_amount) {
-      link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(json[i]) + ".json?print=pretty";
-      let data = await fetch(link);
-      data = await data.json();
+      let data = botCacheStorage.get(`news_${i}`);
+      if (!data) {
+        // construct link
+        let link = "https://hacker-news.firebaseio.com/v0/item/" + encodeURIComponent(value[i]) + ".json?print=pretty";
+        // fetch data and parse
+        data = await fetch(link);
+        data = await data.json();
+        // update the cache
+        let success = botCacheStorage.set(`news_${i}`, data, 2 * 60 * 60 * 1000);
+        // error log
+        if (!success) {
+          console.error(`(news) ERROR - cache error! Failed to get hackernews item [${i}]`);
+        }
+      }
       let url = data.url ? "[Link](" + data.url + ")" : "no url available"; // some stories have no url because they are internal
 
       fields.push(new EzField(data.title, "by " + data.by + " - " + url));
