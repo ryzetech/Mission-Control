@@ -14,6 +14,7 @@ const fetch = require("node-fetch");
 const axios = require("axios");
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
+import { PrismaClient } from "@prisma/client";
 
 var messageCounter = 0;
 var joinCounter = 0;
@@ -53,42 +54,6 @@ function timediff(timestamp1ornow, timestamp2, short) {
   else return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
 }
 
-// load the db from db.json
-function loadDB() {
-  let stuff = fs.readFileSync("./db.json", "utf8");
-  db = JSON.parse(stuff);
-  userData = db[0];
-  clanData = db[1];
-}
-
-// save the db to db.json
-function saveDB() {
-  fs.writeFileSync("./db.json", JSON.stringify(db), "utf8", (err) => {
-    if (err) {
-      console.log(`Error writing file: ${err}`);
-    } else {
-      // dafuq i have planned something here but i'm not sure what
-    }
-  });
-}
-
-// finds a user in the db and returns the object
-function finduser(usrid) {
-  let result;
-  let found = false;
-  let i = 0;
-
-  // loop trough array until the user id is found or the end is reached
-  while (found === false && i < userData.length) {
-    if (userData[i].u == usrid) {
-      found = true;
-      result = userData[i];
-    }
-    else i++;
-  }
-  if (found) return result;
-  else return undefined;
-}
 
 // timed task executor for fetching market data from the CoinGecko API
 function fetchdata() {
@@ -108,18 +73,6 @@ class EzField {
     this.name = name;
     this.value = value;
     this.inline = inline;
-  }
-}
-
-// user class for the db system, will probably be replaced by prisma soon
-class User {
-  constructor(user) {
-    this.u = user.id;
-    this.money = 10000;
-    this.eth = 0;
-    this.lastearnstamp = 0;
-    userData.push(this);
-    saveDB();
   }
 }
 
@@ -184,15 +137,27 @@ client.on('guildMemberAdd', async (member) => {
 
 // MESSAGE HANDLER
 client.on('message', async (message) => {
+  const prisma = new PrismaClient();
 
   // preventing database checks on bots
   if (!message.author.bot) {
     messageCounter++;
 
+    let user = await prisma.user.findUnique(
+      {
+        where: {
+          id: message.author.id,
+        }
+      }
+    );
     // if the user doesn't have an account yet...
-    if (!finduser(message.author)) {
+    if (!user) {
       // create one! it will automagically get pushed into the db
-      new User(message.author);
+      await prisma.user.create({
+        data: {
+          id: message.author.id,
+        }
+      });
     }
   }
 
@@ -824,7 +789,7 @@ client.on('message', async (message) => {
     let stuff = market;
     let args = message.content.slice(5);
 
-    let usr = finduser(message.author.id);
+    let usr = await prisma.user.findUnique({where:{id:message.author.id}});
 
     // CURRENT STATS
     if (args.startsWith("stats")) {
@@ -1066,7 +1031,7 @@ client.on('message', async (message) => {
 
     // identify user and get it from the db
     let argument = userident(message);
-    let usr = finduser(argument.user.id);
+    let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
 
     message.channel.send(
       new Discord.MessageEmbed()
@@ -1107,8 +1072,8 @@ client.on('message', async (message) => {
     // extract the values
     const [, userid, amount] = regres;
     // get users from db
-    const userFrom = finduser(message.author.id);
-    const userTo = finduser(userid);
+    const userFrom = await prisma.user.findUnique({ where: { id: message.author.id } });
+    const userTo = await prisma.user.findUnique({ where: { id: userid } });
     // Check if any value is not initilized
     if (!userTo || !amount || !userFrom) {
       return message.channel.send(new Discord.MessageEmbed()
@@ -1157,7 +1122,7 @@ client.on('message', async (message) => {
     let msg;
 
     // identify user
-    let user = finduser(message.author.id);
+    let user = await prisma.user.findUnique({ where: { id: message.author.id } });
 
     // check if user is in cooldown defined by "p_cooldown"
     if (user.lastearnstamp < new Date().getTime() - p_cooldown) {
@@ -1332,12 +1297,10 @@ client.on('message', async (message) => {
   else {
     // random reward for chatting
     if (Math.round(Math.random() * 4 + 1) === 5 && !message.author.bot) {
-      let usr = finduser(message.author.id);
+      let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
       usr.money += (Math.round(Math.random() * 8 + 1) / 100);
     }
   }
-
-  saveDB();
 });
 
 // go

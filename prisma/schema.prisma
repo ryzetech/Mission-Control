@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./server.db"
+  provider = "postgres"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -11,8 +11,8 @@ generator client {
 }
 
 model User {
-  id              String  @unique
-  money           Float   @default(10000)
-  eth             Float   @default(0)
-  leastearnstamp  Int     @default(0)
+  id             String   @unique
+  money          Float    @default(10000)
+  eth            Float    @default(0)
+  leastearnstamp DateTime @default(now())
 }
