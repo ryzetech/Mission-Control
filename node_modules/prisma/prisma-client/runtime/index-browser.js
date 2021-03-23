@@ -13,12 +13,10 @@ var __commonJS = (callback, module2) => () => {
   return module2.exports;
 };
 var __export = (target, all) => {
-  __markAsModule(target);
   for (var name in all)
     __defProp(target, name, {get: all[name], enumerable: true});
 };
 var __exportStar = (target, module2, desc) => {
-  __markAsModule(target);
   if (module2 && typeof module2 === "object" || typeof module2 === "function") {
     for (let key of __getOwnPropNames(module2))
       if (!__hasOwnProp.call(target, key) && key !== "default")
@@ -27,9 +25,7 @@ var __exportStar = (target, module2, desc) => {
   return target;
 };
 var __toModule = (module2) => {
-  if (module2 && module2.__esModule)
-    return module2;
-  return __exportStar(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", {value: module2, enumerable: true}), module2);
+  return __exportStar(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", module2 && module2.__esModule && "default" in module2 ? {get: () => module2.default, enumerable: true} : {value: module2, enumerable: true})), module2);
 };
 
 // ../../node_modules/.pnpm/decimal.js@10.2.1/node_modules/decimal.js/decimal.js
@@ -2294,7 +2290,12 @@ var require_decimal = __commonJS((exports2, module2) => {
 });
 
 // src/runtime/index-browser.ts
+__markAsModule(exports);
 __export(exports, {
   Decimal: () => import_decimal.default
 });
 var import_decimal = __toModule(require_decimal());
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  Decimal
+});
