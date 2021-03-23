@@ -12,6 +12,7 @@ const CoinGeckoClient = new CoinGecko();
 const fs = require("fs");
 const fetch = require("node-fetch");
 const axios = require("axios");
+const NodeCache = require("node-cache");
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
 
@@ -26,6 +27,8 @@ var clanData = [];
 var db = [];
 
 const startDate = new Date();
+
+const botCacheStorage = new NodeCache();
 
 //// HELP METHODS
 // get user from mentions or return sender
@@ -788,9 +791,21 @@ client.on('message', async (message) => {
     let fields = [];
     let link;
 
-    // get the top stories list
-    let res = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
-    let json = await res.json();
+    let value = botCacheStorage.get("news");
+
+    if (!value) {
+      // get the top stories list
+      let res = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
+      let json = await res.json();
+      // set value
+      value = json;
+      // update cache                                <h, m, s, mil>
+      let success = botCacheStorage.set("news", json, 2*60*60*1000);
+      // error log message
+      if (!success) {
+        console.error("(news) ERROR - cache error!");
+      }
+    }
 
     // get the first "ycomb_story_amount" stories and add them to the ezfield array
     while (i < ycomb_story_amount) {
