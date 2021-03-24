@@ -1,8 +1,11 @@
+.env
 db.json
 token.json
 dvs.js
 
 node_modules/
+config.json
 
 yarn.lock
 yarn-error.*
+
