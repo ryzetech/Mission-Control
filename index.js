@@ -89,7 +89,7 @@ class EzField {
 
 // Lotto interval
 // default: 1000*60*60*24*7 => one week after launch
-setInterval(() => {
+setInterval(async () => {
   // get winning numbers
   let wholeNumbers = [...Array(10).keys()];
   let winningNumbers = [];
