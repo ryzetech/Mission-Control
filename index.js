@@ -14,15 +14,18 @@ const fetch = require("node-fetch");
 const axios = require("axios");
 // Prisma client stuff
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['info', 'warn', 'error']
+});
 // NodeCache
 const NodeCache = require("node-cache");
 
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
-import { PrismaClient } from "@prisma/client";
 
+// Lotto consts
 const LOTTO_TICKET_PRICE = 10;
+const LOTTO_REPORT_CAHNNEL = '811233335762354237';
 
 var messageCounter = 0;
 var joinCounter = 0;
@@ -31,8 +34,6 @@ var market;
 var price = 0;
 
 var userData = [];
-var clanData = [];
-var db = [];
 
 const startDate = new Date();
 
@@ -85,6 +86,58 @@ class EzField {
     this.inline = inline;
   }
 }
+
+// Lotto interval
+// default: 1000*60*60*24*7 => one week after launch
+setInterval(() => {
+  // get winning numbers
+  let wholeNumbers = [...Array(10).keys()];
+  let winningNumbers = [];
+
+  for (let i = 0; i < 5; i++) {
+    let relem = wholeNumbers[Math.floor(Math.random() * wholeNumbers.length)];
+    
+
+    winningNumbers.push(relem);
+    wholeNumbers = wholeNumbers.filter(e => e !== relem);
+  }
+
+  // check if any user has these numbers
+  let winners = await prisma.lottoTicket.findMany({
+    where: {
+      numbers: {
+        hasEvery: winningNumbers
+      }
+    },
+    select: {
+      userId
+    }
+  });
+
+  // give these users a reward
+  if (winners) {
+    await Promise.all(
+      winners.map(async (u) => {
+        await prisma.user.update({
+          where: { id:u.userId},
+          data: {
+            money: { 
+              increment: 5000
+            }
+          }
+        });
+      })
+    );
+  }
+
+  // reset Lotto db
+  await prisma.lottoTicket.deleteMany({});
+
+  // send winner message
+  // TODO: send message
+  console.log(`(lotto) : This weeks winning numbers are : ${winningNumbers} | Winners: ${winners.length}`);
+
+}, 1000*60*60*24*7);
 
 //// BOT MANAGEMENT
 // READY EVENT
@@ -1403,7 +1456,7 @@ client.on('message', async (message) => {
       .setFooter(`Requested by ${message.author.tag}`)
     );
     // extract numbers
-    const pattern = /#lotto buy (\d+) (\d+) (\d+) (\d+) (\d+)/;
+    const pattern = /#lotto buy (\d) (\d) (\d) (\d) (\d)/;
     const regres = pattern.exec(message.content);
     // check for right syntax
     if (regres == null || regres.length !== 6) {
@@ -1412,7 +1465,7 @@ client.on('message', async (message) => {
         .setAuthor("Lotto System", embedPB)
         .setTitle("❌ Syntax mistake!")
         .setDescription("Sytntax is `#lotto buy <number1> <number2> <number3> <number4> <number5>`")
-        .addField("`number1..5`:", "The numbers you choose for your lotto ticket. Can be between `01` to  `50`. Notice a number can only be choosen **once**!")
+        .addField("`number1..5`:", "The numbers you choose for your lotto ticket. Can be between `0` to  `9`. Notice a number can only be choosen **once**!")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
       );
