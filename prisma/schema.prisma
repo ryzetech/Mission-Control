@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./../database.sqlite"
+  provider = "postgres"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -15,13 +15,8 @@ generator client {
 // --------------------------------
 // This is for holding the users choices of numbers.
 model LottoTicket {
-  id Int @id @default(autoincrement())
-  userId Int 
-  // Numbers have to be stored individually, because sqlite does not
-  // support primitive types.
-  numberOne Int
-  numberTwo Int
-  numberThree Int
-  numberFour Int
-  numberFive Int
+  id        Int      @id @default(autoincrement())
+  userId    String
+  numbers   Int[]
+  createdAt DateTime @default(now())
 }

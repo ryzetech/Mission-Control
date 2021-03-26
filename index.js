@@ -12,7 +12,6 @@ const CoinGeckoClient = new CoinGecko();
 const fs = require("fs");
 const fetch = require("node-fetch");
 const axios = require("axios");
-//const prisma = require("prisma");
 const {PrismaClient} = require("@prisma/client");
 const prisma = new PrismaClient();
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
@@ -1360,10 +1359,10 @@ client.on('message', async (message) => {
         .setFooter(`Requested by ${message.author.tag}`)
       );
     }
-    const [,n1,n2,n3,n4,n5] = regres;
+    const numbers = regres.slice(1);
     // Check if numbers are not the same
-    const numberset = new Set([n1, n2, n3, n4, n5]);
-    const duplicates = [n1, n2, n3, n4, n5].filter(n => !numberset.has(n))
+    const numberset = new Set(numbers);
+    const duplicates = numbers.filter(n => !numberset.has(n))
     if (numberset.size !== 5) {
       return message.channel.send(new Discord.MessageEmbed()
         .setColor(embedColorFail)
@@ -1383,11 +1382,7 @@ client.on('message', async (message) => {
       {
         data: {
           userId: message.author.id,
-          numberOne: n1,
-          numberTwo: n2,
-          numberThree: n3,
-          numberFour: n4,
-          numberFive: n5,
+          numbers: numbers,
         }
       }
     ).then(
