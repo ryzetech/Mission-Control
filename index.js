@@ -1480,7 +1480,7 @@ client.on('message', async (message) => {
         .setAuthor("Lotto System", embedPB)
         .setTitle("❌ Syntax mistake! Duplicate numbers found")
         .setDescription("Sytntax is `#lotto buy <number1> <number2> <number3> <number4> <number5>`")
-        .addField("`number1..5`:", "The numbers you choose for your lotto ticket. Can be between `01` to  `50`. Notice a number can only be choosen **once**!")
+        .addField("`number1..5`:", "The numbers you choose for your lotto ticket. Can be between `1` to  `9`. Notice a number can only be choosen **once**!")
         .addField("Duplicates:", duplicates.toString())
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
