@@ -19,4 +19,14 @@ model LottoTicket {
   userId    String
   numbers   Int[]
   createdAt DateTime @default(now())
+
+////////////////////////////////////////////////////////////////
+// Model for User
+// --------------------------------
+// This is for holding the users and their balances
+model User {
+  id             String   @id
+  money          Float    @default(10000)
+  eth            Float    @default(0)
+  leastearnstamp DateTime @default(now())
 }

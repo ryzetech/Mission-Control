@@ -1,12 +1,14 @@
-# DB stuff
-db.json
-database.sqlite
-database.sqlite-journal
+# Env stuff
+.env
 
+# config stuff
 token.json
 dvs.js
+config.json
 
+# node modules
 node_modules/
 
 # yarn stuff
 yarn.lock
+yarn-error.*
