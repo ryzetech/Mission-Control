@@ -11,7 +11,7 @@ generator client {
 }
 
 model User {
-  id             String   @unique
+  id             String   @id
   money          Float    @default(10000)
   eth            Float    @default(0)
   leastearnstamp DateTime @default(now())
