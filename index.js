@@ -13,7 +13,7 @@ const fs = require("fs");
 const fetch = require("node-fetch");
 const axios = require("axios");
 // Prisma client stuff
-const {PrismaClient} = require("@prisma/client");
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 // NodeCache
 const NodeCache = require("node-cache");
@@ -21,6 +21,8 @@ const NodeCache = require("node-cache");
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
 import { PrismaClient } from "@prisma/client";
+
+const LOTTO_TICKET_PRICE = 10;
 
 var messageCounter = 0;
 var joinCounter = 0;
@@ -770,7 +772,7 @@ client.on('message', async (message) => {
       // set value
       value = json;
       // update cache                                <h, m, s, mil>
-      let success = botCacheStorage.set("news", json, 2*60*60*1000);
+      let success = botCacheStorage.set("news", json, 2 * 60 * 60 * 1000);
       // error log message
       if (!success) {
         console.error("(news) ERROR - cache error! Failed to get hackernews top stories");
@@ -820,7 +822,7 @@ client.on('message', async (message) => {
     let stuff = market;
     let args = message.content.slice(5);
 
-    let usr = await prisma.user.findUnique({where:{id:message.author.id}});
+    let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
 
     // CURRENT STATS
     if (args.startsWith("stats")) {
@@ -872,8 +874,17 @@ client.on('message', async (message) => {
 
         // execute order
         else {
-          usr.money -= amount;
-          usr.eth += amount / price;
+          usr = await prisma.user.update({
+            where: { id: usr.id },
+            data: {
+              money: {
+                decrement: amount,
+              },
+              eth: {
+                increment: amount / price,
+              }
+            }
+          });
 
           msg = new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
@@ -921,8 +932,17 @@ client.on('message', async (message) => {
 
         // execute order
         else {
-          usr.money -= amount * price;
-          usr.eth += amount;
+          usr = await prisma.user.update({
+            where: { id: usr.id },
+            data: {
+              money: {
+                decrement: amount * price
+              },
+              eth: {
+                increment: amount
+              }
+            }
+          })
 
           msg = new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
@@ -970,8 +990,17 @@ client.on('message', async (message) => {
 
         // execute order
         else {
-          usr.money += amount;
-          usr.eth -= amount / price;
+          usr = await prisma.user.update({
+            where: { id: usr.id },
+            data: {
+              money: {
+                increment: amount
+              },
+              eth: {
+                decrement: amount / price
+              }
+            }
+          });
 
           msg = new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
@@ -1019,8 +1048,17 @@ client.on('message', async (message) => {
 
         // execute order
         else {
-          usr.money += amount * price;
-          usr.eth -= amount;
+          usr = await prisma.user.update({
+            where: { id: usr.id },
+            data: {
+              money: {
+                increment: amount * price
+              },
+              eth: {
+                decrement: amount
+              }
+            }
+          });
 
           msg = new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
@@ -1131,8 +1169,22 @@ client.on('message', async (message) => {
     // calc fee
     const fee = Math.round(amount * 0.05);
     // transaction
-    userFrom.money -= amount;
-    userTo.money += amount - fee;
+    userFrom = await prisma.user.update({
+      where: { id: userFrom.id },
+      data: {
+        money: {
+          decrement: amount + fee
+        }
+      }
+    });
+    await prisma.user.update({
+      where: { id: userTo.id },
+      data: {
+        money: {
+          increment: amount
+        }
+      }
+    });
     // message after transaction is done
     message.channel.send(new Discord.MessageEmbed()
       .setColor(embedColorConfirm)
@@ -1141,7 +1193,8 @@ client.on('message', async (message) => {
       .setDescription("You've sent " + amount + " Euros! Please be aware of our 5% fee")
       .addFields(
         { name: "Amount", value: amount + "€" },
-        { name: "Fee", value: fee + "€" }
+        { name: "Fee", value: fee + "€" },
+        { name: `Balance <@${userFrom.id}>`, value: userFrom.money + "€" }
       )
       .setTimestamp()
       .setFooter(`Requested by ${message.author.tag}`)
@@ -1162,8 +1215,17 @@ client.on('message', async (message) => {
       let amount = Math.round(Math.random() * 950 + 50);
 
       // cooldown the user and calculate new amount
-      user.lastearnstamp = new Date().getTime();
-      user.money += amount;
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          money: {
+            increment: amount
+          },
+          leastearnstamp: {
+            set: new Date().getTime()
+          }
+        }
+      })
 
       // display the data
       msg = new Discord.MessageEmbed()
@@ -1205,13 +1267,15 @@ client.on('message', async (message) => {
         .setFooter(`Requested by ${message.author.tag}`)
     );
 
+    userData = await prisma.user.findMany({});
+
     // preprocess the user db
     let preprocess = new Map();
     userData.forEach(dbusr => {
       // get the discord user object by id
-      let discordUser = client.users.cache.get(dbusr.u);
+      let discordUser = client.users.cache.get(dbusr.id);
       // handling case: user left the server and could not be found
-      if (!discordUser) console.log("[WARN] User ID " + dbusr.u + " has a DB entry but could not be found! Skipping...");
+      if (!discordUser) console.log("[WARN] User ID " + dbusr.id + " has a DB entry but could not be found! Skipping...");
 
       else {
         // creating map entry
@@ -1328,9 +1392,9 @@ client.on('message', async (message) => {
   // Command for buying tickets
   else if (message.content.startsWith(`${prefix}lotto buy`)) {
     // retrieve the user
-    const user = finduser(message.author.id);
+    const user = await prisma.user.findUnique({ where: { id: message.author.id } });
     // Check Balance
-    if (user.money < 10) return message.channel.send(new Discord.MessageEmbed()
+    if (user.money < LOTTO_TICKET_PRICE) return message.channel.send(new Discord.MessageEmbed()
       .setColor(embedColorFail)
       .setAuthor("Lotto System", embedPB)
       .setTitle("❌ Not enough balance!")
@@ -1370,42 +1434,50 @@ client.on('message', async (message) => {
       );
     }
     // take money from user
-    user.money -= 10;
+    await prisma.user.update({
+      where: { id: message.author.id },
+      data: {
+        money: {
+          decrement: LOTTO_TICKET_PRICE,
+        }
+      }
+    });
     // save user number choices in db
-    prisma.lottoTicket.create(
+    await prisma.lottoTicket.create(
       {
         data: {
           userId: message.author.id,
           numbers: numbers,
+          user: {
+            connect: {
+              id: user.id,
+            }
+          }
         }
       }
-    ).then(
-      message.channel.send(new Discord.MessageEmbed()
-        .setColor(embedColorConfirm)
-        .setAuthor("Lotto System", embedPB)
-        .setTitle("✅ Transaction successfull!")
-        .setDescription("You've bought a ticket! Hope you get lucky this time")
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
-      )
-    ).catch(error => {
-      console.error("(error) lotto: unexpected error - check prisma db conn");
-      message.channel.send(new Discord.MessageEmbed()
-        .setColor(embedColorFail)
-        .setAuthor("Lotto System", embedPB)
-        .setTitle("❌ Unexpected error!")
-        .setDescription("Please try again later or contact an admin")
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
-      );
-    });
+    );
+
+    message.channel.send(new Discord.MessageEmbed()
+      .setColor(embedColorConfirm)
+      .setAuthor("Lotto System", embedPB)
+      .setTitle("✅ Transaction successfull!")
+      .setDescription("You've bought a ticket! Hope you get lucky this time")
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`)
+    )
   }
 
   else {
     // random reward for chatting
     if (Math.round(Math.random() * 4 + 1) === 5 && !message.author.bot) {
-      let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
-      usr.money += (Math.round(Math.random() * 8 + 1) / 100);
+      await prisma.user.update({
+        where: { id:message.author.id},
+        data: {
+          money: {
+            increment: (Math.round(Math.random() * 8 + 1) / 100)
+          }
+        }
+      })
     }
   }
 });

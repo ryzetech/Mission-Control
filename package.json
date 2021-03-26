@@ -11,5 +11,5 @@
   },
   "devDependencies": {
     "prisma": "2.19.0"
-  },
+  }
 }

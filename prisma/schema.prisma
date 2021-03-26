@@ -16,17 +16,20 @@ generator client {
 // This is for holding the users choices of numbers.
 model LottoTicket {
   id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
   userId    String
   numbers   Int[]
   createdAt DateTime @default(now())
+}
 
 ////////////////////////////////////////////////////////////////
 // Model for User
 // --------------------------------
 // This is for holding the users and their balances
 model User {
-  id             String   @id
-  money          Float    @default(10000)
-  eth            Float    @default(0)
-  leastearnstamp DateTime @default(now())
+  id             String        @id
+  money          Float         @default(10000)
+  eth            Float         @default(0)
+  leastearnstamp DateTime      @default(now())
+  tickets        LottoTicket[]
 }
