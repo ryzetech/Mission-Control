@@ -20,7 +20,6 @@ const client = new Discord.Client();
 const si = require("systeminformation");
 const CoinGecko = require('coingecko-api');
 const CoinGeckoClient = new CoinGecko();
-const fs = require("fs");
 const fetch = require("node-fetch");
 const axios = require("axios");
 const NodeCache = require("node-cache");
