@@ -1,7 +1,18 @@
 /*
-  Mission Control
-    by ArcticSpaceFox and ryzetech
-    made with 🍺 and ❤ in Germany
+  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+  ░   ░░░░░░░   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   ░░░░░░░░░░░░░░░░░░░░░░░░░░░   ░░░░░░░░░░░░░░░░░░░░░░   ░
+  ▒  ▒   ▒▒▒    ▒▒  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   ▒▒▒   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   ▒
+  ▒   ▒   ▒ ▒   ▒▒▒▒▒▒     ▒▒▒     ▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒   ▒   ▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒   ▒   ▒▒▒    ▒  ▒  ▒    ▒▒▒▒   ▒▒▒▒▒   ▒
+  ▓   ▓▓   ▓▓   ▓   ▓   ▓▓▓▓▓   ▓▓▓▓▓   ▓▓   ▓▓   ▓▓▓   ▓▓   ▓▓▓▓▓▓▓   ▓▓▓▓▓▓▓▓▓   ▓▓   ▓▓▓   ▓▓   ▓▓▓   ▓▓▓▓   ▓▓▓▓▓   ▓▓   ▓▓   ▓
+  ▓   ▓▓▓  ▓▓   ▓   ▓▓▓    ▓▓▓▓    ▓▓   ▓   ▓▓▓▓   ▓▓   ▓▓   ▓▓▓▓▓▓▓   ▓▓▓▓▓▓▓▓   ▓▓▓▓   ▓▓   ▓▓   ▓▓▓   ▓▓▓▓   ▓▓▓▓   ▓▓▓▓   ▓   ▓
+  ▓   ▓▓▓▓▓▓▓   ▓   ▓▓▓▓▓   ▓▓▓▓▓   ▓   ▓▓   ▓▓   ▓▓▓   ▓▓   ▓▓▓▓▓▓▓▓   ▓▓▓   ▓▓   ▓▓   ▓▓▓   ▓▓   ▓▓▓   ▓ ▓▓   ▓▓▓▓▓   ▓▓   ▓▓   ▓
+  █   ███████   █   █      ██      ██   ████   █████    ██   ██████████     ██████   █████    ██   ████   ██    ███████   █████   █
+  █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+
+  by ArcticSpaceFox and ryzetech
+  made with 🍺 and ❤ in Germany
+
+  DVS endpoint by stefftek, thx buddy
 */
 
 const Discord = require("discord.js");
@@ -15,7 +26,10 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
+const {PrismaClient} = require('@prisma/client')
+// -> why? NOde
+const botCacheStorage = new NodeCache();
 
 var messageCounter = 0;
 var joinCounter = 0;
@@ -24,12 +38,8 @@ var market;
 var price = 0;
 
 var userData = [];
-var clanData = [];
-var db = [];
 
 const startDate = new Date();
-
-const botCacheStorage = new NodeCache();
 
 //// HELP METHODS
 // get user from mentions or return sender
@@ -57,7 +67,6 @@ function timediff(timestamp1ornow, timestamp2, short) {
   else return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
 }
 
-
 // timed task executor for fetching market data from the CoinGecko API
 function fetchdata() {
   CoinGeckoClient.coins.fetch('ethereum', {}).then(d => {
@@ -65,12 +74,12 @@ function fetchdata() {
     price = market.current_price.eur;
   })
     .catch(error => {
-      console.log("--- ERR DUMP ---\nFailed: [TIMED] CoinGecko Data Fetch\nError: " + error.message + "\n--- ERR DUMP END ---");
+      console.log("ERR [TIMED] CoinGecko Data Fetch: \"" + error.message + "\"");
     });
 }
 
 //// CLASSES
-// help class for easily creating more complex embed fields
+// help class for easily creating more complex embed fields because i'm an idiot
 class EzField {
   constructor(name, value, inline) {
     this.name = name;
@@ -82,13 +91,13 @@ class EzField {
 //// BOT MANAGEMENT
 // READY EVENT
 client.on('ready', () => {
-  // set status and info stuffz
-  client.user.setActivity(prefix + "help | made by ryzetech.live | I love you <3");
+  // set status and info stuff
+  client.user.setActivity(prefix + "help | a spacefoxes production");
 
-  loadDB();
   console.log(`Logged in as ${client.user.tag}!`);
 
   // start timed tasks
+  // i couldn't think of a better way to do this. too bad!
   fetchdata();
   setInterval(function () { fetchdata(); }, 60000);
 });
@@ -136,7 +145,6 @@ client.on('guildMemberAdd', async (member) => {
     );
   }
 });
-// thx stftk <3
 
 // MESSAGE HANDLER
 client.on('message', async (message) => {
@@ -199,41 +207,30 @@ client.on('message', async (message) => {
 
   // PING
   else if (message.content.startsWith(`${prefix}ping`)) {
-    // TODO: rework this section, maybe by reusing the old embed object
     let timestamp = message.createdTimestamp;
 
-    let sent = await message.channel.send(
-      new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("Mission Control Info", embedPB)
-        .setTitle("🏓 Pong!")
-        .addFields(
-          { name: "Response Time", value: "Calculating...", inline: true },
-          { name: "Status", value: "Service is healthy", inline: true },
-          { name: "Bot Uptime", value: timediff(Date.now(), startDate) },
-          { name: "Messages since bot start", value: `Calculating...` },
-          { name: "Joins since bot start", value: `Calculating...` }
-        )
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
-    );
+    let embed = new Discord.MessageEmbed()
+      .setColor(embedColorStandard)
+      .setAuthor("Mission Control Info", embedPB)
+      .setTitle("🏓 Pong!")
+      .addFields(
+        { name: "Status", value: "Service is healthy" },
+        { name: "Bot Uptime", value: timediff(Date.now(), startDate) },
+      )
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`);
+
+    let sent = await message.channel.send(embed);
 
     let diff = sent.createdTimestamp - timestamp;
     sent.edit(
-      new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("Mission Control Info", embedPB)
-        .setTitle("🏓 Pong!")
-        .addFields(
-          { name: "Response Time", value: `${diff}ms`, inline: true },
-          { name: "Status", value: "Service is healthy", inline: true },
-          { name: "Bot Uptime", value: timediff(new Date().getTime(), startDate.getTime()) },
+      embed.addFields(
+          { name: "Response Time", value: `${diff}ms` },
           { name: "Messages since bot start", value: `${messageCounter} Messages` },
           { name: "Joins since bot start", value: `${joinCounter} Users` }
         )
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
     );
+    // IHATETHIS i made this ten lines shorter but now loading in the info is fucking ugly
   }
 
   // SYS INFO
@@ -249,13 +246,6 @@ client.on('message', async (message) => {
     let ping = await si.inetLatency("1.1.1.1");
     ping = await Math.floor(ping) + "ms";
 
-    let temp = si.cpuTemperature();
-    temp = await temp.main;
-
-    // failsafe because temp read may fail on windows (fck wndws)
-    if (typeof (temp) != "undefined" && temp != -1) temp = temp.toFixed(1) + "°C";
-    else temp = "(READ FAILED)";
-
     message.channel.send(
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
@@ -263,15 +253,12 @@ client.on('message', async (message) => {
         .setTitle("Mission Control by ryzetech and ArcticSpaceFox")
         .setDescription("Information about the bot and server health")
         .addFields(
-          { name: "\u200b", value: "\u200b" },
-          { name: "Special Thanks", value: "some-random-api.ml\ncrafatar.com" },
-          { name: "\u200b", value: "\u200b" },
-          { name: "Hosted by ZAP-Hosting", value: "Use promocode 'ryzetech-a-4247' to get 20% discount on the entire runtime of your next product!" },
+          { name: "Hosted by ZAP-Hosting", value: "Go to https://zap-hosting.com/ryzetech and use our promocode 'ryzetech-a-4247' to get 20% discount on the entire runtime of your next product!" },
           { name: "CPU Usage", value: load, inline: true },
-          { name: "CPU Temp", value: temp, inline: true },
-          { name: "RAM Use", value: memuse },
-          { name: "Ping to Cloudflare", value: ping },
+          { name: "RAM Use", value: memuse, inline: true },
+          { name: "Ping to Cloudflare", value: ping, inline: true },
           { name: "\u200b", value: "\u200b" },
+          { name: "Special Thanks", value: "some-random-api.ml\ncrafatar.com", inline: true },
           { name: "GitHub Repo", value: "https://github.com/ryzetech/Mission-Control", inline: true },
           { name: "Forked from", value: "Schrödinger by ryzetech\nhttps://schroedinger.ryzetech.live/", inline: true },
           { name: "Made by ryzetech and ArcticSpaceFox", value: "https://ryzetech.live/ | We love you! <3" }
@@ -458,7 +445,7 @@ client.on('message', async (message) => {
     // fetch error handling
     catch (error) {
       message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
-      console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
+      console.log("ERR [EXEC] \"" + message.content + "\" - Error: \"" + error.message + "\" - Link: https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg));
     }
     message.channel.stopTyping();
   }
@@ -509,7 +496,7 @@ client.on('message', async (message) => {
     // fetch error handling
     catch (error) {
       message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
-      console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/mc?username=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
+      console.log("ERR [EXEC] \"" + message.content + "\" - Error: \"" + error.message + "\" - Link: https://some-random-api.ml/mc?username=" + encodeURIComponent(arg));
     }
     message.channel.stopTyping();
   }
@@ -768,7 +755,7 @@ client.on('message', async (message) => {
       let success = botCacheStorage.set("news", json, 2*60*60*1000);
       // error log message
       if (!success) {
-        console.error("(news) ERROR - cache error! Failed to get hackernews top stories");
+        console.error("ERR [EXEC] \"" + message.content + "\" - Error: Cache error! Failed to get hackernews top stories");
       }
     }
 
@@ -785,7 +772,7 @@ client.on('message', async (message) => {
         let success = botCacheStorage.set(`news_${i}`, data, 2 * 60 * 60 * 1000);
         // error log
         if (!success) {
-          console.error(`(news) ERROR - cache error! Failed to get hackernews item [${i}]`);
+          console.error("ERR [EXEC] \"" + message.content + `\" - Error: Cache error! Failed to get hackernews item [${i}]`);
         }
       }
       let url = data.url ? "[Link](" + data.url + ")" : "no url available"; // some stories have no url because they are internal
@@ -806,7 +793,7 @@ client.on('message', async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
-  } // thx stftk (again <3)
+  }
 
   //// ECONOMY SECTION
   // ETH
@@ -815,7 +802,8 @@ client.on('message', async (message) => {
     let stuff = market;
     let args = message.content.slice(5);
 
-    let usr = await prisma.user.findUnique({where:{id:message.author.id}});
+    // get the user from the db
+    let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
 
     // CURRENT STATS
     if (args.startsWith("stats")) {
@@ -1141,24 +1129,26 @@ client.on('message', async (message) => {
       .setTimestamp()
       .setFooter(`Requested by ${message.author.tag}`)
     );
-  } // thx arctic
+  }
 
   // WORK
   else if (message.content.startsWith(`${prefix}work`)) {
     let msg;
 
+    // yes i refractored user to usr whatcha gonna do huh?
+
     // identify user
-    let user = await prisma.user.findUnique({ where: { id: message.author.id } });
+    let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
 
     // check if user is in cooldown defined by "p_cooldown"
-    if (user.lastearnstamp < new Date().getTime() - p_cooldown) {
+    if (usr.lastearnstamp < new Date().getTime() - p_cooldown) {
 
       // calc amount
       let amount = Math.round(Math.random() * 950 + 50);
 
       // cooldown the user and calculate new amount
-      user.lastearnstamp = new Date().getTime();
-      user.money += amount;
+      usr.lastearnstamp = new Date().getTime();
+      usr.money += amount;
 
       // display the data
       msg = new Discord.MessageEmbed()
@@ -1167,8 +1157,8 @@ client.on('message', async (message) => {
         .setTitle("✅ Payout successful!")
         .setDescription("You've got " + amount + " Euros today!")
         .addFields(
-          { name: "Balance", value: user.money.toFixed(2) + "€", inline: true },
-          { name: "Ethereum", value: user.eth + " (approx. " + (price * user.eth).toFixed(2) + "€)", inline: true }
+          { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
+          { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
@@ -1182,7 +1172,7 @@ client.on('message', async (message) => {
         .setAuthor("Coin System", embedPB)
         .setTitle("❌ Payout failed!")
         .setDescription("You can't get salary at the moment!")
-        .addField("Next salary:", timediff(user.lastearnstamp + p_cooldown, new Date().getTime(), true))
+        .addField("Next salary:", timediff(usr.lastearnstamp + p_cooldown, new Date().getTime(), true))
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }
@@ -1329,5 +1319,5 @@ client.on('message', async (message) => {
   }
 });
 
-// go
+// start this abomination
 client.login(token);
