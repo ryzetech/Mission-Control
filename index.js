@@ -482,7 +482,7 @@ client.on('message', async (message) => {
   // MC
   else if (message.content.startsWith(`${prefix}mc`)) {
     let arg = message.content.slice(4);
-    message.channel.startTyping(); // read line 384 for explanation
+    message.channel.startTyping(); // i'm not going to explain this a second time!
 
     try {
       let res = await fetch("https://some-random-api.ml/mc?username=" + encodeURIComponent(arg));
