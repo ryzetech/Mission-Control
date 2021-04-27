@@ -1,35 +1,68 @@
 /*
-  Mission Control
-    by ArcticSpaceFox and ryzetech
-    made with 🍺 and ❤ in Germany
+  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+  ░   ░░░░░░░   ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   ░░░░░░░░░░░░░░░░░░░░░░░░░░░   ░░░░░░░░░░░░░░░░░░░░░░   ░
+  ▒  ▒   ▒▒▒    ▒▒  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   ▒▒▒   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   ▒
+  ▒   ▒   ▒ ▒   ▒▒▒▒▒▒     ▒▒▒     ▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒   ▒   ▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒   ▒   ▒▒▒    ▒  ▒  ▒    ▒▒▒▒   ▒▒▒▒▒   ▒
+  ▓   ▓▓   ▓▓   ▓   ▓   ▓▓▓▓▓   ▓▓▓▓▓   ▓▓   ▓▓   ▓▓▓   ▓▓   ▓▓▓▓▓▓▓   ▓▓▓▓▓▓▓▓▓   ▓▓   ▓▓▓   ▓▓   ▓▓▓   ▓▓▓▓   ▓▓▓▓▓   ▓▓   ▓▓   ▓
+  ▓   ▓▓▓  ▓▓   ▓   ▓▓▓    ▓▓▓▓    ▓▓   ▓   ▓▓▓▓   ▓▓   ▓▓   ▓▓▓▓▓▓▓   ▓▓▓▓▓▓▓▓   ▓▓▓▓   ▓▓   ▓▓   ▓▓▓   ▓▓▓▓   ▓▓▓▓   ▓▓▓▓   ▓   ▓
+  ▓   ▓▓▓▓▓▓▓   ▓   ▓▓▓▓▓   ▓▓▓▓▓   ▓   ▓▓   ▓▓   ▓▓▓   ▓▓   ▓▓▓▓▓▓▓▓   ▓▓▓   ▓▓   ▓▓   ▓▓▓   ▓▓   ▓▓▓   ▓ ▓▓   ▓▓▓▓▓   ▓▓   ▓▓   ▓
+  █   ███████   █   █      ██      ██   ████   █████    ██   ██████████     ██████   █████    ██   ████   ██    ███████   █████   █
+  █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+
+  by ArcticSpaceFox and ryzetech
+  made with 🍺 and ❤ in Germany
+
+  Honorable Mentions:
+    SteffTek
+      dvs endpoint
+      funny code snippets from github.com/SteffTek/Thorben
+
+  Introduction:
+    Hello explorer!
+    This is the holy source code of Mission Control, the bot for the FoxInTheBox Discord ( discord.gg/m46vcrm52b ).
+    The following lines are home to these things:
+      - shitty solutions for easy problems
+      - amateur code
+      - major inefficiencies
+      - TODOs and FIXMEs
+      - comments which mock the code
+      - comments with profanities and insults
+      - comments admitting stupidity
+    If you want to use this code (for whatever reason), it's licensed under the GNU General Public License v3.0.
+    You can read more about it here -> https://github.com/ryzetech/Mission-Control/blob/master/LICENSE
+    
+    Thank you for your interest in this project! If you want to contribute, join the Discord server and talk to us
+    or propose your changes directly in a pull request. :)
 */
 
+// import funny stuff
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const si = require("systeminformation");
 const CoinGecko = require('coingecko-api');
 const CoinGeckoClient = new CoinGecko();
-const fs = require("fs");
 const fetch = require("node-fetch");
 const axios = require("axios");
 const NodeCache = require("node-cache");
+const botCacheStorage = new NodeCache();
+// import { PrismaClient } from "@prisma/client";
+const {PrismaClient} = require('@prisma/client')
+// -> why? NOde
+
+// config shit
+// TODO make this prettier, it looks a bit retarded
 const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
-import { PrismaClient } from "@prisma/client";
 
+// funny counters for fun lol
 var messageCounter = 0;
 var joinCounter = 0;
 
+// init vars for coingecko stuff
 var market;
 var price = 0;
 
-var userData = [];
-var clanData = [];
-var db = [];
-
 const startDate = new Date();
-
-const botCacheStorage = new NodeCache();
 
 //// HELP METHODS
 // get user from mentions or return sender
@@ -57,7 +90,6 @@ function timediff(timestamp1ornow, timestamp2, short) {
   else return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
 }
 
-
 // timed task executor for fetching market data from the CoinGecko API
 function fetchdata() {
   CoinGeckoClient.coins.fetch('ethereum', {}).then(d => {
@@ -65,12 +97,12 @@ function fetchdata() {
     price = market.current_price.eur;
   })
     .catch(error => {
-      console.log("--- ERR DUMP ---\nFailed: [TIMED] CoinGecko Data Fetch\nError: " + error.message + "\n--- ERR DUMP END ---");
+      console.error("ERR [TIMED] CoinGecko Data Fetch: \"" + error.message + "\"");
     });
 }
 
 //// CLASSES
-// help class for easily creating more complex embed fields
+// help class for easily creating more complex embed fields because i'm an idiot
 class EzField {
   constructor(name, value, inline) {
     this.name = name;
@@ -82,13 +114,13 @@ class EzField {
 //// BOT MANAGEMENT
 // READY EVENT
 client.on('ready', () => {
-  // set status and info stuffz
-  client.user.setActivity(prefix + "help | made by ryzetech.live | I love you <3");
+  // set status and info stuff
+  client.user.setActivity(prefix + "help | a spacefoxes production");
 
-  loadDB();
   console.log(`Logged in as ${client.user.tag}!`);
 
   // start timed tasks
+  // i couldn't think of a better way to do this. too bad!
   fetchdata();
   setInterval(function () { fetchdata(); }, 60000);
 });
@@ -136,7 +168,6 @@ client.on('guildMemberAdd', async (member) => {
     );
   }
 });
-// thx stftk <3
 
 // MESSAGE HANDLER
 client.on('message', async (message) => {
@@ -153,9 +184,10 @@ client.on('message', async (message) => {
         }
       }
     );
+
     // if the user doesn't have an account yet...
     if (!user) {
-      // create one! it will automagically get pushed into the db
+      // create one!
       await prisma.user.create({
         data: {
           id: message.author.id,
@@ -199,47 +231,38 @@ client.on('message', async (message) => {
 
   // PING
   else if (message.content.startsWith(`${prefix}ping`)) {
-    // TODO: rework this section, maybe by reusing the old embed object
     let timestamp = message.createdTimestamp;
 
-    let sent = await message.channel.send(
-      new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("Mission Control Info", embedPB)
-        .setTitle("🏓 Pong!")
-        .addFields(
-          { name: "Response Time", value: "Calculating...", inline: true },
-          { name: "Status", value: "Service is healthy", inline: true },
-          { name: "Bot Uptime", value: timediff(Date.now(), startDate) },
-          { name: "Messages since bot start", value: `Calculating...` },
-          { name: "Joins since bot start", value: `Calculating...` }
-        )
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
-    );
+    let embed = new Discord.MessageEmbed()
+      .setColor(embedColorStandard)
+      .setAuthor("Mission Control Info", embedPB)
+      .setTitle("🏓 Pong!")
+      .addFields(
+        { name: "Status", value: "Service is healthy" },
+        { name: "Bot Uptime", value: timediff(Date.now(), startDate) },
+      )
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`);
+
+    let sent = await message.channel.send(embed);
 
     let diff = sent.createdTimestamp - timestamp;
     sent.edit(
-      new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("Mission Control Info", embedPB)
-        .setTitle("🏓 Pong!")
-        .addFields(
-          { name: "Response Time", value: `${diff}ms`, inline: true },
-          { name: "Status", value: "Service is healthy", inline: true },
-          { name: "Bot Uptime", value: timediff(new Date().getTime(), startDate.getTime()) },
+      embed.addFields(
+          { name: "Response Time", value: `${diff}ms` },
           { name: "Messages since bot start", value: `${messageCounter} Messages` },
           { name: "Joins since bot start", value: `${joinCounter} Users` }
         )
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
     );
+    // i made this ten lines shorter but now "loading in" the info is fucking ugly
+    // TODO make this prettier pls
   }
 
   // SYS INFO
   else if (message.content.startsWith(`${prefix}info`)) {
 
     // asking systeminformation about a bunch of server data
+    // TODO i think we should cache this
     let load = await si.cpuCurrentSpeed();
     load = await load.avg;
 
@@ -249,13 +272,6 @@ client.on('message', async (message) => {
     let ping = await si.inetLatency("1.1.1.1");
     ping = await Math.floor(ping) + "ms";
 
-    let temp = si.cpuTemperature();
-    temp = await temp.main;
-
-    // failsafe because temp read may fail on windows (fck wndws)
-    if (typeof (temp) != "undefined" && temp != -1) temp = temp.toFixed(1) + "°C";
-    else temp = "(READ FAILED)";
-
     message.channel.send(
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
@@ -263,15 +279,12 @@ client.on('message', async (message) => {
         .setTitle("Mission Control by ryzetech and ArcticSpaceFox")
         .setDescription("Information about the bot and server health")
         .addFields(
-          { name: "\u200b", value: "\u200b" },
-          { name: "Special Thanks", value: "some-random-api.ml\ncrafatar.com" },
-          { name: "\u200b", value: "\u200b" },
-          { name: "Hosted by ZAP-Hosting", value: "Use promocode 'ryzetech-a-4247' to get 20% discount on the entire runtime of your next product!" },
+          { name: "Hosted by ZAP-Hosting", value: "Go to https://zap-hosting.com/ryzetech and use our promocode 'ryzetech-a-4247' to get 20% discount on the entire runtime of your next product!" },
           { name: "CPU Usage", value: load, inline: true },
-          { name: "CPU Temp", value: temp, inline: true },
-          { name: "RAM Use", value: memuse },
-          { name: "Ping to Cloudflare", value: ping },
+          { name: "RAM Use", value: memuse, inline: true },
+          { name: "Ping to Cloudflare", value: ping, inline: true },
           { name: "\u200b", value: "\u200b" },
+          { name: "Special Thanks", value: "some-random-api.ml\ncrafatar.com", inline: true },
           { name: "GitHub Repo", value: "https://github.com/ryzetech/Mission-Control", inline: true },
           { name: "Forked from", value: "Schrödinger by ryzetech\nhttps://schroedinger.ryzetech.live/", inline: true },
           { name: "Made by ryzetech and ArcticSpaceFox", value: "https://ryzetech.live/ | We love you! <3" }
@@ -296,13 +309,15 @@ client.on('message', async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
+
+    // bruh what did you expect? there is literally nothing to see here
   }
 
   // SRA SECTION
   // note: all the endpoints pretty much work the same: argument handling, fetching from GET endpoint and displaying the data + some error handling
   // ANIMAL
   else if (message.content.startsWith(`${prefix}animal`)) {
-    let animals = ["dog", "cat", "panda", "fox", "koala", "birb"]; // birb is not a typo, it's the actual name of the endpoint
+    let animals = ["dog", "cat", "panda", "fox", "koala", "birb"]; // birb is not a typo, it's the actual name of the endpoint (for real telk???)
     let arg = message.content.slice(8).toLocaleLowerCase();
 
     if (animals.includes(arg)) {
@@ -381,22 +396,23 @@ client.on('message', async (message) => {
         .setFooter(`Requested by ${message.author.tag}`)
     );
     message.channel.stopTyping();
-  }
+  } // TODO we should use the reddit api to get a post from a passed subreddit and fall back to this if nothing is passed
 
   // POKEDEX / POKEMON
   else if (message.content.startsWith(`${prefix}pokedex`) || message.content.startsWith(`${prefix}pokemon`)) {
     let arg = message.content.slice(9);
-    message.channel.startTyping(); // because this might take a while, people hate it when the bot is sitting around doing seemingly nothing
+    message.channel.startTyping(); // do this because this might take a while, people hate it when the bot is sitting around doing seemingly nothing
 
     try {
       let res = await fetch("https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg));
       let json = await res.json();
 
-      // hoping the request doesn't fail
-      if (!json.error) {
+      if (!json.error) { // hoping the request doesn't fail
+
         let typelist = "", genderlist = "", evoLine = "", abilities = "", eggGroups = "", species = "";
 
         // processing information into a somewhat pretty format
+        // side note: this looks ugly and retarded but does the job so well that i dont want to replace it
         for (let i in json.type) typelist += (i == 0) ? json.type[i] : ", " + json.type[i];
         for (let i in json.gender) genderlist += (i == 0) ? json.gender[i] : " / " + json.gender[i];
         for (let i in json.species) species += (i == 0) ? json.species[i] : " " + json.species[i];
@@ -458,7 +474,7 @@ client.on('message', async (message) => {
     // fetch error handling
     catch (error) {
       message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
-      console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
+      console.error("ERR [EXEC] \"" + message.content + "\" - Error: \"" + error.message + "\" - Link: https://some-random-api.ml/pokedex?pokemon=" + encodeURIComponent(arg));
     }
     message.channel.stopTyping();
   }
@@ -466,14 +482,14 @@ client.on('message', async (message) => {
   // MC
   else if (message.content.startsWith(`${prefix}mc`)) {
     let arg = message.content.slice(4);
-    message.channel.startTyping();
+    message.channel.startTyping(); // i'm not going to explain this a second time!
 
     try {
       let res = await fetch("https://some-random-api.ml/mc?username=" + encodeURIComponent(arg));
       let json = await res.json();
 
-      // hoping the request doesn't fail
-      if (!json.error) {
+      if (!json.error) { // hoping the request doesn't fail
+
         let namelist = [];
         for (let i in json.name_history) namelist.push(new EzField(json.name_history[i].name, json.name_history[i].changedToAt, false));
 
@@ -486,7 +502,7 @@ client.on('message', async (message) => {
             .setDescription(`${json.uuid}\n\n**Name History (old to new):**`)
             .setThumbnail("https://crafatar.com/avatars/" + json.uuid)
             .setImage("https://crafatar.com/renders/body/" + json.uuid)
-            .addFields(namelist)
+            .addFields(namelist) // FIXME this WILL fail when there are too many nickname changes (helpful info: discord embed field limit is 25). too bad!
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`)
         );
@@ -509,7 +525,7 @@ client.on('message', async (message) => {
     // fetch error handling
     catch (error) {
       message.channel.send("Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message);
-      console.log("----- ERR DUMP -----\nFailed: " + message.content + "\nError: " + error.message + "\nLink: https://some-random-api.ml/mc?username=" + encodeURIComponent(arg) + "\n--- ERR DUMP END ---");
+      console.error("ERR [EXEC] \"" + message.content + "\" - Error: \"" + error.message + "\" - Link: https://some-random-api.ml/mc?username=" + encodeURIComponent(arg));
     }
     message.channel.stopTyping();
   }
@@ -543,6 +559,7 @@ client.on('message', async (message) => {
     }
 
     // filter handling
+    // TODO we need to implement this in a smarter way...
     else if (args.startsWith("glass")) {
       msg = new Discord.MessageEmbed()
         .setColor(embedColorStandard)
@@ -687,7 +704,7 @@ client.on('message', async (message) => {
         .setFooter(`Requested by ${message.author.tag}`);
     }
 
-    // special attachment treatment for the last two because sra is kinda slow on these endpoints and discord has a timeout on embed image requests
+    // special attachment treatment for the last two because sra is kinda slow on these endpoints and (i think) discord has a timeout on embed image requests
     else if (args.startsWith("triggered")) {
       message.channel.startTyping();
 
@@ -731,7 +748,7 @@ client.on('message', async (message) => {
       msg = new Discord.MessageEmbed()
         .setColor(embedColorFail)
         .setAuthor("❌ Syntax mistake!", embedPB)
-        .setDescription("Either you didn't specify a filter, or the one specified wasn't found.\n**To get a list with all filters, type '" + prefix + "avmod filters'.**\n\n*Usage: " + prefix + "avatarmod <filter> [User Ping]*")
+        .setDescription("Either you didn't specify a filter, or the one specified wasn't found.\n**To get a list with all filters, type '" + prefix + "avmod filters'.**\n\n*Usage: " + prefix + "avmod <filter> [User Ping]*")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }
@@ -754,8 +771,6 @@ client.on('message', async (message) => {
 
     let i = 0;
     let fields = [];
-    let link;
-
     let value = botCacheStorage.get("news");
 
     if (!value) {
@@ -768,7 +783,7 @@ client.on('message', async (message) => {
       let success = botCacheStorage.set("news", json, 2*60*60*1000);
       // error log message
       if (!success) {
-        console.error("(news) ERROR - cache error! Failed to get hackernews top stories");
+        console.error("ERR [EXEC] \"" + message.content + "\" - Error: Cache error! Failed to get hackernews top stories");
       }
     }
 
@@ -785,7 +800,7 @@ client.on('message', async (message) => {
         let success = botCacheStorage.set(`news_${i}`, data, 2 * 60 * 60 * 1000);
         // error log
         if (!success) {
-          console.error(`(news) ERROR - cache error! Failed to get hackernews item [${i}]`);
+          console.error("ERR [EXEC] \"" + message.content + `\" - Error: Cache error! Failed to get hackernews item [${i}]`);
         }
       }
       let url = data.url ? "[Link](" + data.url + ")" : "no url available"; // some stories have no url because they are internal
@@ -806,7 +821,7 @@ client.on('message', async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
-  } // thx stftk (again <3)
+  }
 
   //// ECONOMY SECTION
   // ETH
@@ -815,7 +830,8 @@ client.on('message', async (message) => {
     let stuff = market;
     let args = message.content.slice(5);
 
-    let usr = await prisma.user.findUnique({where:{id:message.author.id}});
+    // get the user from the db
+    let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
 
     // CURRENT STATS
     if (args.startsWith("stats")) {
@@ -1141,24 +1157,26 @@ client.on('message', async (message) => {
       .setTimestamp()
       .setFooter(`Requested by ${message.author.tag}`)
     );
-  } // thx arctic
+  }
 
   // WORK
   else if (message.content.startsWith(`${prefix}work`)) {
     let msg;
 
+    // yes i refractored user to usr whatcha gonna do huh?
+
     // identify user
-    let user = await prisma.user.findUnique({ where: { id: message.author.id } });
+    let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
 
     // check if user is in cooldown defined by "p_cooldown"
-    if (user.lastearnstamp < new Date().getTime() - p_cooldown) {
+    if (usr.lastearnstamp < new Date().getTime() - p_cooldown) {
 
       // calc amount
       let amount = Math.round(Math.random() * 950 + 50);
 
       // cooldown the user and calculate new amount
-      user.lastearnstamp = new Date().getTime();
-      user.money += amount;
+      usr.lastearnstamp = new Date().getTime();
+      usr.money += amount;
 
       // display the data
       msg = new Discord.MessageEmbed()
@@ -1167,8 +1185,8 @@ client.on('message', async (message) => {
         .setTitle("✅ Payout successful!")
         .setDescription("You've got " + amount + " Euros today!")
         .addFields(
-          { name: "Balance", value: user.money.toFixed(2) + "€", inline: true },
-          { name: "Ethereum", value: user.eth + " (approx. " + (price * user.eth).toFixed(2) + "€)", inline: true }
+          { name: "Balance", value: usr.money.toFixed(2) + "€", inline: true },
+          { name: "Ethereum", value: usr.eth + " (approx. " + (price * usr.eth).toFixed(2) + "€)", inline: true }
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
@@ -1182,7 +1200,7 @@ client.on('message', async (message) => {
         .setAuthor("Coin System", embedPB)
         .setTitle("❌ Payout failed!")
         .setDescription("You can't get salary at the moment!")
-        .addField("Next salary:", timediff(user.lastearnstamp + p_cooldown, new Date().getTime(), true))
+        .addField("Next salary:", timediff(usr.lastearnstamp + p_cooldown, new Date().getTime(), true))
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }
@@ -1194,50 +1212,41 @@ client.on('message', async (message) => {
     let sent = await message.channel.send(
       new Discord.MessageEmbed()
         .setColor(embedColorProcessing)
-        .setAuthor("Leaderboard - Top 25", embedPB)
+        .setAuthor("Leaderboard", embedPB)
         .setTitle("Fetching Data...")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
 
-    // preprocess the user db
-    let preprocess = new Map();
-    userData.forEach(dbusr => {
-      // get the discord user object by id
-      let discordUser = client.users.cache.get(dbusr.u);
-      // handling case: user left the server and could not be found
-      if (!discordUser) console.log("[WARN] User ID " + dbusr.u + " has a DB entry but could not be found! Skipping...");
+    // i am too stupid to create a leaderboard for combined stats, so i need to split it into cash and eth
+    let topMoney = await prisma.user.findMany({orderBy: money, take: 10});
+    let topEth = await prisma.user.findMany({orderBy: eth, take: 10});
 
-      else {
-        // creating map entry
-        discordUser = discordUser.tag;
-        let value = parseFloat(dbusr.money + (dbusr.eth * price)).toFixed(2);
-        preprocess.set(discordUser, value);
-      }
-    });
+    let topMoneyField = "", topEthField = "", i = 0, usrCheck;
 
-    // sort map
-    let sorted = new Map([...preprocess.entries()].sort((a, b) => b[1] - a[1]));
+    for (let usr in topMoney) {
+      i++;
+      usrCheck = client.users.cache.get(usr.id);
+      topMoneyField += "**" + i + ".** " + usrCheck ? usrCheck.tag : "*user left*" + " - " + usr.money + "$\n";
+    }
+    i = 0;
+    for (let usr in topEth) {
+      i++;
+      usrCheck = client.users.cache.get(usr.id);
+      topEthField += "**" + i + ".** " + usrCheck ? usrCheck.tag : "*user left*" + " - " + usr.eth + "$\n";
+    }
+    // we still need checks whether a user is still on the server because we dont delete the user object when they leave
+    // TODO do this
 
-    // process display data
-    let i = 1;
-    let lbdata = [];
-    sorted.forEach((value, key, map) => {
-
-      // stop @ 25 users because discord set a max field amount
-      if (i <= 25) {
-        lbdata.push(new EzField(i + ". - " + key, value));
-        i++;
-      }
-    });
-
-    // push content
     sent.edit(
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
-        .setAuthor("Leaderboard - Top " + lbdata.length, embedPB)
-        .setTitle("Cash and ETH combined")
-        .addFields(lbdata)
+        .setAuthor("Leaderboard", embedPB)
+        .setTitle("Top 10")
+        .addFields(
+          { name: "Cash", value: topMoneyField, inline: true },
+          { name: "ETH", value: topEthField, inline: true }
+        )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     )
@@ -1329,5 +1338,5 @@ client.on('message', async (message) => {
   }
 });
 
-// go
+// start this abomination
 client.login(token);
