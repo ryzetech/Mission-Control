@@ -1224,16 +1224,16 @@ client.on('message', async (message) => {
 
     let topMoneyField = "", topEthField = "", i = 0, usrCheck;
 
-    for (let usr in topMoney) {
+    for (let i in topMoney) {
       i++;
-      usrCheck = client.users.cache.get(usr.id);
-      topMoneyField += "**" + i + ".** " + usrCheck ? usrCheck.tag : "*user left*" + " - " + usr.money + "$\n";
+      usrCheck = client.users.cache.get(topMoney[i].id);
+      topMoneyField += "**" + i + ".** " + usrCheck ? usrCheck.tag : "*user left*" + " - " + topMoney[i].money + "$\n";
     }
     i = 0;
-    for (let usr in topEth) {
+    for (let i in topEth) {
       i++;
-      usrCheck = client.users.cache.get(usr.id);
-      topEthField += "**" + i + ".** " + usrCheck ? usrCheck.tag : "*user left*" + " - " + usr.eth + "$\n";
+      usrCheck = client.users.cache.get(topMoney[i].id);
+      topEthField += "**" + i + ".** " + usrCheck ? usrCheck.tag : "*user left*" + " - " + topMoney[i].eth + "$\n";
     }
     // we still need checks whether a user is still on the server because we dont delete the user object when they leave
     // TODO do this
