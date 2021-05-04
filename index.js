@@ -51,7 +51,7 @@ const {PrismaClient} = require('@prisma/client')
 
 // config shit
 // TODO make this prettier, it looks a bit retarded
-const { prefix, welcomeChannelID, autodelete, modroles, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
+const { prefix, welcomeChannelID, autodelete, modroles, muterole, p_cooldown, ycomb_story_amount, embedColorStandard, embedColorProcessing, embedColorConfirm, embedColorWarn, embedColorFail, embedPB } = require("./config.json");
 const { token } = require("./token.json");
 
 // funny counters for fun lol
@@ -101,6 +101,15 @@ function fetchdata() {
     });
 }
 
+// comparer for safe url fetching until we make a better command + argument splitter
+function startsWithInArray(string, stringArray) {
+  for (let index in stringArray) {
+    if (string.startsWith(stringArray[index]))
+    return stringArray[index];
+  }
+  return undefined;
+}
+
 //// CLASSES
 // help class for easily creating more complex embed fields because i'm an idiot
 class EzField {
@@ -137,15 +146,17 @@ client.on('guildMemberAdd', async (member) => {
 
   // if the user is unknown to Virgin Slayer:
   if (res.status === "error" && res.msg === "api.error.notBanned") {
+    // greet them with a warm welcome message <3
     let sent = await channel.send(`Hey ${member}, welcome on our little spaceship! 🚀`);
-    await sent.delete({ timeout: autodelete }); // ...and delete it after "autodelete" seconds to keep the chat clean
+    // and delete it after "autodelete" seconds to keep the chat clean
+    await sent.delete({ timeout: autodelete });
   }
 
   // if the user is known to Virgin Slayer:
   else if (res.status === "success") {
     // instantly mute the detected user
-    let muterole = member.guild.roles.cache.get("810189970920570961");
-    member.roles.add(muterole);
+    let muro = member.guild.roles.cache.get(muterole);
+    member.roles.add(muro);
 
     // get the current time to calculate the amount of time the user is banned
     let date = new Date(res.data.Timestamp);
@@ -170,9 +181,10 @@ client.on('guildMemberAdd', async (member) => {
 });
 
 // MESSAGE HANDLER
+// TODO this is a big ugly mess! we should switch to caveats => https://discordjs.guide/creating-your-bot/commands-with-user-input.html#caveats
 client.on('message', async (message) => {
   const prisma = new PrismaClient();
-
+  
   // preventing database checks on bots
   if (!message.author.bot) {
     messageCounter++;
@@ -236,26 +248,24 @@ client.on('message', async (message) => {
     let embed = new Discord.MessageEmbed()
       .setColor(embedColorStandard)
       .setAuthor("Mission Control Info", embedPB)
-      .setTitle("🏓 Pong!")
-      .addFields(
-        { name: "Status", value: "Service is healthy" },
-        { name: "Bot Uptime", value: timediff(Date.now(), startDate) },
-      )
+      .setTitle("LOADING STATS...")
       .setTimestamp()
       .setFooter(`Requested by ${message.author.tag}`);
 
     let sent = await message.channel.send(embed);
 
     let diff = sent.createdTimestamp - timestamp;
-    sent.edit(
-      embed.addFields(
-          { name: "Response Time", value: `${diff}ms` },
-          { name: "Messages since bot start", value: `${messageCounter} Messages` },
-          { name: "Joins since bot start", value: `${joinCounter} Users` }
-        )
+    sent.edit( embed
+      .setTitle("🏓 Pong!")
+      .addFields(
+        { name: "Response Time", value: `${diff}ms` },
+        { name: "Status", value: "Service is healthy" },
+        { name: "Bot Uptime", value: timediff(Date.now(), startDate) },
+        { name: "Messages since bot start", value: `${messageCounter} Messages` },
+        { name: "Joins since bot start", value: `${joinCounter} Users` }
+      )
     );
     // i made this ten lines shorter but now "loading in" the info is fucking ugly
-    // TODO make this prettier pls
   }
 
   // SYS INFO
@@ -490,22 +500,69 @@ client.on('message', async (message) => {
 
       if (!json.error) { // hoping the request doesn't fail
 
-        let namelist = [];
-        for (let i in json.name_history) namelist.push(new EzField(json.name_history[i].name, json.name_history[i].changedToAt, false));
+        // preparing embed for easy insertion
+        let msg = new Discord.MessageEmbed()
+          .setColor(embedColorStandard)
+          .setAuthor("MC Fetch", embedPB)
+          .setTitle(json.username)
+          .setThumbnail("https://crafatar.com/avatars/" + json.uuid)
+          .setImage("https://crafatar.com/renders/body/" + json.uuid)
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`);
 
-        // displaying the data
-        message.channel.send(
-          new Discord.MessageEmbed()
-            .setColor(embedColorStandard)
-            .setAuthor("MC Fetch", embedPB)
-            .setTitle(json.username)
-            .setDescription(`${json.uuid}\n\n**Name History (old to new):**`)
-            .setThumbnail("https://crafatar.com/avatars/" + json.uuid)
-            .setImage("https://crafatar.com/renders/body/" + json.uuid)
-            .addFields(namelist) // FIXME this WILL fail when there are too many nickname changes (helpful info: discord embed field limit is 25). too bad!
-            .setTimestamp()
-            .setFooter(`Requested by ${message.author.tag}`)
-        );
+        let namelist;
+
+        // check if the user has changed the name more than 25 times (discord embed field limit)
+        if (json.name_history.length > 25) {
+
+          // init namelist as string (don't ask me why this needs a newline character)
+          namelist = "\n";
+
+          /* --------------------------------------------------------------------------------------
+            when we are here, the dataset is too huge to use embed fields.
+            instead, we fall back to using a code box with this format:
+
+            name
+            -> date of change
+
+            but there is a problem: the embed description has a limit as well: 2048 chars.
+            let's calculate it:
+             
+            a nickname can be 16 chars long, plus up to 16 chars for the date and formatting.
+            thats 32 chars per name change. we aditionally have to subtract the codebox chars and
+            the initial description (including the uuid), which leaves us with approximately 1970 chars.
+            thats enough for 60 name changes.
+
+            thats enough breathing space for MY standards, as somebody would have to change their
+            nickname every month for five years straight.
+
+            i mean, even if this fails, we have found one of the oldest players (or one of the
+            most determinded) in minecraft, that would be awesome! :D
+          ----------------------------------------------------------------------------------------- */
+          for (let i in json.name_history) namelist += (i == 0) ? (json.name_history[i].name + "\n-> " + json.name_history[i].changedToAt) : ("\n\n" + json.name_history[i].name + "\n-> " + json.name_history[i].changedToAt);
+          
+          // wrap shit into codebox
+          namelist = "```" + namelist + "```";
+
+          // pipe it into the embed's description
+          msg.setDescription(`${json.uuid}\n\n**Name History (old to new):**\n${namelist}`);
+        }
+
+        else { // field solution (prettier)
+
+          // init namelist as array for EzFields
+          namelist = [];
+
+          // cool solution, i like it
+          for (let i in json.name_history) namelist.push(new EzField(json.name_history[i].name, json.name_history[i].changedToAt, false));
+          
+          // pipe info into the embed
+          msg.setDescription(`${json.uuid}\n\n**Name History (old to new):**`);
+          msg.addFields(namelist);
+        }
+
+        // sending the embed
+        message.channel.send(msg);
       }
 
       // api error handling
@@ -534,9 +591,9 @@ client.on('message', async (message) => {
   else if (message.content.startsWith(`${prefix}avmod`)) {
     let msg;
     let usr = userident(message);
-    let args = message.content.slice(7);
+    let args = message.content.slice(7).toLowerCase();
 
-    if (args.startsWith("filters")) {
+    if (args === "filters") {
       msg = new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("Avatarmod", embedPB)
@@ -548,10 +605,10 @@ client.on('message', async (message) => {
           { name: "greyscale", value: "for sad moments" },
           { name: "invert", value: "wtf" },
           { name: "invgs", value: "greyscale + invert = holy shit" },
-          { name: "bright", value: "pls dont" },
+          { name: "brightness", value: "pls dont" },
           { name: "threshold", value: "this is cursed" },
           { name: "sepia", value: '"I was born in 1869!"' },
-          { name: "pixel", value: "even 144p is luxury" },
+          { name: "pixelate", value: "even 144p is luxury" },
           { name: "lolice", value: "you belong in jail" }
         )
         .setTimestamp()
@@ -559,54 +616,18 @@ client.on('message', async (message) => {
     }
 
     // filter handling
-    // TODO we need to implement this in a smarter way...
-    else if (args.startsWith("glass")) {
+    else if (startsWithInArray(args, ["glass", "wasted", "greyscale", "invert", "brightness", "threshold", "sepia", "pixelate", "red", "green", "blue"])) {
+      args = startsWithInArray(args, ["glass", "wasted", "greyscale", "invert", "brightness", "threshold", "sepia", "pixelate", "red", "green", "blue"]); // i know this is stupid lmao
       msg = new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("AvatarMod", embedPB)
         .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: GLASS")
-        .setURL(`https://some-random-api.ml/canvas/glass/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/glass/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
+        .setDescription(`Modifier: ${args.toUpperCase()}`)
+        .setURL(`https://some-random-api.ml/canvas/${args}/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
+        .setImage(`https://some-random-api.ml/canvas/${args}/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("wasted")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: WASTED")
-        .setURL(`https://some-random-api.ml/canvas/wasted/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/wasted/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("greyscale")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: GREYSCALE")
-        .setURL(`https://some-random-api.ml/canvas/greyscale/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/greyscale/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("invert")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: INVERT")
-        .setURL(`https://some-random-api.ml/canvas/invert/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/invert/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
+    } // side note: this mess saves us approx 90 lines, fuck yeah!
 
     else if (args.startsWith("invgs")) {
       msg = new Discord.MessageEmbed()
@@ -616,90 +637,6 @@ client.on('message', async (message) => {
         .setDescription("Modifier: INVERT GREYSCALE")
         .setURL(`https://some-random-api.ml/canvas/invertgreyscale/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
         .setImage(`https://some-random-api.ml/canvas/invertgreyscale/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("bright")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: BRIGHTNESS")
-        .setURL(`https://some-random-api.ml/canvas/brightness/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/brightness/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("threshold")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: THRESHOLD")
-        .setURL(`https://some-random-api.ml/canvas/threshold/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/threshold/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("sepia")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: SEPIA")
-        .setURL(`https://some-random-api.ml/canvas/sepia/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/sepia/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("pixel")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: PIXELATE")
-        .setURL(`https://some-random-api.ml/canvas/pixelate/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/pixelate/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("red")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: RED")
-        .setURL(`https://some-random-api.ml/canvas/red/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/red/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("green")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: GREEN")
-        .setURL(`https://some-random-api.ml/canvas/green/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/green/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
-    }
-
-    else if (args.startsWith("blue")) {
-      msg = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
-        .setDescription("Modifier: BLUE")
-        .setURL(`https://some-random-api.ml/canvas/blue/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
-        .setImage(`https://some-random-api.ml/canvas/blue/?avatar=${usr.user.displayAvatarURL({ format: 'png' })}`)
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }

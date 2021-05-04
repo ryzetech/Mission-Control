@@ -1,11 +1,15 @@
 {
-    "prefix": "#",
+    "prefix": "-",
+
     "welcomeChannelID": "810178445660258335",
+
     "autodelete": 30000,
+    
     "modroles": [
         "810183197065347103",
         "810183144576778281"
     ],
+    "muterole": "810189970920570961",
 
     "p_cooldown": 43200000,
     "ycomb_story_amount": 5,
