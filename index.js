@@ -184,7 +184,7 @@ client.on('guildMemberAdd', async (member) => {
 // TODO this is a big ugly mess! we should switch to caveats => https://discordjs.guide/creating-your-bot/commands-with-user-input.html#caveats
 client.on('message', async (message) => {
   const prisma = new PrismaClient();
-
+  
   // preventing database checks on bots
   if (!message.author.bot) {
     messageCounter++;
@@ -547,7 +547,7 @@ client.on('message', async (message) => {
           // pipe it into the embed's description
           msg.setDescription(`${json.uuid}\n\n**Name History (old to new):**\n${namelist}`);
         }
-        
+
         else { // field solution (prettier)
 
           // init namelist as array for EzFields
@@ -616,7 +616,8 @@ client.on('message', async (message) => {
     }
 
     // filter handling
-    else if (startsWithInArray(args, ["glass", "wasted", "greyscale", "invert", "brightness", "treshold", "sepia", "pixelate", "red", "green", "blue"])) {
+    else if (startsWithInArray(args, ["glass", "wasted", "greyscale", "invert", "brightness", "threshold", "sepia", "pixelate", "red", "green", "blue"])) {
+      args = startsWithInArray(args, ["glass", "wasted", "greyscale", "invert", "brightness", "threshold", "sepia", "pixelate", "red", "green", "blue"]); // i know this is stupid lmao
       msg = new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("AvatarMod", embedPB)
