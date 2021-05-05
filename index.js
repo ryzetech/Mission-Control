@@ -1104,7 +1104,7 @@ client.on('message', async (message) => {
     let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
 
     // check if user is in cooldown defined by "p_cooldown"
-    if (new Date(usr.lastearnstamp) < new Date().getTime() - p_cooldown) {
+    if (new Date(usr.lastearnstamp) < new Date().getTime() - p_cooldown || !usr.lastearnstamp) {
 
       // calc amount
       let amount = Math.round(Math.random() * 950 + 50);
