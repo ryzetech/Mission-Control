@@ -1115,7 +1115,7 @@ client.on('message', async (message) => {
           id: usr.id,
         },
         data: {
-          leastearnstamp: new Date().getTime(),
+          leastearnstamp: new Date().toUTCString(),
           money: {
             increment: amount,
           },
