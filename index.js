@@ -1104,13 +1104,13 @@ client.on('message', async (message) => {
     let usr = await prisma.user.findUnique({ where: { id: message.author.id } });
 
     // check if user is in cooldown defined by "p_cooldown"
-    if (usr.lastearnstamp < new Date().getTime() - p_cooldown) {
+    if (new Date(usr.lastearnstamp) < new Date().getTime() - p_cooldown) {
 
       // calc amount
       let amount = Math.round(Math.random() * 950 + 50);
 
       // cooldown the user and calculate new amount
-      usr.lastearnstamp = new Date().getTime();
+      new Date(usr.lastearnstamp) = new Date().getTime();
       usr.money += amount;
 
       // display the data
@@ -1135,7 +1135,7 @@ client.on('message', async (message) => {
         .setAuthor("Coin System", embedPB)
         .setTitle("❌ Payout failed!")
         .setDescription("You can't get salary at the moment!")
-        .addField("Next salary:", timediff(usr.lastearnstamp + p_cooldown, new Date().getTime(), true))
+        .addField("Next salary:", timediff(new Date(usr.lastearnstamp) + p_cooldown, new Date().getTime(), true))
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }
