@@ -46,7 +46,7 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
 // import { PrismaClient } from "@prisma/client";
-const {PrismaClient} = require('@prisma/client')
+const {prisma} = require("./lib/client.js")
 // -> why? NOde
 
 // config shit
@@ -183,8 +183,6 @@ client.on('guildMemberAdd', async (member) => {
 // MESSAGE HANDLER
 // TODO this is a big ugly mess! we should switch to caveats => https://discordjs.guide/creating-your-bot/commands-with-user-input.html#caveats
 client.on('message', async (message) => {
-  const prisma = new PrismaClient();
-  
   // preventing database checks on bots
   if (!message.author.bot) {
     messageCounter++;
