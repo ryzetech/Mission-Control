@@ -46,7 +46,7 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
 // import { PrismaClient } from "@prisma/client";
-const {prisma} = require("./lib/client.js")
+const prisma = require("./lib/client.js")
 // -> why? NOde
 
 // config shit
