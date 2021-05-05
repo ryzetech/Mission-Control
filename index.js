@@ -1384,8 +1384,7 @@ client.on("message", async (message) => {
   else if (message.content.startsWith(`${prefix}send`)) {
     // Tests for the following pattern and returns search results
     // prefix + send <@273...132> 123
-    let regex_string = prefix + "send <@!(d+)> (d+)";
-    const pattern = new RegExp(regex_string);
+    const pattern = new RegExp(prefix + "send <@!(\\d+)> (\\d+)", "s");
     const regres = pattern.exec(message.content);
 
     // handle case where pattern fails
@@ -1396,7 +1395,7 @@ client.on("message", async (message) => {
           .setColor(embedColorFail)
           .setAuthor("Coin System", embedPB)
           .setTitle("❌ Syntax mistake!")
-          .setDescription("Sytntax is `${prefix}send @<user_to_send_to> <amount>`")
+          .setDescription("Sytntax is `"+prefix+"send @<user_to_send_to> <amount>`")
           .addField(
             "`user_to_send_to`:",
             "This should be the user you want the transaction to go to"
@@ -1408,12 +1407,13 @@ client.on("message", async (message) => {
     }
 
     // extract the values
-    const [, userid, amount] = regres;
+    let [, userid, amount] = regres;
+    amount = Number(amount);
     // get users from db
-    const userFrom = await prisma.user.findUnique({
+    let userFrom = await prisma.user.findUnique({
       where: { id: message.author.id },
     });
-    const userTo = await prisma.user.findUnique({ where: { id: userid } });
+    let userTo = await prisma.user.findUnique({ where: { id: userid } });
     // Check if any value is not initilized
     if (!userTo || !amount || !userFrom) {
       return message.channel.send(
