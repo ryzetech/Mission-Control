@@ -12,7 +12,7 @@ generator client {
 
 model User {
   id            String   @id
-  money         Float    @default(10000)
+  money         Float    @default(0)
   eth           Float    @default(0)
   lastearnstamp DateTime @default(now())
 }
