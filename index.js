@@ -1110,8 +1110,17 @@ client.on('message', async (message) => {
       let amount = Math.round(Math.random() * 950 + 50);
 
       // cooldown the user and calculate new amount
-      usr.lastearnstamp = new Date().getTime();
-      usr.money += amount;
+      await prisma.user.update({
+        where: {
+          id: usr.id,
+        },
+        data: {
+          lastearnstamp: new Date().getTime(),
+          money: {
+            increment: amount,
+          },
+        },
+      });
 
       // display the data
       msg = new Discord.MessageEmbed()
