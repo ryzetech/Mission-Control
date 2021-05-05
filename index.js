@@ -53,7 +53,6 @@ const prisma = new PrismaClient({
 // -> why? NOde
 
 // config shit
-// TODO make this prettier, it looks a bit retarded
 const {
   prefix,
   welcomeChannelID,
@@ -1575,8 +1574,9 @@ client.on("message", async (message) => {
     );
 
     // i am too stupid to create a leaderboard for combined stats, so i need to split it into cash and eth
-    let topMoney = await prisma.user.findMany({ orderBy: money, take: 10 });
-    let topEth = await prisma.user.findMany({ orderBy: eth, take: 10 });
+    let topMoney = await prisma.user.findMany({ orderBy: {money: "desc"}, take: 10 });
+    let topEth = await prisma.user.findMany({ orderBy: {eth: "desc"}, take: 10 });
+    // thx prisma issue 702!
 
     let topMoneyField = "",
       topEthField = "",
