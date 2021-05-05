@@ -1383,8 +1383,8 @@ client.on("message", async (message) => {
   // SEND
   else if (message.content.startsWith(`${prefix}send`)) {
     // Tests for the following pattern and returns search results
-    // #send <@273...132> 123
-    const pattern = /#send <@!(\d+)> (\d+)/;
+    // prefix + send <@273...132> 123
+    const pattern = new RegExp(`${prefix}send <@!(\d+)> (\d+)`);
     const regres = pattern.exec(message.content);
 
     // handle case where pattern fails
@@ -1395,7 +1395,7 @@ client.on("message", async (message) => {
           .setColor(embedColorFail)
           .setAuthor("Coin System", embedPB)
           .setTitle("❌ Syntax mistake!")
-          .setDescription("Sytntax is `#send @<user_to_send_to> <amount>`")
+          .setDescription("Sytntax is `${prefix}send @<user_to_send_to> <amount>`")
           .addField(
             "`user_to_send_to`:",
             "This should be the user you want the transaction to go to"
