@@ -1110,7 +1110,7 @@ client.on('message', async (message) => {
       let amount = Math.round(Math.random() * 950 + 50);
 
       // cooldown the user and calculate new amount
-      new Date(usr.lastearnstamp) = new Date().getTime();
+      usr.lastearnstamp = new Date().getTime();
       usr.money += amount;
 
       // display the data
