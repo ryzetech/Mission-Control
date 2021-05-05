@@ -1125,7 +1125,6 @@ client.on('message', async (message) => {
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
-      saveDB();
     }
 
     // display error message on cooldown
