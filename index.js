@@ -1384,7 +1384,7 @@ client.on("message", async (message) => {
   else if (message.content.startsWith(`${prefix}send`)) {
     // Tests for the following pattern and returns search results
     // prefix + send <@273...132> 123
-    const pattern = new RegExp(`${prefix}send <@!(\d+)> (\d+)`);
+    const pattern = new RegExp(prefix + "send <@!(\d+)> (\d+)");
     const regres = pattern.exec(message.content);
 
     // handle case where pattern fails
