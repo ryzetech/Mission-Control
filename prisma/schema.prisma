@@ -19,7 +19,7 @@ model User {
   id            String    @id
   money         Float     @default(0)
   eth           Float     @default(0)
-  lastearnstamp DateTime  @default(now())
+  lastearnstamp DateTime  
   isMuted       Boolean   @default(false)
   muteEnd       DateTime?
   updatedAt     DateTime  @updatedAt

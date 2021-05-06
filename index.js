@@ -241,6 +241,7 @@ client.on("message", async (message) => {
       await prisma.user.create({
         data: {
           id: message.author.id,
+          lastearnstamp: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString(),
         },
       });
     }
