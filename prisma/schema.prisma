@@ -16,12 +16,6 @@ enum ROLE {
 }
 
 model User {
-<<<<<<< HEAD
-  id            String   @id
-  money         Float    @default(0)
-  eth           Float    @default(0)
-  lastearnstamp DateTime @default(now())
-=======
   id            String    @id
   money         Float     @default(0)
   eth           Float     @default(0)
@@ -30,5 +24,4 @@ model User {
   muteEnd       DateTime?
   updatedAt     DateTime  @updatedAt
   createdAt     DateTime  @default(now())
->>>>>>> 769b5332bcecd5aa5d500cdba092dd97d1ff1ec2
 }

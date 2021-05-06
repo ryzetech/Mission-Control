@@ -48,11 +48,7 @@ const botCacheStorage = new NodeCache();
 // import { PrismaClient } from "@prisma/client";
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
-<<<<<<< HEAD
-      log: ["query", "info", `warn`, `error`],
-=======
   log: ["query", "info", `warn`, `error`],
->>>>>>> 769b5332bcecd5aa5d500cdba092dd97d1ff1ec2
 });
 // -> why? NOde
 
@@ -109,8 +105,6 @@ function timediff(timestamp1ornow, timestamp2, short) {
   if (short) return `${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
   else
     return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
-<<<<<<< HEAD
-=======
 }
 
 // Check if user is still on server, if not remove from db
@@ -121,7 +115,6 @@ async function checkUserIsStillHere(usr, usrCheck, timeOffset = 10) {
   }
 
   return true;
->>>>>>> 769b5332bcecd5aa5d500cdba092dd97d1ff1ec2
 }
 
 // timed task executor for fetching market data from the CoinGecko API
@@ -1412,13 +1405,9 @@ client.on("message", async (message) => {
           .setColor(embedColorFail)
           .setAuthor("Coin System", embedPB)
           .setTitle("❌ Syntax mistake!")
-<<<<<<< HEAD
-          .setDescription("Sytntax is `"+prefix+"send @<user_to_send_to> <amount>`")
-=======
           .setDescription(
             "Sytntax is `" + prefix + "send @<user_to_send_to> <amount>`"
           )
->>>>>>> 769b5332bcecd5aa5d500cdba092dd97d1ff1ec2
           .addField(
             "`user_to_send_to`:",
             "This should be the user you want the transaction to go to"
@@ -1597,10 +1586,6 @@ client.on("message", async (message) => {
     );
 
     // i am too stupid to create a leaderboard for combined stats, so i need to split it into cash and eth
-<<<<<<< HEAD
-    let topMoney = await prisma.user.findMany({ orderBy: {money: "desc"}, take: 10 });
-    let topEth = await prisma.user.findMany({ orderBy: {eth: "desc"}, take: 10 });
-=======
     let topMoney = await prisma.user.findMany({
       orderBy: { money: "desc" },
       take: 10,
@@ -1609,33 +1594,10 @@ client.on("message", async (message) => {
       orderBy: { eth: "desc" },
       take: 10,
     });
->>>>>>> 769b5332bcecd5aa5d500cdba092dd97d1ff1ec2
     // thx prisma issue 702!
 
     let topMoneyField = "",
       topEthField = "",
-<<<<<<< HEAD
-      i = 0,
-      usrCheck;
-
-    for (let i in topMoney) {
-      i++;
-      usrCheck = client.users.cache.get(topMoney[i].id);
-      topMoneyField +=
-        "**" + i + ".** " + usrCheck
-          ? usrCheck.tag
-          : "*user left*" + " - " + topMoney[i].money + "$\n";
-    }
-    i = 0;
-    for (let i in topEth) {
-      i++;
-      usrCheck = client.users.cache.get(topEth[i].id);
-      topEthField +=
-        "**" + i + ".** " + usrCheck
-          ? usrCheck.tag
-          : "*user left*" + " - " + topEth[i].eth + "$\n";
-    }
-=======
       usrCheck;
 
     topMoney.forEach((u, i) => {
@@ -1660,7 +1622,6 @@ client.on("message", async (message) => {
         } [${u.eth}eth]\n`;
       }
     });
->>>>>>> 769b5332bcecd5aa5d500cdba092dd97d1ff1ec2
     // we still need checks whether a user is still on the server because we dont delete the user object when they leave
     // TODO do this
 
