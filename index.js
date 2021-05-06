@@ -48,7 +48,7 @@ const botCacheStorage = new NodeCache();
 // import { PrismaClient } from "@prisma/client";
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
-      log: ["query", "info", `warn`, `error`],
+  log: ["query", "info", `warn`, `error`],
 });
 // -> why? NOde
 
@@ -105,6 +105,16 @@ function timediff(timestamp1ornow, timestamp2, short) {
   if (short) return `${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
   else
     return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
+}
+
+// Check if user is still on server, if not remove from db
+async function checkUserIsStillHere(usr, usrCheck, timeOffset = 10) {
+  if (!usrCheck) {
+    if (new Date(usr.updatedAt) < new Date().setDate(new Date() - timeOffset))
+      return false;
+  }
+
+  return true;
 }
 
 // timed task executor for fetching market data from the CoinGecko API
@@ -1395,7 +1405,9 @@ client.on("message", async (message) => {
           .setColor(embedColorFail)
           .setAuthor("Coin System", embedPB)
           .setTitle("❌ Syntax mistake!")
-          .setDescription("Sytntax is `"+prefix+"send @<user_to_send_to> <amount>`")
+          .setDescription(
+            "Sytntax is `" + prefix + "send @<user_to_send_to> <amount>`"
+          )
           .addField(
             "`user_to_send_to`:",
             "This should be the user you want the transaction to go to"
@@ -1574,34 +1586,47 @@ client.on("message", async (message) => {
     );
 
     // i am too stupid to create a leaderboard for combined stats, so i need to split it into cash and eth
-    let topMoney = await prisma.user.findMany({ orderBy: {money: "desc"}, take: 10 });
-    let topEth = await prisma.user.findMany({ orderBy: {eth: "desc"}, take: 10 });
+    let topMoney = await prisma.user.findMany({
+      orderBy: { money: "desc" },
+      take: 10,
+    });
+    let topEth = await prisma.user.findMany({
+      orderBy: { eth: "desc" },
+      take: 10,
+    });
     // thx prisma issue 702!
 
     let topMoneyField = "",
       topEthField = "",
-      i = 0,
       usrCheck;
 
-    for (let i in topMoney) {
-      i++;
-      usrCheck = client.users.cache.get(topMoney[i].id);
-      topMoneyField +=
-        "**" + i + ".** " + usrCheck
-          ? usrCheck.tag
-          : "*user left*" + " - " + topMoney[i].money + "$\n";
-    }
-    i = 0;
-    for (let i in topEth) {
-      i++;
-      usrCheck = client.users.cache.get(topEth[i].id);
-      topEthField +=
-        "**" + i + ".** " + usrCheck
-          ? usrCheck.tag
-          : "*user left*" + " - " + topEth[i].eth + "$\n";
-    }
+    topMoney.forEach((u, i) => {
+      if (u.money == 0) {
+        topMoneyField += "\n";
+      } else {
+        usrCheck = client.users.cache.get(u.id);
+
+        topMoneyField += `**${i + 1}** - ${
+          usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
+        } [${u.money}$]\n`;
+      }
+    });
+    topEth.forEach((u, i) => {
+      if (u.eth == 0) {
+        topEthField += "\n";
+      } else {
+        usrCheck = client.users.cache.get(u.id);
+
+        topEthField += `**${i + 1}** - ${
+          usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
+        } [${u.eth}eth]\n`;
+      }
+    });
     // we still need checks whether a user is still on the server because we dont delete the user object when they leave
     // TODO do this
+
+    if (!topEthField || topEthField == "\n") topEthField = "[NO DATA]";
+    if (!topMoneyField || topMoneyField == "\n") topMoneyField = "[NO DATA]";
 
     sent.edit(
       new Discord.MessageEmbed()
@@ -1618,6 +1643,36 @@ client.on("message", async (message) => {
   }
 
   //// MOD SECTION
+  // old user removal
+  else if (message.content.startsWith(`${prefix}clearOldUsers`)) {
+    if (!message.member.roles.cache.some((role) => modroles.includes(role.id)))
+      return;
+
+    let allUsers = await prisma.user.findMany({});
+    let rmUsers = [];
+
+    allUsers.forEach((u, i) => {
+      if (!checkUserIsStillHere) rmUsers.push(u.id); 
+    })
+
+    const {_count} = await prisma.user.deleteMany({
+      where: {
+        id: {
+          in: rmUsers
+        }
+      }
+    })
+
+    await message.channel.send(
+      new Discord.MessageEmbed()
+        .setColor(embedColorProcessing)
+        .setAuthor("The inactive User vacuum of ", embedPB)
+        .setTitle("REMOVED OLD USERS")
+        .setDescription("Removed [**"+(_count || "0")+"**] Users from database")
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+    );
+  }
   // VS CHECK
   else if (message.content.startsWith(`${prefix}vscheck`)) {
     let usrid;
