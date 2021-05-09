@@ -46,10 +46,12 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
 // import { PrismaClient } from "@prisma/client";
+/*
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
   log: ["query", "info", `warn`, `error`],
 });
+*/
 // -> why? NOde
 
 // config shit
@@ -226,6 +228,7 @@ client.on("guildMemberAdd", async (member) => {
 // TODO this is a big ugly mess! we should switch to caveats => https://discordjs.guide/creating-your-bot/commands-with-user-input.html#caveats
 client.on("message", async (message) => {
   // preventing database checks on bots
+  /*
   if (!message.author.bot) {
     messageCounter++;
 
@@ -246,6 +249,7 @@ client.on("message", async (message) => {
       });
     }
   }
+  */
 
   //// GENERAL SECTION
   // HELP
@@ -926,6 +930,7 @@ client.on("message", async (message) => {
     message.channel.send(msg);
   }
 
+  // GENERAL INFO SECTION
   // HACKER NEWS
   else if (message.content.startsWith(`${prefix}news`)) {
     // displaying procesing message due to long fetch times
@@ -1012,6 +1017,68 @@ client.on("message", async (message) => {
     );
   }
 
+  else if (message.content.startsWith(`${prefix}spacex`)) {
+    let args = message.content.slice(8);
+
+    if (args.startsWith("next")) {
+      let res = await fetch("https://api.spacexdata.com/v4/launches/next");
+      let json = await res.json();
+
+      // prebake the embed for funny stuff
+      let embed = new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("SpaceX - Next Launch", embedPB)
+        .setTitle(json.name)
+        .setThumbnail(
+          json.links.patch.small
+        )
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`);
+
+      if (json.tbd) embed.addField(
+        {
+          name: "Countdown to T-0",
+          value: "TO BE DETERMINED"
+        }
+      );
+      else embed.addField(
+        {
+          name: "Countdown to T-0",
+          value: timediff(
+            json.date_unix,
+            new Date().getTime(),
+            false
+          ) + "\n*Accuracy: to" + json.date_precision + "*",
+          inline: true
+        }
+      );
+
+      
+      // god i hate this notation, it took me five minutes FOR EACH to get them "right"
+
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorStandard)
+          .setAuthor("SpaceX - Next Launch", embedPB)
+          .setTitle(json.name)
+          .setThumbnail(
+            json.links.patch.small
+          )
+          .addFields(
+            {
+              name: "Countdown to T-0",
+              value: timediff(
+                json.date_unix,
+                new Date().getTime(),
+                false
+              ) + "\n*Accuracy: to" + json.date_precision + "*",
+              inline: true
+            },
+          )
+      );
+    }
+  }
+
   //// ECONOMY SECTION
   // ETH
   // note: this is pretty much a "command subcommand" section because i need some subcommands again later for future item buying and selling
@@ -1038,7 +1105,10 @@ client.on("message", async (message) => {
             "*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*"
           )
           .addFields(
-            { name: "Current value", value: stuff.current_price.eur + "€" },
+            { 
+              name: "Current value",
+              value: stuff.current_price.eur + "€"
+            },
             {
               name: "Highest value (24h)",
               value: stuff.high_24h.eur + "€",
@@ -1623,8 +1693,6 @@ client.on("message", async (message) => {
         } [${u.eth}eth]\n`;
       }
     });
-    // we still need checks whether a user is still on the server because we dont delete the user object when they leave
-    // TODO do this
 
     if (!topEthField || topEthField == "\n") topEthField = "[NO DATA]";
     if (!topMoneyField || topMoneyField == "\n") topMoneyField = "[NO DATA]";
