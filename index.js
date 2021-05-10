@@ -1154,7 +1154,7 @@ client.on("message", async (message) => {
           .setAuthor("Stonk Info", embedPB)
           .setTitle("Banano Stats")
           .setThumbnail(
-            "https://s2.coinmarketcap.com/static/img/coins/200x200/4704.png"
+            "https://tenor.com/bm6cW.gif"
           )
           .setDescription(
             "*Note: The data displayed here can be delayed by up to five minutes.*"
