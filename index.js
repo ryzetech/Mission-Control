@@ -296,6 +296,16 @@ client.on("message", async (message) => {
             value:
               "Modifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with **avatarmod filters**.",
           },
+          {
+            name: "news",
+            value:
+              "Get fresh news from yCombinator! (we can't gurantee freshness)",
+          },
+          {
+            name: "spacex",
+            value:
+              "Read more about the latest or next launch by SpaceX (because Jeff Who?)",
+          },
           { name: "\u200b", value: "\u200b" },
           {
             name: "balance [user ping]",
@@ -305,7 +315,7 @@ client.on("message", async (message) => {
           {
             name: "leaderboard",
             value:
-              "Shows the current leaderboard of all users by net value (cash and eth combined).",
+              "Shows the current leaderboard of all users by net value (cash and eth seperate).",
           },
           { name: "work", value: "You can get free money every 24 hours!" },
           {
@@ -1023,6 +1033,26 @@ client.on("message", async (message) => {
 
     if (args.startsWith("next")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/next");
     else if (args.startsWith("latest")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/latest");
+    else {
+      message.channel.send(
+        new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("❌ Syntax error!", embedPB)
+        .setDescription("There are multiple subcommands:")
+        .addFields(
+          {
+            name: "spacex next",
+            value: "Gets info about the next launch"
+          },
+          {
+            name: "spacex latest",
+            value: "Gets info about the last launch"
+          }
+        )
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
     let mission_json = await mission_res.json();
 
     // millis conversion
