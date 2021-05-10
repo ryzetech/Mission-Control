@@ -46,10 +46,12 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
 // import { PrismaClient } from "@prisma/client";
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
   log: ["query", "info", `warn`, `error`],
 });
+
 // -> why? NOde
 
 // config shit
@@ -256,8 +258,8 @@ client.on("message", async (message) => {
         .setAuthor("Help", embedPB)
         .setDescription(
           "Prefix: " +
-            prefix +
-            "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but are not required.\noh and please leave out the brackets"
+          prefix +
+          "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but are not required.\noh and please leave out the brackets"
         )
         .setThumbnail(embedPB)
         .addFields(
@@ -292,6 +294,16 @@ client.on("message", async (message) => {
             value:
               "Modifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with **avatarmod filters**.",
           },
+          {
+            name: "news",
+            value:
+              "Get fresh news from yCombinator! (we can't gurantee freshness)",
+          },
+          {
+            name: "spacex",
+            value:
+              "Read more about the latest or next launch by SpaceX (because Jeff Who?)",
+          },
           { name: "\u200b", value: "\u200b" },
           {
             name: "balance [user ping]",
@@ -301,9 +313,12 @@ client.on("message", async (message) => {
           {
             name: "leaderboard",
             value:
-              "Shows the current leaderboard of all users by net value (cash and eth combined).",
+              "Shows the current leaderboard of all users by net value (cash and eth seperate).",
           },
-          { name: "work", value: "You can get free money every 24 hours!" },
+          {
+            name: "work",
+            value: "You can get free money every 24 hours!"
+          },
           {
             name: "send <user ping> <amount>",
             value:
@@ -315,7 +330,10 @@ client.on("message", async (message) => {
               "You can trade Ethereum in a simulated environment. Execute this command to get more info on what you can do with it.",
           },
           { name: "\u200b", value: "\u200b" },
-          { name: "info", value: "Shows some information on the bot" }
+          {
+            name: "info",
+            value: "Shows some information on the bot"
+          }
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
@@ -484,8 +502,8 @@ client.on("message", async (message) => {
           .setTitle("❌ Error")
           .setDescription(
             "That animal isn't available in our database (yet)\nCheck **" +
-              prefix +
-              "animal list** for a list of all animals!"
+            prefix +
+            "animal list** for a list of all animals!"
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
@@ -547,7 +565,7 @@ client.on("message", async (message) => {
           evoLine += i == 0 ? "" : " => ";
           evoLine +=
             json.family.evolutionLine[i] ===
-            json.name.charAt(0).toUpperCase() + json.name.slice(1)
+              json.name.charAt(0).toUpperCase() + json.name.slice(1)
               ? "**" + json.family.evolutionLine[i] + "**"
               : json.family.evolutionLine[i];
         }
@@ -623,11 +641,11 @@ client.on("message", async (message) => {
       );
       console.error(
         'ERR [EXEC] "' +
-          message.content +
-          '" - Error: "' +
-          error.message +
-          '" - Link: https://some-random-api.ml/pokedex?pokemon=' +
-          encodeURIComponent(arg)
+        message.content +
+        '" - Error: "' +
+        error.message +
+        '" - Link: https://some-random-api.ml/pokedex?pokemon=' +
+        encodeURIComponent(arg)
       );
     }
     message.channel.stopTyping();
@@ -689,12 +707,12 @@ client.on("message", async (message) => {
             namelist +=
               i == 0
                 ? json.name_history[i].name +
-                  "\n-> " +
-                  json.name_history[i].changedToAt
+                "\n-> " +
+                json.name_history[i].changedToAt
                 : "\n\n" +
-                  json.name_history[i].name +
-                  "\n-> " +
-                  json.name_history[i].changedToAt;
+                json.name_history[i].name +
+                "\n-> " +
+                json.name_history[i].changedToAt;
 
           // wrap shit into codebox
           namelist = "```" + namelist + "```";
@@ -747,11 +765,11 @@ client.on("message", async (message) => {
       );
       console.error(
         'ERR [EXEC] "' +
-          message.content +
-          '" - Error: "' +
-          error.message +
-          '" - Link: https://some-random-api.ml/mc?username=' +
-          encodeURIComponent(arg)
+        message.content +
+        '" - Error: "' +
+        error.message +
+        '" - Link: https://some-random-api.ml/mc?username=' +
+        encodeURIComponent(arg)
       );
     }
     message.channel.stopTyping();
@@ -914,10 +932,10 @@ client.on("message", async (message) => {
         .setAuthor("❌ Syntax mistake!", embedPB)
         .setDescription(
           "Either you didn't specify a filter, or the one specified wasn't found.\n**To get a list with all filters, type '" +
-            prefix +
-            "avmod filters'.**\n\n*Usage: " +
-            prefix +
-            "avmod <filter> [User Ping]*"
+          prefix +
+          "avmod filters'.**\n\n*Usage: " +
+          prefix +
+          "avmod <filter> [User Ping]*"
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
@@ -926,6 +944,7 @@ client.on("message", async (message) => {
     message.channel.send(msg);
   }
 
+  // GENERAL INFO SECTION
   // HACKER NEWS
   else if (message.content.startsWith(`${prefix}news`)) {
     // displaying procesing message due to long fetch times
@@ -957,8 +976,8 @@ client.on("message", async (message) => {
       if (!success) {
         console.error(
           'ERR [EXEC] "' +
-            message.content +
-            '" - Error: Cache error! Failed to get hackernews top stories'
+          message.content +
+          '" - Error: Cache error! Failed to get hackernews top stories'
         );
       }
     }
@@ -985,8 +1004,8 @@ client.on("message", async (message) => {
         if (!success) {
           console.error(
             'ERR [EXEC] "' +
-              message.content +
-              `\" - Error: Cache error! Failed to get hackernews item [${i}]`
+            message.content +
+            `\" - Error: Cache error! Failed to get hackernews item [${i}]`
           );
         }
       }
@@ -1010,6 +1029,115 @@ client.on("message", async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
+  }
+
+  else if (message.content.startsWith(`${prefix}spacex`)) {
+    let args = message.content.slice(8);
+    let mission_res;
+
+    if (args.startsWith("next")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/next");
+    else if (args.startsWith("latest")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/latest");
+    else {
+      message.channel.send(
+        new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("❌ Syntax error!", embedPB)
+        .setDescription("There are multiple subcommands:")
+        .addFields(
+          {
+            name: "spacex next",
+            value: "Gets info about the next launch"
+          },
+          {
+            name: "spacex latest",
+            value: "Gets info about the last launch"
+          }
+        )
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+    let mission_json = await mission_res.json();
+
+    // millis conversion
+    mission_json.date_unix = mission_json.date_unix * 1000;
+
+    // prebake the embed for funny stuff
+    let embed = new Discord.MessageEmbed()
+      .setColor(embedColorStandard)
+      .setAuthor("SpaceX - Launch", embedPB)
+      .setTitle(mission_json.name)
+      .setThumbnail(
+        mission_json.links.patch.small
+      )
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`);
+
+    // funny info checks and validation
+    if (!mission_json.details) embed.setDescription("No description available");
+    else embed.setDescription(mission_json.details);
+
+    // countdown check
+    if (mission_json.tbd) embed.addFields(
+      {
+        name: "Countdown to T-0",
+        value: "TO BE DETERMINED",
+      }
+    );
+    else embed.addFields(
+      {
+        name: "Countdown to T-0",
+        value: timediff(
+          mission_json.date_unix,
+          new Date().getTime(),
+          false
+        ) + "\n*Accuracy level: " + mission_json.date_precision + "*",
+      }
+    );
+
+    // booster check
+    if (mission_json.cores[0].core === null) {
+      embed.addFields(
+        {
+          name: "Booster Information",
+          value: "**NO INFORMATION AVAILABLE**",
+        }
+      );
+    } else {
+      let core_res = await fetch("https://api.spacexdata.com/v4/cores/" + mission_json.cores[0].core);
+      let core_json = await core_res.json();
+
+      embed.addFields(
+        {
+          name: "Booster Information",
+          value: `Serial NO: ${core_json.serial}\nReuse Counter: ${core_json.reuse_count}\nLast Update: \`${core_json.last_update}\``,
+        }
+      );
+    }
+
+    // payload check
+    if (mission_json.payloads[0] === null) {
+      embed.addFields(
+        {
+          name: "Payload Information",
+          value: "**NO INFORMATION AVAILABLE**",
+        }
+      );
+    } else {
+      let payload_res = await fetch("https://api.spacexdata.com/v4/payloads/" + mission_json.payloads[0]);
+      let payload_json = await payload_res.json();
+
+      embed.addFields(
+        {
+          name: "Payload Informatiom",
+          value: `Name: ${payload_json.name}\nType: ${payload_json.type}\nOrbit: ${payload_json.orbit}\nMass: ${payload_json.mass_kg}kg\n`,
+        }
+      );
+    }
+
+    // god i hate this notation, NEVER USE IT AGAIN!
+
+    message.channel.send(embed);
   }
 
   //// ECONOMY SECTION
@@ -1038,7 +1166,10 @@ client.on("message", async (message) => {
             "*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*"
           )
           .addFields(
-            { name: "Current value", value: stuff.current_price.eur + "€" },
+            {
+              name: "Current value",
+              value: stuff.current_price.eur + "€"
+            },
             {
               name: "Highest value (24h)",
               value: stuff.high_24h.eur + "€",
@@ -1607,9 +1738,8 @@ client.on("message", async (message) => {
       } else {
         usrCheck = client.users.cache.get(u.id);
 
-        topMoneyField += `**${i + 1}** - ${
-          usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
-        } [${u.money}$]\n`;
+        topMoneyField += `**${i + 1}** - ${usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
+          } [${u.money}$]\n`;
       }
     });
     topEth.forEach((u, i) => {
@@ -1618,13 +1748,10 @@ client.on("message", async (message) => {
       } else {
         usrCheck = client.users.cache.get(u.id);
 
-        topEthField += `**${i + 1}** - ${
-          usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
-        } [${u.eth}eth]\n`;
+        topEthField += `**${i + 1}** - ${usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
+          } [${u.eth}eth]\n`;
       }
     });
-    // we still need checks whether a user is still on the server because we dont delete the user object when they leave
-    // TODO do this
 
     if (!topEthField || topEthField == "\n") topEthField = "[NO DATA]";
     if (!topMoneyField || topMoneyField == "\n") topMoneyField = "[NO DATA]";
@@ -1653,10 +1780,10 @@ client.on("message", async (message) => {
     let rmUsers = [];
 
     allUsers.forEach((u, i) => {
-      if (!checkUserIsStillHere) rmUsers.push(u.id); 
+      if (!checkUserIsStillHere) rmUsers.push(u.id);
     })
 
-    const {_count} = await prisma.user.deleteMany({
+    const { _count } = await prisma.user.deleteMany({
       where: {
         id: {
           in: rmUsers
@@ -1669,7 +1796,7 @@ client.on("message", async (message) => {
         .setColor(embedColorProcessing)
         .setAuthor("The inactive User vacuum of ", embedPB)
         .setTitle("REMOVED OLD USERS")
-        .setDescription("Removed [**"+(_count || "0")+"**] Users from database")
+        .setDescription("Removed [**" + (_count || "0") + "**] Users from database")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
