@@ -46,12 +46,12 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
 // import { PrismaClient } from "@prisma/client";
-/*
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
   log: ["query", "info", `warn`, `error`],
 });
-*/
+
 // -> why? NOde
 
 // config shit
@@ -228,7 +228,6 @@ client.on("guildMemberAdd", async (member) => {
 // TODO this is a big ugly mess! we should switch to caveats => https://discordjs.guide/creating-your-bot/commands-with-user-input.html#caveats
 client.on("message", async (message) => {
   // preventing database checks on bots
-  /*
   if (!message.author.bot) {
     messageCounter++;
 
@@ -249,7 +248,6 @@ client.on("message", async (message) => {
       });
     }
   }
-  */
 
   //// GENERAL SECTION
   // HELP
@@ -317,7 +315,10 @@ client.on("message", async (message) => {
             value:
               "Shows the current leaderboard of all users by net value (cash and eth seperate).",
           },
-          { name: "work", value: "You can get free money every 24 hours!" },
+          {
+            name: "work",
+            value: "You can get free money every 24 hours!"
+          },
           {
             name: "send <user ping> <amount>",
             value:
@@ -329,7 +330,10 @@ client.on("message", async (message) => {
               "You can trade Ethereum in a simulated environment. Execute this command to get more info on what you can do with it.",
           },
           { name: "\u200b", value: "\u200b" },
-          { name: "info", value: "Shows some information on the bot" }
+          {
+            name: "info",
+            value: "Shows some information on the bot"
+          }
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
