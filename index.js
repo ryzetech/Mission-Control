@@ -260,8 +260,8 @@ client.on("message", async (message) => {
         .setAuthor("Help", embedPB)
         .setDescription(
           "Prefix: " +
-            prefix +
-            "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but are not required.\noh and please leave out the brackets"
+          prefix +
+          "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but are not required.\noh and please leave out the brackets"
         )
         .setThumbnail(embedPB)
         .addFields(
@@ -488,8 +488,8 @@ client.on("message", async (message) => {
           .setTitle("❌ Error")
           .setDescription(
             "That animal isn't available in our database (yet)\nCheck **" +
-              prefix +
-              "animal list** for a list of all animals!"
+            prefix +
+            "animal list** for a list of all animals!"
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
@@ -551,7 +551,7 @@ client.on("message", async (message) => {
           evoLine += i == 0 ? "" : " => ";
           evoLine +=
             json.family.evolutionLine[i] ===
-            json.name.charAt(0).toUpperCase() + json.name.slice(1)
+              json.name.charAt(0).toUpperCase() + json.name.slice(1)
               ? "**" + json.family.evolutionLine[i] + "**"
               : json.family.evolutionLine[i];
         }
@@ -627,11 +627,11 @@ client.on("message", async (message) => {
       );
       console.error(
         'ERR [EXEC] "' +
-          message.content +
-          '" - Error: "' +
-          error.message +
-          '" - Link: https://some-random-api.ml/pokedex?pokemon=' +
-          encodeURIComponent(arg)
+        message.content +
+        '" - Error: "' +
+        error.message +
+        '" - Link: https://some-random-api.ml/pokedex?pokemon=' +
+        encodeURIComponent(arg)
       );
     }
     message.channel.stopTyping();
@@ -693,12 +693,12 @@ client.on("message", async (message) => {
             namelist +=
               i == 0
                 ? json.name_history[i].name +
-                  "\n-> " +
-                  json.name_history[i].changedToAt
+                "\n-> " +
+                json.name_history[i].changedToAt
                 : "\n\n" +
-                  json.name_history[i].name +
-                  "\n-> " +
-                  json.name_history[i].changedToAt;
+                json.name_history[i].name +
+                "\n-> " +
+                json.name_history[i].changedToAt;
 
           // wrap shit into codebox
           namelist = "```" + namelist + "```";
@@ -751,11 +751,11 @@ client.on("message", async (message) => {
       );
       console.error(
         'ERR [EXEC] "' +
-          message.content +
-          '" - Error: "' +
-          error.message +
-          '" - Link: https://some-random-api.ml/mc?username=' +
-          encodeURIComponent(arg)
+        message.content +
+        '" - Error: "' +
+        error.message +
+        '" - Link: https://some-random-api.ml/mc?username=' +
+        encodeURIComponent(arg)
       );
     }
     message.channel.stopTyping();
@@ -918,10 +918,10 @@ client.on("message", async (message) => {
         .setAuthor("❌ Syntax mistake!", embedPB)
         .setDescription(
           "Either you didn't specify a filter, or the one specified wasn't found.\n**To get a list with all filters, type '" +
-            prefix +
-            "avmod filters'.**\n\n*Usage: " +
-            prefix +
-            "avmod <filter> [User Ping]*"
+          prefix +
+          "avmod filters'.**\n\n*Usage: " +
+          prefix +
+          "avmod <filter> [User Ping]*"
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
@@ -962,8 +962,8 @@ client.on("message", async (message) => {
       if (!success) {
         console.error(
           'ERR [EXEC] "' +
-            message.content +
-            '" - Error: Cache error! Failed to get hackernews top stories'
+          message.content +
+          '" - Error: Cache error! Failed to get hackernews top stories'
         );
       }
     }
@@ -990,8 +990,8 @@ client.on("message", async (message) => {
         if (!success) {
           console.error(
             'ERR [EXEC] "' +
-              message.content +
-              `\" - Error: Cache error! Failed to get hackernews item [${i}]`
+            message.content +
+            `\" - Error: Cache error! Failed to get hackernews item [${i}]`
           );
         }
       }
@@ -1019,57 +1019,91 @@ client.on("message", async (message) => {
 
   else if (message.content.startsWith(`${prefix}spacex`)) {
     let args = message.content.slice(8);
+    let mission_res;
 
-    if (args.startsWith("next")) {
-      let res = await fetch("https://api.spacexdata.com/v4/launches/next");
-      let json = await res.json();
+    if (args.startsWith("next")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/next");
+    else if (args.startsWith("latest")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/latest");
+    let mission_json = await mission_res.json();
 
-      // prebake the embed for funny stuff
-      let embed = new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("SpaceX - Next Launch", embedPB)
-        .setTitle(json.name)
-        .setThumbnail(
-          json.links.patch.small
-        )
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`);
+    // prebake the embed for funny stuff
+    let embed = new Discord.MessageEmbed()
+      .setColor(embedColorStandard)
+      .setAuthor("SpaceX - Next Launch", embedPB)
+      .setTitle(mission_json.name)
+      .setThumbnail(
+        mission_json.links.patch.small
+      )
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`);
 
-      if (json.tbd) embed.addField(
+    // funny info checks and validation
+    if (!mission_json.details) embed.setDescription("No description available");
+    else embed.setDescription(mission_json.details);
+
+    // countdown check
+    if (mission_json.tbd) embed.addField(
+      {
+        name: "Countdown to T-0",
+        value: "TO BE DETERMINED"
+      }
+    );
+    else embed.addField(
+      {
+        name: "Countdown to T-0",
+        value: timediff(
+          mission_json.date_unix,
+          new Date().getTime(),
+          false
+        ) + "\n*Accuracy level: " + mission_json.date_precision + "*",
+        inline: true
+      }
+    );
+
+    // booster check
+    if (!mission_json.cores[0].core) {
+      embed.addField(
         {
-          name: "Countdown to T-0",
-          value: "TO BE DETERMINED"
+          name: "Booster Information",
+          value: "**NO INFORMATION AVAILABLE**"
         }
       );
-      else embed.addField(
+    } else {
+      let core_res = await fetch("https://api.spacexdata.com/v4/cores/" + mission_json.cores[0].core);
+      let core_json = await core_res.json();
+
+      embed.addField(
         {
-          name: "Countdown to T-0",
-          value: timediff(
-            json.date_unix,
-            new Date().getTime(),
-            false
-          ) + "\n*Accuracy: to" + json.date_precision + "*",
+          name: "Booster Information",
+          value: `Serial NO: ${core_json.serial}\nReuse Counter: ${core_json.reuse_count}\nLast Update: \`${core_json.last_update}\``,
           inline: true
         }
       );
+    }
 
-      
-      // god i hate this notation, it took me five minutes FOR EACH to get them "right"
+    // payload check
+    if (!mission_json.payloads[0]) {
+      embed.addField(
+        {
+          name: "Payload Information",
+          value: "**NO INFORMATION AVAILABLE**"
+        }
+      );
+    } else {
+      let payload_res = await fetch("https://api.spacexdata.com/v4/cores/" + mission_json.cores[0].core);
+      let payload_json = await payload_res.json();
 
-      message.channel.send(
-        new Discord.MessageEmbed()
-          .setColor(embedColorStandard)
-          .setAuthor("SpaceX - Next Launch", embedPB)
-          .setTitle(json.name)
-          .setThumbnail(
-            json.links.patch.small
-          )
-          .addFields(
-            {
-            }
-          )
+      embed.addField(
+        {
+          name: "Payload Informatiom",
+          value: `Name: ${payload_json.name}\nType: ${payload_json.type}Orbit: ${payload_json.orbit}\nMass: ${payload_json.mass_kg}\n`,
+          inline: true
+        }
       );
     }
+
+    // god i hate this notation, NEVER USE IT AGAIN!
+
+    message.channel.send(embed);
   }
 
   //// ECONOMY SECTION
@@ -1098,7 +1132,7 @@ client.on("message", async (message) => {
             "*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*"
           )
           .addFields(
-            { 
+            {
               name: "Current value",
               value: stuff.current_price.eur + "€"
             },
@@ -1670,9 +1704,8 @@ client.on("message", async (message) => {
       } else {
         usrCheck = client.users.cache.get(u.id);
 
-        topMoneyField += `**${i + 1}** - ${
-          usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
-        } [${u.money}$]\n`;
+        topMoneyField += `**${i + 1}** - ${usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
+          } [${u.money}$]\n`;
       }
     });
     topEth.forEach((u, i) => {
@@ -1681,9 +1714,8 @@ client.on("message", async (message) => {
       } else {
         usrCheck = client.users.cache.get(u.id);
 
-        topEthField += `**${i + 1}** - ${
-          usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
-        } [${u.eth}eth]\n`;
+        topEthField += `**${i + 1}** - ${usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
+          } [${u.eth}eth]\n`;
       }
     });
 
@@ -1714,10 +1746,10 @@ client.on("message", async (message) => {
     let rmUsers = [];
 
     allUsers.forEach((u, i) => {
-      if (!checkUserIsStillHere) rmUsers.push(u.id); 
+      if (!checkUserIsStillHere) rmUsers.push(u.id);
     })
 
-    const {_count} = await prisma.user.deleteMany({
+    const { _count } = await prisma.user.deleteMany({
       where: {
         id: {
           in: rmUsers
@@ -1730,7 +1762,7 @@ client.on("message", async (message) => {
         .setColor(embedColorProcessing)
         .setAuthor("The inactive User vacuum of ", embedPB)
         .setTitle("REMOVED OLD USERS")
-        .setDescription("Removed [**"+(_count || "0")+"**] Users from database")
+        .setDescription("Removed [**" + (_count || "0") + "**] Users from database")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
