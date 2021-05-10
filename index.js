@@ -1047,7 +1047,7 @@ client.on("message", async (message) => {
     if (mission_json.tbd) embed.addFields(
       {
         name: "Countdown to T-0",
-        value: "TO BE DETERMINED"
+        value: "TO BE DETERMINED",
       }
     );
     else embed.addFields(
@@ -1058,7 +1058,6 @@ client.on("message", async (message) => {
           new Date().getTime(),
           false
         ) + "\n*Accuracy level: " + mission_json.date_precision + "*",
-        inline: true
       }
     );
 
@@ -1067,7 +1066,7 @@ client.on("message", async (message) => {
       embed.addFields(
         {
           name: "Booster Information",
-          value: "**NO INFORMATION AVAILABLE**"
+          value: "**NO INFORMATION AVAILABLE**",
         }
       );
     } else {
@@ -1078,7 +1077,6 @@ client.on("message", async (message) => {
         {
           name: "Booster Information",
           value: `Serial NO: ${core_json.serial}\nReuse Counter: ${core_json.reuse_count}\nLast Update: \`${core_json.last_update}\``,
-          inline: true
         }
       );
     }
@@ -1088,7 +1086,7 @@ client.on("message", async (message) => {
       embed.addFields(
         {
           name: "Payload Information",
-          value: "**NO INFORMATION AVAILABLE**"
+          value: "**NO INFORMATION AVAILABLE**",
         }
       );
     } else {
@@ -1099,7 +1097,6 @@ client.on("message", async (message) => {
         {
           name: "Payload Informatiom",
           value: `Name: ${payload_json.name}\nType: ${payload_json.type}\nOrbit: ${payload_json.orbit}\nMass: ${payload_json.mass_kg}kg\n`,
-          inline: true
         }
       );
     }
