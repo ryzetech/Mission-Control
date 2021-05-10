@@ -1154,7 +1154,7 @@ client.on("message", async (message) => {
           .setAuthor("Stonk Info", embedPB)
           .setTitle("Banano Stats")
           .setThumbnail(
-            "https://tenor.com/bm6cW.gif"
+            "https://i.ryzetech.live/banana.gif"
           )
           .setDescription(
             "*Note: The data displayed here can be delayed by up to five minutes.*"
