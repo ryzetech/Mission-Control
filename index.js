@@ -1025,10 +1025,13 @@ client.on("message", async (message) => {
     else if (args.startsWith("latest")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/latest");
     let mission_json = await mission_res.json();
 
+    // millis conversion
+    mission_json.date_unix = mission_json.date_unix * 1000;
+
     // prebake the embed for funny stuff
     let embed = new Discord.MessageEmbed()
       .setColor(embedColorStandard)
-      .setAuthor("SpaceX - Next Launch", embedPB)
+      .setAuthor("SpaceX - Launch", embedPB)
       .setTitle(mission_json.name)
       .setThumbnail(
         mission_json.links.patch.small
@@ -1041,13 +1044,13 @@ client.on("message", async (message) => {
     else embed.setDescription(mission_json.details);
 
     // countdown check
-    if (mission_json.tbd) embed.addField(
+    if (mission_json.tbd) embed.addFields(
       {
         name: "Countdown to T-0",
         value: "TO BE DETERMINED"
       }
     );
-    else embed.addField(
+    else embed.addFields(
       {
         name: "Countdown to T-0",
         value: timediff(
@@ -1060,8 +1063,8 @@ client.on("message", async (message) => {
     );
 
     // booster check
-    if (!mission_json.cores[0].core) {
-      embed.addField(
+    if (mission_json.cores[0].core === null) {
+      embed.addFields(
         {
           name: "Booster Information",
           value: "**NO INFORMATION AVAILABLE**"
@@ -1071,7 +1074,7 @@ client.on("message", async (message) => {
       let core_res = await fetch("https://api.spacexdata.com/v4/cores/" + mission_json.cores[0].core);
       let core_json = await core_res.json();
 
-      embed.addField(
+      embed.addFields(
         {
           name: "Booster Information",
           value: `Serial NO: ${core_json.serial}\nReuse Counter: ${core_json.reuse_count}\nLast Update: \`${core_json.last_update}\``,
@@ -1081,21 +1084,21 @@ client.on("message", async (message) => {
     }
 
     // payload check
-    if (!mission_json.payloads[0]) {
-      embed.addField(
+    if (mission_json.payloads[0] === null) {
+      embed.addFields(
         {
           name: "Payload Information",
           value: "**NO INFORMATION AVAILABLE**"
         }
       );
     } else {
-      let payload_res = await fetch("https://api.spacexdata.com/v4/cores/" + mission_json.cores[0].core);
+      let payload_res = await fetch("https://api.spacexdata.com/v4/payloads/" + mission_json.payloads[0]);
       let payload_json = await payload_res.json();
 
-      embed.addField(
+      embed.addFields(
         {
           name: "Payload Informatiom",
-          value: `Name: ${payload_json.name}\nType: ${payload_json.type}Orbit: ${payload_json.orbit}\nMass: ${payload_json.mass_kg}\n`,
+          value: `Name: ${payload_json.name}\nType: ${payload_json.type}\nOrbit: ${payload_json.orbit}\nMass: ${payload_json.mass_kg}kg\n`,
           inline: true
         }
       );
