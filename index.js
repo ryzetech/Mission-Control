@@ -1141,6 +1141,58 @@ client.on("message", async (message) => {
   }
 
   //// ECONOMY SECTION
+  // BANANO
+  else if (message.content.startsWith(`${prefix}banano`)) {
+    CoinGeckoClient.coins
+    .fetch("banano", {})
+    .then((d) => {
+      let stuff = d.data.market_data;
+
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorStandard)
+          .setAuthor("Stonk Info", embedPB)
+          .setTitle("Banano Stats")
+          .setThumbnail(
+            "https://s2.coinmarketcap.com/static/img/coins/200x200/4704.png"
+          )
+          .setDescription(
+            "*Note: The data displayed here can be delayed by up to five minutes.*"
+          )
+          .addFields(
+            {
+              name: "Current value",
+              value: stuff.current_price.eur + "€"
+            },
+            {
+              name: "Highest value (24h)",
+              value: stuff.high_24h.eur + "€",
+              inline: true,
+            },
+            {
+              name: "Lowest value (24h)",
+              value: stuff.low_24h.eur + "€",
+              inline: true,
+            },
+            {
+              name: "Change (24h)",
+              value: stuff.price_change_percentage_24h.toFixed(2) + "%",
+            }
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+    })
+    .catch((error) => {
+      console.error(
+        'ERR [EXEC] "' +
+        message.content +
+        '" - Error: "' +
+        error.message
+      );
+    });
+  }
+
   // ETH
   // note: this is pretty much a "command subcommand" section because i need some subcommands again later for future item buying and selling
   else if (message.content.startsWith(`${prefix}eth`)) {
