@@ -1066,14 +1066,7 @@ client.on("message", async (message) => {
           )
           .addFields(
             {
-              name: "Countdown to T-0",
-              value: timediff(
-                json.date_unix,
-                new Date().getTime(),
-                false
-              ) + "\n*Accuracy: to" + json.date_precision + "*",
-              inline: true
-            },
+            }
           )
       );
     }
