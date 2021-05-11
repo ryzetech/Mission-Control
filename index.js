@@ -77,7 +77,7 @@ var messageCounter = 0;
 var joinCounter = 0;
 
 // init vars for coingecko stuff
-var market;
+var market, eth_badge;
 var price = 0;
 
 const startDate = new Date();
@@ -124,6 +124,7 @@ function fetchdata() {
   CoinGeckoClient.coins
     .fetch("ethereum", {})
     .then((d) => {
+      eth_badge = d.data.image.large;
       market = d.data.market_data;
       price = market.current_price.eur;
     })
@@ -1040,21 +1041,21 @@ client.on("message", async (message) => {
     else {
       message.channel.send(
         new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("❌ Syntax error!", embedPB)
-        .setDescription("There are multiple subcommands:")
-        .addFields(
-          {
-            name: "spacex next",
-            value: "Gets info about the next launch"
-          },
-          {
-            name: "spacex latest",
-            value: "Gets info about the last launch"
-          }
-        )
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
+          .setColor(embedColorStandard)
+          .setAuthor("❌ Syntax error!", embedPB)
+          .setDescription("There are multiple subcommands:")
+          .addFields(
+            {
+              name: "spacex next",
+              value: "Gets info about the next launch"
+            },
+            {
+              name: "spacex latest",
+              value: "Gets info about the last launch"
+            }
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
       );
     }
     let mission_json = await mission_res.json();
@@ -1144,53 +1145,106 @@ client.on("message", async (message) => {
   // BANANO
   else if (message.content.startsWith(`${prefix}banano`)) {
     CoinGeckoClient.coins
-    .fetch("banano", {})
-    .then((d) => {
-      let stuff = d.data.market_data;
+      .fetch("banano", {})
+      .then((d1) => {
+        let stuff = d1.data.market_data;
+        let ban_img = d1.data.image.large;
 
-      message.channel.send(
-        new Discord.MessageEmbed()
-          .setColor(embedColorStandard)
-          .setAuthor("Stonk Info", embedPB)
-          .setTitle("Banano Stats")
-          .setThumbnail(
-            "https://i.ryzetech.live/banana.gif"
-          )
-          .setDescription(
-            "*Note: The data displayed here can be delayed by up to five minutes.*"
-          )
-          .addFields(
-            {
-              name: "Current value",
-              value: stuff.current_price.eur + "€"
-            },
-            {
-              name: "Highest value (24h)",
-              value: stuff.high_24h.eur + "€",
-              inline: true,
-            },
-            {
-              name: "Lowest value (24h)",
-              value: stuff.low_24h.eur + "€",
-              inline: true,
-            },
-            {
-              name: "Change (24h)",
-              value: stuff.price_change_percentage_24h.toFixed(2) + "%",
-            }
-          )
-          .setTimestamp()
-          .setFooter(`Requested by ${message.author.tag}`)
-      );
-    })
-    .catch((error) => {
-      console.error(
-        'ERR [EXEC] "' +
-        message.content +
-        '" - Error: "' +
-        error.message
-      );
-    });
+        CoinGeckoClient.coins // yes we need this
+          .fetchMarketChart("banano", { vs_currency: "eur", days: "1" })
+          .then((d2) => {
+            let prices = d2.data.prices; // get data list
+
+            let highest, lowest, counter = 0;
+            prices.forEach(element => {
+
+              if (counter === 0) { // set level values
+                lowest = element[1];
+                highest = element[1];
+                data += element[1];
+              }
+              else { // level out graph dimensions
+                if (element[1] > highest) highest = element[1];
+                else if (element[1] < lowest) lowest = element[1];
+
+                data += "," + element[1]; // generate data
+              }
+
+              counter++;
+            });
+            // expand graph view
+            highest += 0.001;
+            lowest -= 0.001;
+
+            let img = ImageCharts() // i know that this is horrible but yolo
+              .cht("ls")                                                  // chart type
+              .chf("bg,s,2f313600")                                       // background (alpha set to 0, can be changed later)
+              .chxt("y")                                                  // visible axis
+              .chxs("0,FFFFFF")                                           // axis color
+              .chxr("0," + lowest.toFixed(3) + "," + highest.toFixed(3))  // axis range
+              .chg("0,50,1,1,FFFFFF")                                     // grid style
+              .chtt("Banano 24h €")                                       // title
+              .chts("FFFFFF,25")                                          // title style
+              .chls("2")                                                  // graph thickness
+              .chco("D7BB00")                                             // graph style
+              .chd(data)                                                  // data
+              .chs("999x500");                                            // image size
+
+            img.toFile("./data/graph_ban.png"); // save the image
+
+            message.channel.send(
+              new Discord.MessageEmbed()
+                .setColor(embedColorStandard)
+                .setAuthor("Stonk Info", embedPB)
+                .setTitle("Banano Stats")
+                .setThumbnail(ban_img)
+                .setImage(
+                  "https://botdata.ryzetech.live/graph_ban.png"
+                )
+                .setDescription(
+                  "*Note: The data displayed here can be delayed by up to five minutes.*"
+                )
+                .addFields(
+                  {
+                    name: "Current value",
+                    value: stuff.current_price.eur + "€"
+                  },
+                  {
+                    name: "Highest value (24h)",
+                    value: stuff.high_24h.eur + "€",
+                    inline: true,
+                  },
+                  {
+                    name: "Lowest value (24h)",
+                    value: stuff.low_24h.eur + "€",
+                    inline: true,
+                  },
+                  {
+                    name: "Change (24h)",
+                    value: stuff.price_change_percentage_24h.toFixed(2) + "%",
+                  }
+                )
+                .setTimestamp()
+                .setFooter(`Requested by ${message.author.tag}`)
+            );
+          })
+          .catch((error) => {
+            console.error(
+              'ERR [EXEC] "' +
+              message.content +
+              '" - Error: "' +
+              error.message
+            );
+          })
+          .catch((error) => {
+            console.error(
+              'ERR [EXEC] "' +
+              message.content +
+              '" - Error: "' +
+              error.message
+            );
+          });
+      });
   }
 
   // ETH
@@ -1206,40 +1260,90 @@ client.on("message", async (message) => {
 
     // CURRENT STATS
     if (args.startsWith("stats")) {
-      message.channel.send(
-        new Discord.MessageEmbed()
-          .setColor(embedColorStandard)
-          .setAuthor("Coin System", embedPB)
-          .setTitle("Ethereum Stats")
-          .setThumbnail(
-            "http://www.vectorico.com/download/cryptocurrency/ethereum-icon.png"
-          )
-          .setDescription(
-            "*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*"
-          )
-          .addFields(
-            {
-              name: "Current value",
-              value: stuff.current_price.eur + "€"
-            },
-            {
-              name: "Highest value (24h)",
-              value: stuff.high_24h.eur + "€",
-              inline: true,
-            },
-            {
-              name: "Lowest value (24h)",
-              value: stuff.low_24h.eur + "€",
-              inline: true,
-            },
-            {
-              name: "Change (24h)",
-              value: stuff.price_change_percentage_24h.toFixed(2) + "%",
+      // please check the banano method for documentation, i hate this
+      CoinGeckoClient.coins
+        .fetchMarketChart("ethereum", { vs_currency: "eur", days: "1" })
+        .then((d2) => {
+          let prices = d2.data.prices;
+
+          let highest, lowest, counter = 0;
+          prices.forEach(element => {
+
+            if (counter === 0) {
+              lowest = element[1];
+              highest = element[1];
+              data += element[1];
             }
-          )
-          .setTimestamp()
-          .setFooter(`Requested by ${message.author.tag}`)
-      );
+            else {
+              if (element[1] > highest) highest = element[1];
+              else if (element[1] < lowest) lowest = element[1];
+
+              data += "," + element[1];
+            }
+
+            counter++;
+          });
+          highest += 0.001;
+          lowest -= 0.001;
+
+          let img = ImageCharts() // i know that this is horrible but yolo
+            .cht("ls")                                                  // chart type
+            .chf("bg,s,2f313600")                                       // background (alpha set to 0, can be changed later)
+            .chxt("y")                                                  // visible axis
+            .chxs("0,FFFFFF")                                           // axis color
+            .chxr("0," + lowest.toFixed(3) + "," + highest.toFixed(3))  // axis range
+            .chg("0,50,1,1,FFFFFF")                                     // grid style
+            .chtt("Banano 24h €")                                       // title
+            .chts("FFFFFF,25")                                          // title style
+            .chls("2")                                                  // graph thickness
+            .chco("8B93B3")                                             // graph style
+            .chd(data)                                                  // data
+            .chs("999x500");                                            // image size
+
+          img.toFile("./data/graph_eth.png");
+
+          message.channel.send(
+            new Discord.MessageEmbed()
+              .setColor(embedColorStandard)
+              .setAuthor("Coin System", embedPB)
+              .setTitle("Ethereum Stats")
+              .setThumbnail(eth_badge)
+              .setImage("https://botdata.ryzetech.live/grapth_eth.png")
+              .setDescription(
+                "*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*"
+              )
+              .addFields(
+                {
+                  name: "Current value",
+                  value: stuff.current_price.eur + "€"
+                },
+                {
+                  name: "Highest value (24h)",
+                  value: stuff.high_24h.eur + "€",
+                  inline: true,
+                },
+                {
+                  name: "Lowest value (24h)",
+                  value: stuff.low_24h.eur + "€",
+                  inline: true,
+                },
+                {
+                  name: "Change (24h)",
+                  value: stuff.price_change_percentage_24h.toFixed(2) + "%",
+                }
+              )
+              .setTimestamp()
+              .setFooter(`Requested by ${message.author.tag}`)
+          );
+        })
+        .catch((error) => {
+          console.error(
+            'ERR [EXEC] "' +
+            message.content +
+            '" - Error: "' +
+            error.message
+          );
+        });
     }
 
     // BUY FOR AMOUNT
