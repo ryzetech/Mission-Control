@@ -1308,7 +1308,7 @@ client.on("message", async (message) => {
               .setAuthor("Coin System", embedPB)
               .setTitle("Ethereum Stats")
               .setThumbnail(eth_badge)
-              .attachFiles(["./data/grapth_eth.png"])
+              .attachFiles(["./data/graph_eth.png"])
                 .setImage(
                   "attachment://graph_eth.png"
                 )
