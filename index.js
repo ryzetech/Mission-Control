@@ -1189,7 +1189,7 @@ client.on("message", async (message) => {
               .chd(plotdata)                                              // data
               .chs("999x500");                                            // image size
 
-            img.toFile("./data/graph_ban.png"); // save the image
+            await img.toFile("./data/graph_ban.png"); // save the image
 
             message.channel.send(
               new Discord.MessageEmbed()
