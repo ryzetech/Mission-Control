@@ -1197,7 +1197,7 @@ client.on("message", async (message) => {
                 .setAuthor("Stonk Info", embedPB)
                 .setTitle("Banano Stats")
                 .setThumbnail(ban_img)
-                .attachFiles(["./data/grapth_ban.png"])
+                .attachFiles(["./data/graph_ban.png"])
                 .setImage(
                   "attachment://graph_ban.png"
                 )
