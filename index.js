@@ -1146,7 +1146,6 @@ client.on("message", async (message) => {
     CoinGeckoClient.coins
       .fetch("banano", {})
       .then((d1) => {
-        console.log(d1.data);
         let stuff = d1.data.market_data;
         let ban_img = d1.data.image.large;
 
