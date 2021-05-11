@@ -1186,7 +1186,7 @@ client.on("message", async (message) => {
               .chts("FFFFFF,25")                                          // title style
               .chls("2")                                                  // graph thickness
               .chco("D7BB00")                                             // graph style
-              .chd(plotdata)                                                  // data
+              .chd(plotdata)                                              // data
               .chs("999x500");                                            // image size
 
             img.toFile("./data/graph_ban.png"); // save the image
@@ -1292,11 +1292,11 @@ client.on("message", async (message) => {
             .chxs("0,FFFFFF")                                           // axis color
             .chxr("0," + lowest.toFixed(3) + "," + highest.toFixed(3))  // axis range
             .chg("0,50,1,1,FFFFFF")                                     // grid style
-            .chtt("Banano 24h €")                                       // title
+            .chtt("Ethereum 24h €")                                     // title
             .chts("FFFFFF,25")                                          // title style
             .chls("2")                                                  // graph thickness
             .chco("8B93B3")                                             // graph style
-            .chd(plotdata)                                                  // data
+            .chd(plotdata)                                              // data
             .chs("999x500");                                            // image size
 
           img.toFile("./data/graph_eth.png");
@@ -1307,7 +1307,7 @@ client.on("message", async (message) => {
               .setAuthor("Coin System", embedPB)
               .setTitle("Ethereum Stats")
               .setThumbnail(eth_badge)
-              .setImage("https://botdata.ryzetech.live/grapth_eth.png")
+              .setImage("https://botdata.ryzetech.live/graph_eth.png")
               .setDescription(
                 "*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*"
               )
