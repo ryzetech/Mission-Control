@@ -1197,9 +1197,8 @@ client.on("message", async (message) => {
                 .setAuthor("Stonk Info", embedPB)
                 .setTitle("Banano Stats")
                 .setThumbnail(ban_img)
-                .attachFiles(["data/graph_ban.png"])
                 .setImage(
-                  "attachment://graph_ban.png"
+                  "https://botdata.ryzetech.live/graph_ban.png"
                 )
                 .setDescription(
                   "*Note: The data displayed here can be delayed by up to five minutes.*"
@@ -1308,10 +1307,9 @@ client.on("message", async (message) => {
               .setAuthor("Coin System", embedPB)
               .setTitle("Ethereum Stats")
               .setThumbnail(eth_badge)
-              .attachFiles(["./data/graph_eth.png"])
-                .setImage(
-                  "attachment://graph_eth.png"
-                )
+              .setImage(
+                "https://botdata.ryzetech.live/graph_eth.png"
+              )
               .setDescription(
                 "*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*"
               )
