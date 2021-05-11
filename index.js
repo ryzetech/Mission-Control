@@ -1282,8 +1282,8 @@ client.on("message", async (message) => {
 
             counter++;
           });
-          highest += 0.001;
-          lowest -= 0.001;
+          highest += 1;
+          lowest -= 1;
 
           let img = ImageCharts() // i know that this is horrible but yolo
             .cht("ls")                                                  // chart type
