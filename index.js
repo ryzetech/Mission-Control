@@ -45,13 +45,12 @@ const fetch = require("node-fetch");
 const axios = require("axios");
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
+const ImageCharts = require('image-charts');
 // import { PrismaClient } from "@prisma/client";
-
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
   log: ["query", "info", `warn`, `error`],
 });
-
 // -> why? NOde
 
 // config shit
@@ -1156,19 +1155,19 @@ client.on("message", async (message) => {
           .then((d2) => {
             let prices = d2.data.prices; // get data list
 
-            let highest, lowest, counter = 0;
+            let plotdata = "a:", highest, lowest, counter = 0;
             prices.forEach(element => {
 
               if (counter === 0) { // set level values
                 lowest = element[1];
                 highest = element[1];
-                data += element[1];
+                plotdata += element[1];
               }
               else { // level out graph dimensions
                 if (element[1] > highest) highest = element[1];
                 else if (element[1] < lowest) lowest = element[1];
 
-                data += "," + element[1]; // generate data
+                plotdata += "," + element[1]; // generate data
               }
 
               counter++;
@@ -1188,7 +1187,7 @@ client.on("message", async (message) => {
               .chts("FFFFFF,25")                                          // title style
               .chls("2")                                                  // graph thickness
               .chco("D7BB00")                                             // graph style
-              .chd(data)                                                  // data
+              .chd(plotdata)                                                  // data
               .chs("999x500");                                            // image size
 
             img.toFile("./data/graph_ban.png"); // save the image
@@ -1267,19 +1266,19 @@ client.on("message", async (message) => {
         .then((d2) => {
           let prices = d2.data.prices;
 
-          let highest, lowest, counter = 0;
+          let plotdata = "a:", highest, lowest, counter = 0;
           prices.forEach(element => {
 
             if (counter === 0) {
               lowest = element[1];
               highest = element[1];
-              data += element[1];
+              plotdata += element[1];
             }
             else {
               if (element[1] > highest) highest = element[1];
               else if (element[1] < lowest) lowest = element[1];
 
-              data += "," + element[1];
+              plotdata += "," + element[1];
             }
 
             counter++;
@@ -1298,7 +1297,7 @@ client.on("message", async (message) => {
             .chts("FFFFFF,25")                                          // title style
             .chls("2")                                                  // graph thickness
             .chco("8B93B3")                                             // graph style
-            .chd(data)                                                  // data
+            .chd(plotdata)                                                  // data
             .chs("999x500");                                            // image size
 
           img.toFile("./data/graph_eth.png");
