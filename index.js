@@ -1220,7 +1220,7 @@ client.on("message", async (message) => {
               .chd(plotdata)                                              // data
               .chs("999x500");                                            // image size
 
-            img.toFile(`./data/graph_ban_${exectime}.png`); // save the image
+            img.toFile(`/usr/services/Mission-Control/data/graph_ban_${exectime}.png`); // save the image
 
             message.channel.send(
               new Discord.MessageEmbed()
