@@ -229,6 +229,9 @@ client.on("guildMemberAdd", async (member) => {
 // MESSAGE HANDLER
 // TODO this is a big ugly mess! we should switch to caveats => https://discordjs.guide/creating-your-bot/commands-with-user-input.html#caveats
 client.on("message", async (message) => {
+  // some tasks need the time of execution
+  let exectime = new Date().getTime();
+
   // preventing database checks on bots
   if (!message.author.bot) {
     messageCounter++;
@@ -1217,7 +1220,7 @@ client.on("message", async (message) => {
               .chd(plotdata)                                              // data
               .chs("999x500");                                            // image size
 
-            img.toFile("data/graph_ban.png"); // save the image
+            img.toFile(`./data/graph_ban_${exectime}.png`); // save the image
 
             message.channel.send(
               new Discord.MessageEmbed()
@@ -1226,7 +1229,7 @@ client.on("message", async (message) => {
                 .setTitle("Banano Stats")
                 .setThumbnail(ban_img)
                 .setImage(
-                  "https://botdata.ryzetech.live/graph_ban.png"
+                  `https://botdata.ryzetech.live/graph_ban_${exectime}.png`
                 )
                 .setDescription(
                   "*Note: The data displayed here can be delayed by up to five minutes.*"
@@ -1327,7 +1330,7 @@ client.on("message", async (message) => {
             .chd(plotdata)                                              // data
             .chs("999x500");                                            // image size
 
-          img.toFile("./data/graph_eth.png");
+          img.toFile(`./data/graph_eth_${exectime}.png`);
 
           message.channel.send(
             new Discord.MessageEmbed()
@@ -1336,7 +1339,7 @@ client.on("message", async (message) => {
               .setTitle("Ethereum Stats")
               .setThumbnail(eth_badge)
               .setImage(
-                "https://botdata.ryzetech.live/graph_eth.png"
+                `https://botdata.ryzetech.live/graph_eth_${exectime}.png`
               )
               .setDescription(
                 "*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*"
