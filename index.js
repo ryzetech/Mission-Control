@@ -182,10 +182,12 @@ client.on("guildMemberAdd", async (member) => {
 
   // if the user is unknown to Virgin Slayer:
   if (res.status === "error" && res.msg === "api.error.notBanned") {
+
     // greet them with a warm welcome message <3
     let sent = await channel.send(
       `Hey ${member}, welcome on our little spaceship! 🚀`
     );
+
     // and delete it after "autodelete" seconds to keep the chat clean
     await sent.delete({ timeout: autodelete });
   }
@@ -268,72 +270,98 @@ client.on("message", async (message) => {
             name: "ping",
             value:
               "Pong! (please don't spam this command, even if you like ping-pong)",
+            inline: true
           },
+          {
+            name: "info",
+            value:
+              "Shows some information on the bot",
+            inline: true
+          },
+          { name: "\u200b", value: "\u200b" },
           {
             name: "avatar [user ping]",
             value:
               "Takes the avatar of an user (or yours) and delivers it in the chat!",
-          },
-          { name: "\u200b", value: "\u200b" },
-          { name: "meme", value: "random laugh stuff" },
-          {
-            name: "animal <animal>",
-            value:
-              "We have all the animals! With every execution, a new picture and a nice fact are thrown at your face.\nYou can get a list of all supported animals with **animals list**.",
-          },
-          {
-            name: "pokedex <name>",
-            value: "bruh it's a pokédex, what did you expect",
-          },
-          {
-            name: "mc <username>",
-            value: "Shows some information on a player in Minecraft.",
+            inline: true
           },
           {
             name: "avmod <filter> [user ping]",
             value:
               "Modifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with **avatarmod filters**.",
+            inline: true
+          },
+          { name: "\u200b", value: "\u200b", inline: true },
+          {
+            name: "animal <animal>",
+            value:
+              "We have all the animals! With every execution, a new picture and a nice fact are thrown at your face.\nYou can get a list of all supported animals with **animals list**.",
+            inline: true
+          },
+          {
+            name: "pokedex <name>",
+            value:
+              "bruh it's a pokédex, what did you expect",
+            inline: true
+          },
+          {
+            name: "mc <username>",
+            value:
+              "Shows some information on a player in Minecraft.",
+            inline: true
+          },
+          {
+            name: "meme",
+            value: "random laugh stuff"
           },
           {
             name: "news",
             value:
               "Get fresh news from yCombinator! (we can't gurantee freshness)",
+            inline: true
           },
           {
             name: "spacex",
             value:
               "Read more about the latest or next launch by SpaceX (because Jeff Who?)",
+            inline: true
           },
           { name: "\u200b", value: "\u200b" },
+          {
+            name: "work",
+            value:
+              "You can get free money every 12 hours!",
+            inline: true
+          },
           {
             name: "balance [user ping]",
             value:
               "Shows how much money is in your pocket (or in the pocket of the pinged user).",
-          },
-          {
-            name: "leaderboard",
-            value:
-              "Shows the current leaderboard of all users by net value (cash and eth seperate).",
-          },
-          {
-            name: "work",
-            value: "You can get free money every 24 hours!"
+            inline: true
           },
           {
             name: "send <user ping> <amount>",
             value:
               "Send the specified amount to the specified user.\n**Note: A fee of 5% per trancaction is applied!**",
+            inline: true
+          },
+          {
+            name: "leaderboard",
+            value:
+              "Shows the current leaderboard of all users (cash and eth seperate)."
           },
           {
             name: "eth",
             value:
               "You can trade Ethereum in a simulated environment. Execute this command to get more info on what you can do with it.",
+            inline: true
           },
-          { name: "\u200b", value: "\u200b" },
           {
-            name: "info",
-            value: "Shows some information on the bot"
-          }
+            name: "banano",
+            value:
+              "BANANO STONK (get info about banano token)",
+            inline: true
+          },
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
@@ -780,6 +808,19 @@ client.on("message", async (message) => {
     let msg;
     let usr = userident(message);
     let args = message.content.slice(7).toLowerCase();
+    let directly_available = [
+      "glass",
+      "wasted",
+      "greyscale",
+      "invert",
+      "brightness",
+      "threshold",
+      "sepia",
+      "pixelate",
+      "red",
+      "green",
+      "blue",
+    ];
 
     if (args === "filters") {
       msg = new Discord.MessageEmbed()
@@ -804,34 +845,8 @@ client.on("message", async (message) => {
     }
 
     // filter handling
-    else if (
-      startsWithInArray(args, [
-        "glass",
-        "wasted",
-        "greyscale",
-        "invert",
-        "brightness",
-        "threshold",
-        "sepia",
-        "pixelate",
-        "red",
-        "green",
-        "blue",
-      ])
-    ) {
-      args = startsWithInArray(args, [
-        "glass",
-        "wasted",
-        "greyscale",
-        "invert",
-        "brightness",
-        "threshold",
-        "sepia",
-        "pixelate",
-        "red",
-        "green",
-        "blue",
-      ]); // i know this is stupid lmao
+    else if (startsWithInArray(args, directly_available)) {
+      args = startsWithInArray(args, directly_available); // i know this is stupid lmao
       msg = new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("AvatarMod", embedPB)
@@ -850,6 +865,7 @@ client.on("message", async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     } // side note: this mess saves us approx 90 lines, fuck yeah!
+
     else if (args.startsWith("invgs")) {
       msg = new Discord.MessageEmbed()
         .setColor(embedColorStandard)
@@ -871,6 +887,7 @@ client.on("message", async (message) => {
     }
 
     // special attachment treatment for the last two because sra is kinda slow on these endpoints and (i think) discord has a timeout on embed image requests
+    // triggered endpoint
     else if (args.startsWith("triggered")) {
       message.channel.startTyping();
 
@@ -897,7 +914,10 @@ client.on("message", async (message) => {
         .setFooter(`Requested by ${message.author.tag}`);
 
       message.channel.stopTyping();
-    } else if (args.startsWith("lolice")) {
+    }
+
+    // lolice endpoint
+    else if (args.startsWith("lolice")) {
       message.channel.startTyping();
 
       let att = new Discord.MessageAttachment(
@@ -968,10 +988,13 @@ client.on("message", async (message) => {
         "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
       );
       let json = await res.json();
+
       // set value
       value = json;
+
       // update cache                                <h, m, s, mil>
       let success = botCacheStorage.set("news", json, 2 * 60 * 60 * 1000);
+
       // error log message
       if (!success) {
         console.error(
@@ -985,21 +1008,25 @@ client.on("message", async (message) => {
     // get the first "ycomb_story_amount" stories and add them to the ezfield array
     while (i < ycomb_story_amount) {
       let data = botCacheStorage.get(`news_${i}`);
+
       if (!data) {
         // construct link
         let link =
           "https://hacker-news.firebaseio.com/v0/item/" +
           encodeURIComponent(value[i]) +
           ".json?print=pretty";
+
         // fetch data and parse
         data = await fetch(link);
         data = await data.json();
+
         // update the cache
         let success = botCacheStorage.set(
           `news_${i}`,
           data,
           2 * 60 * 60 * 1000
         );
+
         // error log
         if (!success) {
           console.error(
@@ -1009,6 +1036,7 @@ client.on("message", async (message) => {
           );
         }
       }
+
       let url = data.url ? "[Link](" + data.url + ")" : "no url available"; // some stories have no url because they are internal
 
       fields.push(new EzField(data.title, "by " + data.by + " - " + url));
@@ -1621,7 +1649,10 @@ client.on("message", async (message) => {
       }
 
       message.channel.send(msg);
-    } else {
+    }
+
+    // fallback to help message
+    else {
       message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
@@ -1958,6 +1989,7 @@ client.on("message", async (message) => {
         .setFooter(`Requested by ${message.author.tag}`)
     );
   }
+
   // VS CHECK
   else if (message.content.startsWith(`${prefix}vscheck`)) {
     let usrid;
@@ -2040,8 +2072,10 @@ client.on("message", async (message) => {
           .setFooter(`Requested by ${message.author.tag}`)
       );
     }
-  } else {
-    // random reward for chatting
+  }
+
+  // random reward for chatting
+  else {
     if (Math.round(Math.random() * 4 + 1) === 5 && !message.author.bot) {
       let usr = await prisma.user.update({
         where: { id: message.author.id },
