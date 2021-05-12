@@ -1220,7 +1220,7 @@ client.on("message", async (message) => {
               .chd(plotdata)                                              // data
               .chs("999x500");                                            // image size
 
-            img.toFile(`/usr/services/Mission-Control/data/graph_ban_${exectime}.png`); // save the image
+            img.toFile(`/usr/services/Mission-Control/data/graph_ban.png`); // save the image
 
             message.channel.send(
               new Discord.MessageEmbed()
@@ -1229,7 +1229,7 @@ client.on("message", async (message) => {
                 .setTitle("Banano Stats")
                 .setThumbnail(ban_img)
                 .setImage(
-                  `https://botdata.ryzetech.live/graph_ban_${exectime}.png`
+                  `https://botdata.ryzetech.live/graph_ban.png`
                 )
                 .setDescription(
                   "*Note: The data displayed here can be delayed by up to five minutes.*"
@@ -1330,7 +1330,7 @@ client.on("message", async (message) => {
             .chd(plotdata)                                              // data
             .chs("999x500");                                            // image size
 
-          img.toFile(`./data/graph_eth_${exectime}.png`);
+          img.toFile(`/usr/services/Mission-Control/data/graph_eth_${exectime}.png`);
 
           message.channel.send(
             new Discord.MessageEmbed()
