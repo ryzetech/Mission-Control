@@ -1174,6 +1174,8 @@ client.on("message", async (message) => {
   //// ECONOMY SECTION
   // BANANO
   else if (message.content.startsWith(`${prefix}banano`)) {
+    message.channel.startTyping();
+
     CoinGeckoClient.coins
       .fetch("banano", {})
       .then((d1) => {
@@ -1227,6 +1229,7 @@ client.on("message", async (message) => {
                 .setColor(embedColorStandard)
                 .setAuthor("Stonk Info", embedPB)
                 .setTitle("Banano Stats")
+                .setURL("https://www.coingecko.com/en/coins/banano")
                 .setThumbnail(ban_img)
                 .setImage(
                   `https://botdata.ryzetech.live/graph_ban_${exectime}.png`
@@ -1275,6 +1278,8 @@ client.on("message", async (message) => {
             );
           });
       });
+
+    message.channel.stopTyping();
   }
 
   // ETH
@@ -1337,6 +1342,7 @@ client.on("message", async (message) => {
               .setColor(embedColorStandard)
               .setAuthor("Coin System", embedPB)
               .setTitle("Ethereum Stats")
+              .setURL("https://www.coingecko.com/en/coins/ethereum")
               .setThumbnail(eth_badge)
               .setImage(
                 `https://botdata.ryzetech.live/graph_eth_${exectime}.png`
