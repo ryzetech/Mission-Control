@@ -1930,7 +1930,7 @@ client.on("message", async (message) => {
         usrCheck = client.users.cache.get(u.id);
 
         topMoneyField += `**${i + 1}** - ${usrCheck ? usrCheck.tag.substring(0, usrCheck.tag.length - 5) : "left"
-          } [${u.money}$]\n`;
+          } [${u.money.toFixed(2)}€]\n`;
       }
     });
     topEth.forEach((u, i) => {
