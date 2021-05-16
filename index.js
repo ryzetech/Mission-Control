@@ -1168,7 +1168,7 @@ client.on("message", async (message) => {
       embed.addFields(
         {
           name: "Payload Informatiom",
-          value: fieldFalue,
+          value: fieldValue,
         }
       );
     }
