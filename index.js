@@ -1161,7 +1161,7 @@ client.on("message", async (message) => {
         let payload_res = await fetch("https://api.spacexdata.com/v4/payloads/" + mission_json.payloads[index]);
         let payload_json = await payload_res.json();
 
-        fieldValue += `**-- ${index+1} --**`;
+        fieldValue += `**-- ${parseInt(index)+1} --**\n`;
         fieldValue += `Name: ${payload_json.name}\nType: ${payload_json.type}\nOrbit: ${payload_json.orbit}\nMass: ${payload_json.mass_kg}kg\n\n`
       }
 
