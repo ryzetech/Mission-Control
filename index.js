@@ -1155,13 +1155,20 @@ client.on("message", async (message) => {
         }
       );
     } else {
-      let payload_res = await fetch("https://api.spacexdata.com/v4/payloads/" + mission_json.payloads[0]);
-      let payload_json = await payload_res.json();
+      let fieldValue = "";
+
+      for (let index in mission_json.payloads) {
+        let payload_res = await fetch("https://api.spacexdata.com/v4/payloads/" + mission_json.payloads[index]);
+        let payload_json = await payload_res.json();
+
+        fieldValue += `**-- ${index+1} --**`;
+        fieldValue += `Name: ${payload_json.name}\nType: ${payload_json.type}\nOrbit: ${payload_json.orbit}\nMass: ${payload_json.mass_kg}kg\n\n`
+      }
 
       embed.addFields(
         {
           name: "Payload Informatiom",
-          value: `Name: ${payload_json.name}\nType: ${payload_json.type}\nOrbit: ${payload_json.orbit}\nMass: ${payload_json.mass_kg}kg\n`,
+          value: fieldFalue,
         }
       );
     }
