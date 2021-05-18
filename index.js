@@ -2090,14 +2090,14 @@ client.on("message", async (message) => {
       msg
         .setColor(embedColorConfirm)
         .setTitle("🏆 YOU WON!")
-        .setDescription("**Side: **" + side.toUpperCase() + "\n**Payout:** " + amount*2 + "\n**New Balance:** " + usr.money);
+        .setDescription("**Side: **" + side.toUpperCase() + "\n**Payout:** " + amount*2 + "\n**New Balance:** " + usr.money.toFixed(2));
       sent.edit(msg);
     }
     else {
       msg
         .setColor(embedColorFail)
         .setTitle("❌ YOU LOST!")
-        .setDescription("**Side: **" + ((side === "heads") ? "tails" : "heads").toUpperCase() + "\n**Loss: **" + amount + "\n**New Balance:** " + usr.money);
+        .setDescription("**Side: **" + ((side === "heads") ? "tails" : "heads").toUpperCase() + "\n**Loss: **" + amount + "\n**New Balance:** " + usr.money.toFixed(2));
       sent.edit(msg);
     }
   }
