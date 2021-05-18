@@ -62,6 +62,7 @@ const {
   muterole,
   p_cooldown,
   ycomb_story_amount,
+  coinflip_multiplicator,
   embedColorStandard,
   embedColorProcessing,
   embedColorConfirm,
@@ -2064,12 +2065,13 @@ client.on("message", async (message) => {
         .setAuthor("Coinflip", embedPB)
         .setTitle("Flipping Coin...")
         .setThumbnail("https://i.ryzetech.live/spinningcoin.gif")
-        .setDescription("**AT RISK:** " + amount + "\n**POSSIBLE WIN:** " + (amount * 2))
+        .setDescription("**AT RISK:** " + amount + "\n**POSSIBLE WIN:** " + (amount * coinflip_multiplicator))
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
 
-    await setTimeoutPromise(3000);
+
+    await setTimeoutPromise(Math.round(Math.random() * 5000 + 2000));
 
     // preassembling the embed
     let msg = new Discord.MessageEmbed()
@@ -2082,7 +2084,7 @@ client.on("message", async (message) => {
         where: { id: usr.id },
         data: {
           money: {
-            increment: amount*2,
+            increment: amount*coinflip_multiplicator,
           },
         },
       });
@@ -2090,7 +2092,7 @@ client.on("message", async (message) => {
       msg
         .setColor(embedColorConfirm)
         .setTitle("🏆 YOU WON!")
-        .setDescription("**Side: **" + side.toUpperCase() + "\n**Payout:** " + amount*2 + "\n**New Balance:** " + usr.money.toFixed(2));
+        .setDescription("**Side: **" + side.toUpperCase() + "\n**Payout:** " + amount*coinflip_multiplicator + "\n**New Balance:** " + usr.money.toFixed(2));
       sent.edit(msg);
     }
     else {
