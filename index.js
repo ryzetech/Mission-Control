@@ -1192,7 +1192,7 @@ client.on("message", async (message) => {
         let stuff = d1.data.market_data;
         let ban_img = d1.data.image.large;
 
-        CoinGeckoClient.coins // yes we need this
+        CoinGeckoClient.coins // yes we need this, no i don't know how to do this better
           .fetchMarketChart("banano", { vs_currency: "eur", days: "1" })
           .then((d2) => {
             let prices = d2.data.prices; // get data list
@@ -1232,7 +1232,8 @@ client.on("message", async (message) => {
               .chd(plotdata)                                              // data
               .chs("999x500");                                            // image size
 
-            img.toFile(`/usr/services/Mission-Control/data/graph_ban_${exectime}.png`); // save the image
+            // save the image | don't worry about disk space, old images will be cleaned up by cron
+            img.toFile(`/usr/services/Mission-Control/data/graph_ban_${exectime}.png`);
 
             message.channel.send(
               new Discord.MessageEmbed()
