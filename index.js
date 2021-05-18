@@ -2071,7 +2071,7 @@ client.on("message", async (message) => {
     );
 
 
-    await setTimeoutPromise(Math.round(Math.random() * 5000 + 2000));
+    await setTimeoutPromise(3500);
 
     // preassembling the embed
     let msg = new Discord.MessageEmbed()
