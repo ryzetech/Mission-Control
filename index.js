@@ -2029,7 +2029,7 @@ client.on("message", async (message) => {
       return;
     }
     // check if user has enough money to perform this action
-    if (amount > usr.eth) {
+    if (amount > usr.money) {
       message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
