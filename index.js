@@ -142,6 +142,13 @@ function startsWithInArray(string, stringArray) {
   return undefined;
 }
 
+// the cooler setTimeout
+function setTimeoutPromise(delay) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), delay);
+  });
+}
+
 //// CLASSES
 // help class for easily creating more complex embed fields because i'm an idiot
 class EzField {
@@ -1164,7 +1171,7 @@ client.on("message", async (message) => {
         if (payload_json.mass_kg === null) payload_json.mass_kg = "**N/A**";
         else payload_json.mass_kg += "kg";
 
-        fieldValue += `**-- ${parseInt(index)+1} --**\n`;
+        fieldValue += `**-- ${parseInt(index) + 1} --**\n`;
         fieldValue += `Name: ${payload_json.name}\nType: ${payload_json.type}\nOrbit: ${payload_json.orbit}\nMass: ${payload_json.mass_kg}\n\n`
       }
 
@@ -1976,6 +1983,123 @@ client.on("message", async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
+  }
+
+  // COINFLIP
+  else if (message.content.startsWith(`${prefix}coinflip`)) {
+    let sides = ["heads", "tails"];
+    let args = message.content.slice(10);
+
+    // get the user from the db
+    let usr = await prisma.user.findUnique({
+      where: { id: message.author.id },
+    });
+
+    // parse amount
+    let side = args.slice(0, 5).toLowerCase();
+    let amount = parseFloat(args.slice(6).replace(",", "."));
+
+    // check if side is valid
+    if (!sides.includes(side)) {
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("❌ Invalid side!", embedPB)
+          .setDescription(
+            "The side must be either \"heads\" or \"tails\". Please check your syntax and try again."
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+      return;
+    }
+
+    // check if amount is valid
+    if (isNaN(amount) || amount <= 0) {
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("❌ Invalid amount!", embedPB)
+          .setDescription(
+            "The specified amount is not a number or invalid.\nPlease try again."
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+      return;
+    }
+    // check if user has enough money to perform this action
+    if (amount > usr.eth) {
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("❌ Invalid amount", embedPB)
+          .setDescription(
+            "The specified amount is too high or your balance is to low."
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+      return;
+    }
+
+    // predeterming if the user has won
+    let won = (Math.floor(Math.random() * 2) == 0);
+    // side note: i dont give a shit on what side the user gives me
+    // im just determining if they won and display the if the other side if they didnt
+    // well, lets hope that nobody will ever look here to verify chances or something...
+
+    usr = await prisma.user.update({
+      where: { id: userFrom.id },
+      data: {
+        money: {
+          decrement: amount,
+        },
+      },
+    });
+
+    let sent = await message.channel.send(
+      new Discord.MessageEmbed()
+        .setColor(embedColorProcessing)
+        .setAuthor("Coinflip", embedPB)
+        .setTitle("Flipping Coin...")
+        .setThumbnail("https://i.ryzetech.live/spinningcoin.gif")
+        .setDescription("**AT RISK:** " + amount + "\n**POSSIBLE WIN:** " + (amount * 2))
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+    );
+
+    await setTimeoutPromise(3000);
+
+    // preassembling the embed
+    let msg = new Discord.MessageEmbed()
+      .setAuthor("Coinflip", embedPB)
+      .setTimestamp()
+      .setFooter(`Requested by ${message.author.tag}`);
+
+    if (won) {
+      usr = await prisma.user.update({
+        where: { id: userFrom.id },
+        data: {
+          money: {
+            increment: amount*2,
+          },
+        },
+      });
+
+      msg
+        .setColor(embedColorConfirm)
+        .setTitle("🏆 YOU WON!")
+        .setDescription("**Side: **" + side.toUpperCase() + "\n**Payout:** " + amount*2 + "\n**New Balance:** " + usr.money);
+      sent.edit(msg);
+    }
+    else {
+      msg
+        .setColor(embedColorFail)
+        .setTitle("❌ YOU LOST!")
+        .setDescription("**Side: **" + ((side === "heads") ? "tails" : "heads").toUpperCase() + "\n**Loss: **" + amount + "\n**New Balance:** " + usr.money);
+      sent.edit(msg);
+    }
   }
 
   //// MOD SECTION
