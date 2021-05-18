@@ -2050,7 +2050,7 @@ client.on("message", async (message) => {
     // well, lets hope that nobody will ever look here to verify chances or something...
 
     usr = await prisma.user.update({
-      where: { id: userFrom.id },
+      where: { id: usr.id },
       data: {
         money: {
           decrement: amount,
