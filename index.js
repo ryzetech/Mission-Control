@@ -1070,6 +1070,7 @@ client.on("message", async (message) => {
     );
   }
 
+  // SPACEX INFO
   else if (message.content.startsWith(`${prefix}spacex`)) {
     let args = message.content.slice(8);
     let mission_res;
@@ -1154,6 +1155,26 @@ client.on("message", async (message) => {
       );
     }
 
+    // launchpad check
+    if (mission_json.launchpad === null) {
+      embed.addFields(
+        {
+          name: "Launchpad Information",
+          value: "**NO INFORMATION AVAILABLE**"
+        }
+      );
+    } else {
+      let launchpad_res = await fetch("https://api.spacexdata.com/v4/launchpads/" + mission_json.launchpad);
+      let launchpad_json = await launchpad_res.json();
+
+      embed.addFields(
+        {
+          name: "Launchpad Information",
+          value: `Name: ${launchpad_json.name}\nLocality: ${launchpad_json.locality}, ${launchpad_json.region}\nSuccess Rate: ${launchpad_json.launch_successes}/${launchpad_json.launch_attempts}`
+        }
+      );
+    }
+
     // payload check
     if (mission_json.payloads[0] === null) {
       embed.addFields(
@@ -1169,7 +1190,7 @@ client.on("message", async (message) => {
         let payload_res = await fetch("https://api.spacexdata.com/v4/payloads/" + mission_json.payloads[index]);
         let payload_json = await payload_res.json();
 
-        if (payload_json.mass_kg === null) payload_json.mass_kg = "**N/A**";
+        if (payload_json.mass_kg === null) payload_json.mass_kg = "N/A";
         else payload_json.mass_kg += "kg";
 
         fieldValue += `**-- ${parseInt(index) + 1} --**\n`;
@@ -2007,7 +2028,7 @@ client.on("message", async (message) => {
           .setColor(embedColorFail)
           .setAuthor("❌ Invalid side!", embedPB)
           .setDescription(
-            "The side must be either \"heads\" or \"tails\". Please check your syntax and try again."
+            "The side must be either \"heads\" or \"tails\". Please check your syntax and try again.\n\n*Usage: " + prefix + "coinflip <{heads | tails}> <bet>*"
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
@@ -2084,7 +2105,7 @@ client.on("message", async (message) => {
         where: { id: usr.id },
         data: {
           money: {
-            increment: amount*coinflip_multiplicator,
+            increment: amount * coinflip_multiplicator,
           },
         },
       });
@@ -2092,7 +2113,7 @@ client.on("message", async (message) => {
       msg
         .setColor(embedColorConfirm)
         .setTitle("🏆 YOU WON!")
-        .setDescription("**Side: **" + side.toUpperCase() + "\n**Payout:** " + amount*coinflip_multiplicator + "\n**New Balance:** " + usr.money.toFixed(2));
+        .setDescription("**Side: **" + side.toUpperCase() + "\n**Payout:** " + amount * coinflip_multiplicator + "\n**New Balance:** " + usr.money.toFixed(2));
       sent.edit(msg);
     }
     else {
