@@ -299,14 +299,14 @@ client.on("message", async (message) => {
           {
             name: "avmod <filter> [user ping]",
             value:
-              "Modifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with **avatarmod filters**.",
+              "Modifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with **avmod filters**.",
             inline: true
           },
           { name: "\u200b", value: "\u200b", inline: true },
           {
             name: "animal <animal>",
             value:
-              "We have all the animals! With every execution, a new picture and a nice fact are thrown at your face.\nYou can get a list of all supported animals with **animals list**.",
+              "We have all the animals! With every execution, a new picture and a nice fact are thrown at your face.\nYou can get a list of all supported animals with **animal list**.",
             inline: true
           },
           {
@@ -325,6 +325,7 @@ client.on("message", async (message) => {
             name: "meme",
             value: "random laugh stuff"
           },
+          { name: "\u200b", value: "\u200b" },
           {
             name: "news",
             value:
@@ -334,7 +335,7 @@ client.on("message", async (message) => {
           {
             name: "spacex",
             value:
-              "Read more about the latest or next launch by SpaceX (because Jeff Who?)",
+              "Read more about the latest or next launch by SpaceX",
             inline: true
           },
           { name: "\u200b", value: "\u200b" },
@@ -361,6 +362,11 @@ client.on("message", async (message) => {
             value:
               "Shows the current leaderboard of all users (cash and eth seperate)."
           },
+          {
+            name: "coinflip <{heads | tails}> <bet>",
+            value: "Let's you flip a coin. If you're right, you will get your bet back multiplied with a bonus. If you're wrong, you will lose everthing. **Current multiplicator: " + coinflip_multiplicator + "x**"
+          },
+          { name: "\u200b", value: "\u200b" },
           {
             name: "eth",
             value:
