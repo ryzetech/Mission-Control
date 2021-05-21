@@ -25,7 +25,7 @@ model Stat {
 }
 
 model Streamer {
-  id     Int     @id @default(autoincrement())
+  id     String  @id
   name   String
   live   Boolean @default(false)
   user   User?   @relation(fields: [userId], references: [id])
