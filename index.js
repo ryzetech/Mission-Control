@@ -1744,7 +1744,7 @@ client.on("message", async (message) => {
     // identify user and get it from the db
     let argument = userident(message);
     let usr = await prisma.user.findUnique({
-      where: { id: message.author.id },
+      where: { id: argument.id },
     });
 
     message.channel.send(
