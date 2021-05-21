@@ -2201,6 +2201,12 @@ client.on("message", async (message) => {
             .setAuthor("VS Check", embedPB)
             .setTitle("User is not banned!")
             .setDescription("This user is unknown to our global database.")
+            .addFields(
+              {
+                name: "\u200b",
+                value: "Ban information provided by https://dvs.stefftek.de/"
+              }
+            )
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`)
         );
@@ -2228,6 +2234,10 @@ client.on("message", async (message) => {
                 name: "Ban Timestamp",
                 value:
                   date + "\n(" + timediff(Date.now(), date.getTime()) + " ago)",
+              },
+              {
+                name: "\u200b",
+                value: "Ban information provided by https://dvs.stefftek.de/"
               }
             )
             .setTimestamp()
