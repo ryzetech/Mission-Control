@@ -10,18 +10,36 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum ROLE {
-  USER
-  ADMIN
+model Stat {
+  id             Int      @id @default(autoincrement())
+  messagesRead   Int      @default(0)
+  usersGreeted   Int      @default(0)
+  ecoPayoutTotal Float    @default(0.0)
+  casinoWinnings Float    @default(0.0)
+  casinoLosses   Float    @default(0.0)
+  casinoPot      Float    @default(0.0)
+  casinoLastWin  DateTime
+  // Update tracking
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Streamer {
+  id     Int     @id @default(autoincrement())
+  name   String
+  live   Boolean @default(false)
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
 }
 
 model User {
   id            String    @id
   money         Float     @default(0)
   eth           Float     @default(0)
-  lastearnstamp DateTime  
+  lastearnstamp DateTime
   isMuted       Boolean   @default(false)
   muteEnd       DateTime?
   updatedAt     DateTime  @updatedAt
   createdAt     DateTime  @default(now())
+  Streamer      Streamer?
 }
