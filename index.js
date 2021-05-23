@@ -716,7 +716,7 @@ client.on("message", async (message) => {
           .setAuthor("MC Fetch", embedPB)
           .setTitle(json.username)
           .setThumbnail("https://crafatar.com/avatars/" + json.uuid)
-          .setImage("https://crafatar.com/renders/body/" + json.uuid)
+          .setImage("https://crafatar.com/renders/body/" + json.uuid + "?overlay=true")
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`);
 
