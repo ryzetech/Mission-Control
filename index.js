@@ -63,6 +63,7 @@ const {
   p_cooldown,
   ycomb_story_amount,
   coinflip_multiplicator,
+  livechecks,
   embedColorStandard,
   embedColorProcessing,
   embedColorConfirm,
@@ -70,7 +71,7 @@ const {
   embedColorFail,
   embedPB,
 } = require("./config.json");
-const { token } = require("./token.json");
+const { token, twitch_auth } = require("./token.json");
 
 // funny counters for fun lol
 var messageCounter = 0;
@@ -109,6 +110,23 @@ function timediff(timestamp1ornow, timestamp2, short) {
     return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
 }
 
+// comparer for safe url fetching until we make a better command + argument splitter
+function startsWithInArray(string, stringArray) {
+  for (let index in stringArray) {
+    if (string.startsWith(stringArray[index])) return stringArray[index];
+  }
+  return undefined;
+}
+
+// the cooler setTimeout
+function setTimeoutPromise(delay) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), delay);
+  });
+}
+
+// ----------------------------------------------------------- //
+
 // Check if user is still on server, if not remove from db
 async function checkUserIsStillHere(usr, usrCheck, timeOffset = 10) {
   if (!usrCheck) {
@@ -119,8 +137,30 @@ async function checkUserIsStillHere(usr, usrCheck, timeOffset = 10) {
   return true;
 }
 
-// timed task executor for fetching market data from the CoinGecko API
-function fetchdata() {
+// get Twitch user data
+async function fetchTwitchUser(username) {
+  let auth = await axios.post("https://id.twitch.tv/oauth2/token?client_id=0vcqmyeq1gkqvxkazpemgsouss41h7&client_secret=" + twitch_auth + "&grant_type=client_credentials");
+  let auth_json = await auth.data;
+
+  let users = await axios.get("https://api.twitch.tv/helix/search/channels?query=" + username, {
+    headers: {
+      "client-id": "0vcqmyeq1gkqvxkazpemgsouss41h7",
+      "Authorization": "Bearer " + auth_json.access_token
+    }
+  });
+  let users_json = await users.data;
+
+  for (let user in users_json.data) {
+    if (user.broadcaster_login === username.toLowerCase()) {
+      return user;
+    }
+  }
+
+  return undefined;
+}
+
+// fetch CoinGecko ETH data
+function fetchCoinData() {
   CoinGeckoClient.coins
     .fetch("ethereum", {})
     .then((d) => {
@@ -135,19 +175,15 @@ function fetchdata() {
     });
 }
 
-// comparer for safe url fetching until we make a better command + argument splitter
-function startsWithInArray(string, stringArray) {
-  for (let index in stringArray) {
-    if (string.startsWith(stringArray[index])) return stringArray[index];
-  }
-  return undefined;
+// fetch live data from Twitch
+async function fetchLiveData() {
+
 }
 
-// the cooler setTimeout
-function setTimeoutPromise(delay) {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(), delay);
-  });
+// timed task executor for fetching market data from the CoinGecko API and live data from Twitch
+function fetchdata() {
+  fetchCoinData();
+  fetchLiveData();
 }
 
 //// CLASSES
@@ -2254,6 +2290,229 @@ client.on("message", async (message) => {
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
       );
+    }
+  }
+
+  // TWITCH CONTROL
+  else if (message.content.startsWith(`${prefix}twitch`)) {
+    // permission check
+    if (!message.member.roles.cache.some((role) => modroles.includes(role.id))) {
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("Twitch", embedPB)
+          .setTitle("❌ Insufficent Permissions!")
+          .setDescription("This command is reserved for mods and admins!")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+      return;
+    }
+
+    // i should use a regex but im too stupid for that
+    let args = message.content.slice(8);
+
+    // add streamer
+    if (args.startsWith("add")) {
+      args = args.slice(4);
+
+      // find username
+      let lookup = await fetchTwitchUser(args);
+
+      // check if Twitch has this user
+      if (typeof lookup === "undefined") {
+        message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("Twitch", embedPB)
+            .setTitle("❌ User not found!")
+            .setDescription("Twitch couldn't find this streamer. Please check your spelling and try again.")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+        return;
+      }
+
+      // creater the user as Streamer
+      let streamer = await prisma.streamer.create({
+        id: lookup.id,
+        name: lookup.broadcaster_login,
+        live: lookup.is_live
+      });
+
+      // send confirmation
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorConfirm)
+          .setAuthor("Twitch", embedPB)
+          .setTitle("✅ User created!")
+          .setDescription("A listener for https://twitch.tv/" + streamer.name + "/ has been set up!")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+
+    }
+
+    // remove listener
+    else if (args.startsWith("remove")) {
+      args = args.slice(7);
+
+      // lookup Twitch User ID
+      let lookup = await fetchTwitchUser(args);
+
+      // find the user by id
+      let streamer = await prisma.streamer.findUnique({
+        where: { id: lookup.id }
+      });
+
+      // check if an entry exists for the user
+      if (!streamer) {
+        return message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("Twitch", embedPB)
+            .setTitle("❌ User not found!")
+            .setDescription("That streamer doesn't exist in the database.")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+
+      // delet
+      await prisma.streamer.delete({
+        where: { id: streamer.id }
+      });
+
+      // send confirmation
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorConfirm)
+          .setAuthor("Twitch", embedPB)
+          .setTitle("✅ User deleted!")
+          .setDescription("The listener for `" + streamer.name + "` has been deleted!")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+
+    }
+
+    // link streamer notification with discord user
+    else if (args.startsWith("link")) {
+      args = args.slice(5);
+
+      let pattern = new RegExp("([a-zA-Z0-9][\w]{2,25}) <@!(\\d+)>", "s");
+      let regres = pattern.exec(args);
+
+      // handle case where pattern fails
+      // handle case match is not len 3
+      if (regres == null || regres.length !== 3) {
+        return message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("Coin System", embedPB)
+            .setTitle("❌ Syntax mistake!")
+            .setDescription(
+              "Sytntax is `" + prefix + "twitch link <twitch_username> @<user_to_link>`"
+            )
+            .addField("`twitch_username`:", "The streamer to be linked")
+            .addField(
+              "`user_to_link`:",
+              "This should be the user you want the transaction to go to"
+            )
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+
+      // extract the values
+      let [, twitchname, userid] = regres;
+
+      // find the user in the db
+      let user = await prisma.user.findUnique({
+        where: { id: userid }
+      });
+
+      // display error if user not in db
+      if (!user) {
+        return message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("Twitch", embedPB)
+            .setTitle("❌ Database fail!")
+            .setDescription(
+              "We couldn't find the user in the database. Please contact an admin if you think that this is a mistake!"
+            )
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+
+      // let twitch search for the streamer
+      let twitchuser = await fetchTwitchUser(twitchname);
+
+      // display error if twitch cant find the streamer
+      if (!twitchuser) {
+        return message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("Twitch", embedPB)
+            .setTitle("❌ User not found!")
+            .setDescription(
+              "Twitch couldn't find this streamer. Please check your spelling and try again."
+            )
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+
+      // find the user in the db
+      let streamer = prisma.streamer.findUnique({
+        where: { id: twitchuser.id }
+      });
+
+      // display error message if not in db
+      // side note: i could create a new streamer, but im too lazy for that rn
+      if (!streamer) {
+        return message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("Twitch", embedPB)
+            .setTitle("❌ User not found!")
+            .setDescription("That streamer doesn't exist in the database.\nCreate one first with `twitch add <username>`")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+
+      // update the user
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          Streamer: { connectOrCreate: { data: { where: { id: streamer.id } } } }
+        }
+      });
+
+      // update the streamer
+      streamer = await prisma.streamer.update({
+        where: { id: streamer.id },
+        data: {
+          user: {
+            connectOrCreate: {
+              
+            }
+          }
+        }
+      });
+    }
+
+    // unlink streamer with user
+    else if (args.startsWith("unlink")) {
+
+    }
+
+    // list streamers in database
+    else if (args.startsWith("list")) {
+
     }
   }
 
