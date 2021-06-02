@@ -70,7 +70,7 @@ const {
   embedColorFail,
   embedPB,
 } = require("./config.json");
-const { token } = require("./token.json");
+const { token, nasa_auth } = require("./token.json");
 
 // funny counters for fun lol
 var messageCounter = 0;
@@ -1249,6 +1249,43 @@ client.on("message", async (message) => {
     // god i hate this notation, NEVER USE IT AGAIN!
 
     message.channel.send(embed);
+  }
+
+  // NASA INFO
+  else if (message.content.startsWith(`${prefix}nasa`)) {
+    let args = message.content.slice(6).toLowerCase();
+
+    if (args.startsWith("apod")) {
+      // TODO: APOD getter
+    }
+
+    // rover info
+    else if (args.startsWith("rover")) {
+      args = args.slice(6);
+
+      // get rover
+      let rover = startsWithInArray(args, ["curiosity", "opportunity", "spirit"]);
+      if (!rover) {
+        return message.channel.send(
+          // TODO: rover rejection message
+        );
+      }
+
+      // define cams
+      let available_cams;
+      rover == "curiosity" ? available_cams = ["mast", "chemcam", "mahli", "mardi", "navcam"] : available_cams = ["pancam", "minites"];
+      available_cams.concat(["fhaz", "rhaz", "navcam"]);
+
+      // get cam
+      let cam = args.slice(rover.length+1);
+      if (!available_cams.includes(cam)) {
+        return message.channel.send(
+          // TODO: cam rejection message
+        );
+      }
+
+
+    }
   }
 
   //// ECONOMY SECTION
