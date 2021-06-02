@@ -1250,8 +1250,9 @@ client.on("message", async (message) => {
               counter++;
             });
             // expand graph view
-            highest += 0.001;
-            lowest -= 0.001;
+            let diff = (highest - lowest)/10;
+            highest += diff;
+            lowest -= diff;
 
             let img = ImageCharts() // i know that this is horrible but yolo
               .cht("ls")                                                  // chart type
@@ -1364,8 +1365,9 @@ client.on("message", async (message) => {
 
             counter++;
           });
-          highest += 1;
-          lowest -= 1;
+          let diff = (highest - lowest)/10;
+          highest += diff;
+          lowest -= diff;
 
           let img = ImageCharts() // i know that this is horrible but yolo
             .cht("ls")                                                  // chart type
