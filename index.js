@@ -1205,8 +1205,23 @@ client.on("message", async (message) => {
 
       embed.addFields(
         {
-          name: "Payload Informatiom",
+          name: "Payload Information",
           value: fieldValue,
+        }
+      );
+    }
+
+    // dragon capsule check
+    if (mission_json.capsules[0] !== null) {
+      let capsule_res = await fetch("https://api.spacexdata.com/v4/capsules/" + mission_json.capsules[0]);
+      let capsule_json = await capsule_res.json();
+
+      let fieldValue = `Type: ${capsule_json.type}\nSerial: ${capsule_json.serial}\nReuse Counter: ${capsule_json.reuse_count}\nLast Update: ${capsule_json.last_update}\n\n`;
+
+      embed.addFields(
+        {
+          name: "Dragon Information",
+          value: fieldValue
         }
       );
     }
@@ -1250,7 +1265,7 @@ client.on("message", async (message) => {
               counter++;
             });
             // expand graph view
-            let diff = (highest - lowest)/10;
+            let diff = (highest - lowest) / 10;
             highest += diff;
             lowest -= diff;
 
@@ -1365,7 +1380,7 @@ client.on("message", async (message) => {
 
             counter++;
           });
-          let diff = (highest - lowest)/10;
+          let diff = (highest - lowest) / 10;
           highest += diff;
           lowest -= diff;
 
