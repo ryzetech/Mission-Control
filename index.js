@@ -1212,7 +1212,7 @@ client.on("message", async (message) => {
     }
 
     // dragon capsule check
-    if (mission_json.capsules[0] !== null) {
+    if (mission_json.capsules.length > 0) {
       let capsule_res = await fetch("https://api.spacexdata.com/v4/capsules/" + mission_json.capsules[0]);
       let capsule_json = await capsule_res.json();
 
