@@ -1176,7 +1176,27 @@ client.on("message", async (message) => {
       embed.addFields(
         {
           name: "Launchpad Information",
-          value: `Name: ${launchpad_json.name}\nLocality: ${launchpad_json.locality}, ${launchpad_json.region}\nSuccess Rate: ${launchpad_json.launch_successes}/${launchpad_json.launch_attempts}`
+          value: `Name: ${launchpad_json.name}\nLocality: \`${launchpad_json.locality}, ${launchpad_json.region}\`\nSuccess Rate: ${launchpad_json.launch_successes}/${launchpad_json.launch_attempts}`
+        }
+      );
+    }
+
+    // landpad check
+    if (mission_json.cores[0].landpad === null) {
+      embed.addFields(
+        {
+          name: "Landpad Information",
+          value: "**NO INFORMATION AVAILABLE**"
+        }
+      );
+    } else {
+      let landpad_res = await fetch("https://api.spacexdata.com/v4/landpads/" + mission_json.cores[0].landpad);
+      let landpad_json = await landpad_res.json();
+
+      embed.addFields(
+        {
+          name: "Landpad Information",
+          value: `Name: ${landpad_json.full_name}\nLocality: \`${landpad_json.locality}, ${landpad_json.region}\`\nSuccess Rate: ${landpad_json.landing_successes}/${landpad_json.landing_attempts}`
         }
       );
     }
@@ -1216,7 +1236,7 @@ client.on("message", async (message) => {
       let capsule_res = await fetch("https://api.spacexdata.com/v4/capsules/" + mission_json.capsules[0]);
       let capsule_json = await capsule_res.json();
 
-      let fieldValue = `Type: ${capsule_json.type}\nSerial: ${capsule_json.serial}\nReuse Counter: ${capsule_json.reuse_count}\nLast Update: ${capsule_json.last_update}\n\n`;
+      let fieldValue = `Type: ${capsule_json.type}\nSerial: ${capsule_json.serial}\nReuse Counter: ${capsule_json.reuse_count}\nLast Update: \`${capsule_json.last_update}\``;
 
       embed.addFields(
         {
