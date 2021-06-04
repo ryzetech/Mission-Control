@@ -1259,7 +1259,21 @@ client.on("message", async (message) => {
     let args = message.content.slice(6).toLowerCase();
 
     if (args.startsWith("apod")) {
-      // TODO: APOD getter
+      let apod_res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${nasa_auth}`);
+      let apod_json = await apod_res.json();
+
+      nasa_rate = parseInt(apod_res.headers.raw()["x-ratelimit-remaining"][0]);
+
+      return message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor("#0b3d91")
+          .setAuthor("NASA APOD", "https://botdata.ryzetech.live/perma/NASA.png")
+          .setTitle(`"${apod_json.title}"`)
+          .setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*`)
+          .setImage(apod_json.hdurl)
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
     }
 
     // rover info
@@ -1272,7 +1286,7 @@ client.on("message", async (message) => {
         return message.channel.send(
           new Discord.MessageEmbed()
             .setColor(embedColorFail)
-            .setAuthor("Nasa Rover", "https://botdata.ryzetech.live/perma/NASA.png")
+            .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
             .setTitle("❌ Invalid Rover!")
             .setDescription(`You can choose between **Curiosity, Opportunity** and **Spirit**.\n*Syntax: ${prefix}nasa rover <rover> <cam>*`)
             .setTimestamp()
@@ -1293,7 +1307,7 @@ client.on("message", async (message) => {
         return message.channel.send(
           new Discord.MessageEmbed()
             .setColor(embedColorFail)
-            .setAuthor("Nasa Rover", "https://botdata.ryzetech.live/perma/NASA.png")
+            .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
             .setTitle("❌ Invalid Cam!")
             .setDescription(`A matrix of available cams per rover is displayed below. Use the abbreviations!\n*Syntax: ${prefix}nasa rover <rover> <cam>*`)
             .setImage("https://botdata.ryzetech.live/perma/nasarovercams.png")
@@ -1333,8 +1347,8 @@ client.on("message", async (message) => {
 
       return message.channel.send(
         new Discord.MessageEmbed()
-          .setColor(embedColorStandard)
-          .setAuthor("Nasa Rover", "https://botdata.ryzetech.live/perma/NASA.png")
+          .setColor("#0b3d91")
+          .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
           .setTitle(`${rover.charAt(0).toUpperCase() + rover.slice(1)} ${cam.toUpperCase()} @ SOL ${sol}`)
           .setImage(img)
           .setTimestamp()
