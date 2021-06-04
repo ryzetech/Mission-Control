@@ -80,6 +80,9 @@ var joinCounter = 0;
 var market, eth_badge;
 var price = 0;
 
+// nasa api rate limit holder
+var nasa_rate = 1000;
+
 const startDate = new Date();
 
 //// HELP METHODS
@@ -1267,24 +1270,76 @@ client.on("message", async (message) => {
       let rover = startsWithInArray(args, ["curiosity", "opportunity", "spirit"]);
       if (!rover) {
         return message.channel.send(
-          // TODO: rover rejection message
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("Nasa Rover", "https://botdata.ryzetech.live/perma/NASA.png")
+            .setTitle("❌ Invalid Rover!")
+            .setDescription(`You can choose between **Curiosity, Opportunity** and **Spirit**.\n*Syntax: ${prefix}nasa rover <rover> <cam>*`)
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
         );
       }
 
       // define cams
       let available_cams;
       rover == "curiosity" ? available_cams = ["mast", "chemcam", "mahli", "mardi", "navcam"] : available_cams = ["pancam", "minites"];
-      available_cams.concat(["fhaz", "rhaz", "navcam"]);
+      available_cams.push("fhaz", "rhaz", "navcam"); // those cams are available on all three rovers, therefore we can add them every time
 
       // get cam
-      let cam = args.slice(rover.length+1);
+      let cam = args.slice(rover.length + 1);
       if (!available_cams.includes(cam)) {
+
+
         return message.channel.send(
-          // TODO: cam rejection message
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("Nasa Rover", "https://botdata.ryzetech.live/perma/NASA.png")
+            .setTitle("❌ Invalid Cam!")
+            .setDescription(`A matrix of available cams per rover is displayed below. Use the abbreviations!\n*Syntax: ${prefix}nasa rover <rover> <cam>*`)
+            .setImage("https://botdata.ryzetech.live/perma/nasarovercams.png")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
         );
       }
 
+      message.channel.startTyping();
 
+      // get rover manifest
+      let man_res = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${nasa_auth}`);
+      let man_json = await man_res.json();
+
+      // reverse the order to get the latest image
+      let cam_data = man_json.photo_manifest.photos.reverse();
+      let sol = 0;
+
+      // find latest sol set where the cam has taken an image
+      for (let i in cam_data) {
+        if (cam_data[i].cameras.includes(cam.toUpperCase())) {
+          sol = cam_data[i].sol;
+          break;
+        }
+      }
+
+      // resolve sol data
+      let sol_res = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/photos?sol=${sol}&camera=${cam}&api_key=${nasa_auth}`);
+      let sol_json = await sol_res.json();
+
+      // get last image
+      let img = sol_json.photos[sol_json.photos.length - 1].img_src;
+
+      message.channel.stopTyping();
+
+      nasa_rate = parseInt(sol_res.headers.raw()["x-ratelimit-remaining"][0]);
+
+      return message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorStandard)
+          .setAuthor("Nasa Rover", "https://botdata.ryzetech.live/perma/NASA.png")
+          .setTitle(`${rover.charAt(0).toUpperCase() + rover.slice(1)} ${cam.toUpperCase()} @ SOL ${sol}`)
+          .setImage(img)
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
     }
   }
 
