@@ -1355,6 +1355,28 @@ client.on("message", async (message) => {
           .setFooter(`Requested by ${message.author.tag}`)
       );
     }
+
+    else {
+      return message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("NASA", "https://botdata.ryzetech.live/perma/NASA.png")
+          .setTitle("❌ Syntax error!")
+          .setDescription("There are multiple subcommands:")
+          .addFields(
+            {
+              name: "nasa apod",
+              value: "Get the Astronomic Picture of the Day"
+            },
+            {
+              name: "nasa rover <rover> <cam>",
+              value: "Get the lastest picture of a rover cam on Mars!"
+            }
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
   }
 
   //// ECONOMY SECTION
