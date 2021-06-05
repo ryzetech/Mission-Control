@@ -1259,10 +1259,25 @@ client.on("message", async (message) => {
     let args = message.content.slice(6).toLowerCase();
 
     if (args.startsWith("apod")) {
-      let apod_res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${nasa_auth}`);
-      let apod_json = await apod_res.json();
+      // attempt to load data from cache
+      let apod_json = botCacheStorage.get("nasa-apod");
 
-      nasa_rate = parseInt(apod_res.headers.raw()["x-ratelimit-remaining"][0]);
+      // if nothing is cached:
+      if (!apod_json) {
+        let apod_res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${nasa_auth}`);
+        apod_json = await apod_res.json();
+        nasa_rate = parseInt(apod_res.headers.raw()["x-ratelimit-remaining"][0]);
+
+        // set cache
+        let success = botCacheStorage.set("nasa-apod", apod_json, 60 * 60); // TTL = 1h
+        if (!success) {
+          console.error(
+            'ERR [EXEC] "' +
+            message.content +
+            '" - Error: Cache error! Failed to set cache value for "nasa_apod"'
+          );
+        }
+      }
 
       return message.channel.send(
         new Discord.MessageEmbed()
@@ -1319,8 +1334,23 @@ client.on("message", async (message) => {
       message.channel.startTyping();
 
       // get rover manifest
-      let man_res = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${nasa_auth}`);
-      let man_json = await man_res.json();
+      let man_json = botCacheStorage.get("nasa-manifest-" + rover);
+
+      // if the manifest has not been cached yet:
+      if (!man_json){
+        let man_res = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${nasa_auth}`);
+        man_json = await man_res.json();
+
+        let success = botCacheStorage.set("nasa-manifest-" + rover, man_json, 60 * 60); // TTL = 1h
+
+        if (!success) {
+          console.error(
+            'ERR [EXEC] "' +
+            message.content +
+            '" - Error: Cache error! Failed to set cache value for "nasa-manifest-' + rover + '"'
+          );
+        }
+      }
 
       // reverse the order to get the latest image
       let cam_data = man_json.photo_manifest.photos.reverse();
