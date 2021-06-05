@@ -1009,8 +1009,8 @@ client.on("message", async (message) => {
       // set value
       value = json;
 
-      // update cache                                <h, m, s, mil>
-      let success = botCacheStorage.set("news", json, 2 * 60 * 60 * 1000);
+      // update cache                                <h, m, s>
+      let success = botCacheStorage.set("news", json, 2 * 60 * 60);
 
       // error log message
       if (!success) {
@@ -1041,7 +1041,7 @@ client.on("message", async (message) => {
         let success = botCacheStorage.set(
           `news_${i}`,
           data,
-          2 * 60 * 60 * 1000
+          2 * 60 * 60
         );
 
         // error log
