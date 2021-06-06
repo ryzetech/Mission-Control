@@ -70,7 +70,7 @@ const {
   embedColorFail,
   embedPB,
 } = require("./config.json");
-const { token } = require("./token.json");
+const { token, nasa_auth } = require("./token.json");
 
 // funny counters for fun lol
 var messageCounter = 0;
@@ -79,6 +79,9 @@ var joinCounter = 0;
 // init vars for coingecko stuff
 var market, eth_badge;
 var price = 0;
+
+// nasa api rate limit holder
+var nasa_rate = 1000;
 
 const startDate = new Date();
 
@@ -1249,6 +1252,161 @@ client.on("message", async (message) => {
     // god i hate this notation, NEVER USE IT AGAIN!
 
     message.channel.send(embed);
+  }
+
+  // NASA INFO
+  else if (message.content.startsWith(`${prefix}nasa`)) {
+    let args = message.content.slice(6).toLowerCase();
+
+    if (args.startsWith("apod")) {
+      // attempt to load data from cache
+      let apod_json = botCacheStorage.get("nasa-apod");
+
+      // if nothing is cached:
+      if (!apod_json) {
+        let apod_res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${nasa_auth}`);
+        apod_json = await apod_res.json();
+        nasa_rate = parseInt(apod_res.headers.raw()["x-ratelimit-remaining"][0]);
+
+        // set cache
+        let success = botCacheStorage.set("nasa-apod", apod_json, 60 * 60); // TTL = 1h
+        if (!success) {
+          console.error(
+            'ERR [EXEC] "' +
+            message.content +
+            '" - Error: Cache error! Failed to set cache value for "nasa_apod"'
+          );
+        }
+      }
+
+      return message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor("#0b3d91")
+          .setAuthor("NASA APOD", "https://botdata.ryzetech.live/perma/NASA.png")
+          .setTitle(`"${apod_json.title}"`)
+          .setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*`)
+          .setImage(apod_json.hdurl)
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+
+    // rover info
+    else if (args.startsWith("rover")) {
+      args = args.slice(6);
+
+      // get rover
+      let rover = startsWithInArray(args, ["curiosity", "opportunity", "spirit"]);
+      if (!rover) {
+        return message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
+            .setTitle("❌ Invalid Rover!")
+            .setDescription(`You can choose between **Curiosity, Opportunity** and **Spirit**.\n*Syntax: ${prefix}nasa rover <rover> <cam>*`)
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+
+      // define cams
+      let available_cams;
+      rover == "curiosity" ? available_cams = ["mast", "chemcam", "mahli", "mardi", "navcam"] : available_cams = ["pancam", "minites"];
+      available_cams.push("fhaz", "rhaz", "navcam"); // those cams are available on all three rovers, therefore we can add them every time
+
+      // get cam
+      let cam = args.slice(rover.length + 1);
+      if (!available_cams.includes(cam)) {
+
+
+        return message.channel.send(
+          new Discord.MessageEmbed()
+            .setColor(embedColorFail)
+            .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
+            .setTitle("❌ Invalid Cam!")
+            .setDescription(`A matrix of available cams per rover is displayed below. Use the abbreviations!\n*Syntax: ${prefix}nasa rover <rover> <cam>*`)
+            .setImage("https://botdata.ryzetech.live/perma/nasarovercams.png")
+            .setTimestamp()
+            .setFooter(`Requested by ${message.author.tag}`)
+        );
+      }
+
+      message.channel.startTyping();
+
+      // get rover manifest
+      let man_json = botCacheStorage.get("nasa-manifest-" + rover);
+
+      // if the manifest has not been cached yet:
+      if (!man_json){
+        let man_res = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${nasa_auth}`);
+        man_json = await man_res.json();
+
+        let success = botCacheStorage.set("nasa-manifest-" + rover, man_json, 60 * 60); // TTL = 1h
+
+        if (!success) {
+          console.error(
+            'ERR [EXEC] "' +
+            message.content +
+            '" - Error: Cache error! Failed to set cache value for "nasa-manifest-' + rover + '"'
+          );
+        }
+      }
+
+      // reverse the order to get the latest image
+      let cam_data = man_json.photo_manifest.photos.reverse();
+      let sol = 0;
+
+      // find latest sol set where the cam has taken an image
+      for (let i in cam_data) {
+        if (cam_data[i].cameras.includes(cam.toUpperCase())) {
+          sol = cam_data[i].sol;
+          break;
+        }
+      }
+
+      // resolve sol data
+      let sol_res = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/photos?sol=${sol}&camera=${cam}&api_key=${nasa_auth}`);
+      let sol_json = await sol_res.json();
+
+      // get last image
+      let img = sol_json.photos[sol_json.photos.length - 1].img_src;
+
+      message.channel.stopTyping();
+
+      nasa_rate = parseInt(sol_res.headers.raw()["x-ratelimit-remaining"][0]);
+
+      return message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor("#0b3d91")
+          .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
+          .setTitle(`${rover.charAt(0).toUpperCase() + rover.slice(1)} ${cam.toUpperCase()} @ SOL ${sol}`)
+          .setImage(img)
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+
+    else {
+      return message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("NASA", "https://botdata.ryzetech.live/perma/NASA.png")
+          .setTitle("❌ Syntax error!")
+          .setDescription("There are multiple subcommands:")
+          .addFields(
+            {
+              name: "nasa apod",
+              value: "Get the Astronomic Picture of the Day"
+            },
+            {
+              name: "nasa rover <rover> <cam>",
+              value: "Get the lastest picture of a rover cam on Mars!"
+            }
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
   }
 
   //// ECONOMY SECTION
