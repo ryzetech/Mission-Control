@@ -2469,9 +2469,9 @@ client.on("message", async (message) => {
 
     message.channel.send(
       "``` ------ LOCAL VARS ------\nmessageCounter = " + messageCounter +
-      "joinCounter = " + joinCounter +
-      "price = " + price +
-      "nasa_rate = " + nasa_rate +
+      "\njoinCounter = " + joinCounter +
+      "\nprice = " + price +
+      "\nnasa_rate = " + nasa_rate +
       "```"
       );
   }
