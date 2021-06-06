@@ -71,6 +71,7 @@ const {
   embedPB,
 } = require("./config.json");
 const { token, nasa_auth } = require("./token.json");
+const { join } = require("@prisma/client/runtime");
 
 // funny counters for fun lol
 var messageCounter = 0;
@@ -2450,6 +2451,29 @@ client.on("message", async (message) => {
           .setFooter(`Requested by ${message.author.tag}`)
       );
     }
+  }
+
+  // EVALUATE LOCAL VARS
+  else if (message.content.startsWith(`${prefix}localvars`)) {
+    if (!message.member.roles.cache.some((role) => modroles.includes(role.id))) {
+      return message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("Debug", embedPB)
+          .setTitle("❌ Insufficent Permissions!")
+          .setDescription("This command is reserved for mods and admins!")
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+
+    message.channel.send(
+      "``` ------ LOCAL VARS ------\nmessageCounter = " + messageCounter +
+      "joinCounter = " + joinCounter +
+      "price = " + price +
+      "nasa_rate = " + nasa_rate +
+      "```"
+      );
   }
 
   // random reward for chatting
