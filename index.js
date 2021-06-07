@@ -628,7 +628,7 @@ client.on("message", async (message) => {
         message.channel.send(
           new Discord.MessageEmbed()
             .setColor(embedColorStandard)
-            .setAuthor("Pokédex", embedPB)
+            .setAuthor("Pokédex", "https://botdata.ryzetech.live/perma/pokeball.png")
             .setTitle(json.name.charAt(0).toUpperCase() + json.name.slice(1))
             .setDescription("**" + species + "**\n" + json.description)
             .setThumbnail(json.sprites.animated)
@@ -673,10 +673,10 @@ client.on("message", async (message) => {
         message.channel.send(
           new Discord.MessageEmbed()
             .setColor(embedColorFail)
-            .setAuthor("Pokédex", embedPB)
+            .setAuthor("Pokédex", "https://botdata.ryzetech.live/perma/pokeball.png")
             .setTitle("❌ An error occured! :(")
             .setThumbnail(
-              "https://static.wikia.nocookie.net/nintendo/images/8/85/MissingNoNormal.png/revision/latest?cb=20131114211037&path-prefix=en"
+              "https://botdata.ryzetech.live/perma/missingno.png"
             )
             .setDescription("Error Message: *" + json.error + "*")
             .setTimestamp()
@@ -717,7 +717,7 @@ client.on("message", async (message) => {
         // preparing embed for easy insertion
         let msg = new Discord.MessageEmbed()
           .setColor(embedColorStandard)
-          .setAuthor("MC Fetch", embedPB)
+          .setAuthor("MC Fetch", "https://botdata.ryzetech.live/perma/grassblock.png")
           .setTitle(json.username)
           .setThumbnail("https://crafatar.com/avatars/" + json.uuid + "?overlay=true")
           .setImage("https://crafatar.com/renders/body/" + json.uuid + "?overlay=true")
@@ -800,7 +800,7 @@ client.on("message", async (message) => {
         message.channel.send(
           new Discord.MessageEmbed()
             .setColor(embedColorFail)
-            .setAuthor("MC Fetch", embedPB)
+            .setAuthor("MC Fetch", "https://botdata.ryzetech.live/perma/grassblock.png")
             .setTitle("❌ An error occured! :(")
             .setDescription("Error Message: *" + json.error + "*")
             .setTimestamp()
@@ -1069,11 +1069,8 @@ client.on("message", async (message) => {
     msg.edit(
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
-        .setAuthor("HackerNews", embedPB)
+        .setAuthor("HackerNews", "https://botdata.ryzetech.live/perma/ycomb.png")
         .setTitle("Top Stories")
-        .setThumbnail(
-          "https://www.ycombinator.com/assets/ycdc/ycombinator-logo-b603b0a270e12b1d42b7cca9d4527a9b206adf8293a77f9f3e8b6cb542fcbfa7.png"
-        )
         .addFields(fields)
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
@@ -1088,7 +1085,7 @@ client.on("message", async (message) => {
     if (args.startsWith("next")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/next");
     else if (args.startsWith("latest")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/latest");
     else {
-      message.channel.send(
+      return message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
           .setAuthor("❌ Syntax error!", embedPB)
@@ -1481,7 +1478,7 @@ client.on("message", async (message) => {
             message.channel.send(
               new Discord.MessageEmbed()
                 .setColor(embedColorStandard)
-                .setAuthor("Stonk Info", embedPB)
+                .setAuthor("Crypto Info", "https://botdata.ryzetech.live/perma/CoinGecko.png")
                 .setTitle("Banano Stats")
                 .setURL("https://www.coingecko.com/en/coins/banano")
                 .setThumbnail(ban_img)
@@ -1595,7 +1592,7 @@ client.on("message", async (message) => {
           message.channel.send(
             new Discord.MessageEmbed()
               .setColor(embedColorStandard)
-              .setAuthor("Coin System", embedPB)
+              .setAuthor("Crypto Info", "https://botdata.ryzetech.live/perma/CoinGecko.png")
               .setTitle("Ethereum Stats")
               .setURL("https://www.coingecko.com/en/coins/ethereum")
               .setThumbnail(eth_badge)
@@ -1650,7 +1647,8 @@ client.on("message", async (message) => {
       if (isNaN(amount) || amount <= 0) {
         msg = new Discord.MessageEmbed()
           .setColor(embedColorFail)
-          .setAuthor("❌ Invalid amount!", embedPB)
+          .setAuthor("Trading", embedPB)
+          .setTitle("❌ Invalid amount!")
           .setDescription(
             "The specified amount is not a number or invalid.\nPlease try again."
           )
@@ -1661,7 +1659,8 @@ client.on("message", async (message) => {
         if (amount > usr.money) {
           msg = new Discord.MessageEmbed()
             .setColor(embedColorFail)
-            .setAuthor("❌ Invalid amount!", embedPB)
+            .setAuthor("Trading", embedPB)
+            .setTitle("❌ Invalid amount!")
             .setDescription(
               "The specified amount is too high or your balance is to low."
             )
@@ -1685,7 +1684,8 @@ client.on("message", async (message) => {
 
           msg = new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
-            .setAuthor("✅ Transaction confirmed!", embedPB)
+            .setAuthor("Trading", embedPB)
+            .setTitle("✅ Transaction confirmed!")
             .setDescription("This is your balance now:")
             .addFields(
               {
@@ -1719,7 +1719,8 @@ client.on("message", async (message) => {
       if (isNaN(amount) || amount <= 0) {
         msg = new Discord.MessageEmbed()
           .setColor(embedColorFail)
-          .setAuthor("❌ Invalid amount", embedPB)
+          .setAuthor("Trading", embedPB)
+          .setTitle("❌ Invalid amount")
           .setDescription(
             "The specified amount is not a number or invalid.\nPlease try again."
           )
@@ -1730,7 +1731,8 @@ client.on("message", async (message) => {
         if (amount * price > usr.money) {
           msg = new Discord.MessageEmbed()
             .setColor(embedColorFail)
-            .setAuthor("❌ Invalid amount", embedPB)
+            .setAuthor("Trading", embedPB)
+            .setTitle("❌ Invalid amount")
             .setDescription(
               "The specified amount is too high or your balance is to low."
             )
@@ -1754,7 +1756,8 @@ client.on("message", async (message) => {
 
           msg = new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
-            .setAuthor("✅ Transaction confirmed!", embedPB)
+            .setAuthor("Trading", embedPB)
+            .setTitle("✅ Transaction confirmed!")
             .setDescription("This is your balance now:")
             .addFields(
               {
@@ -1788,7 +1791,8 @@ client.on("message", async (message) => {
       if (isNaN(amount) || amount <= 0) {
         msg = new Discord.MessageEmbed()
           .setColor(embedColorFail)
-          .setAuthor("❌ Invalid amount", embedPB)
+          .setAuthor("Trading", embedPB)
+          .setTitle("❌ Invalid amount")
           .setDescription(
             "The specified amount is not a number or invalid.\nPlease try again."
           )
@@ -1799,7 +1803,8 @@ client.on("message", async (message) => {
         if (amount / price > usr.eth) {
           msg = new Discord.MessageEmbed()
             .setColor(embedColorFail)
-            .setAuthor("❌ Invalid amount", embedPB)
+            .setAuthor("Trading", embedPB)
+            .setTitle("❌ Invalid amount")
             .setDescription(
               "The specified amount is too high or your balance is to low."
             )
@@ -1823,7 +1828,8 @@ client.on("message", async (message) => {
 
           msg = new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
-            .setAuthor("✅ Transaction confirmed!", embedPB)
+            .setAuthor("Trading", embedPB)
+            .setTitle("✅ Transaction confirmed!")
             .setDescription("This is your balance now:")
             .addFields(
               {
@@ -1857,7 +1863,8 @@ client.on("message", async (message) => {
       if (isNaN(amount) || amount <= 0) {
         msg = new Discord.MessageEmbed()
           .setColor(embedColorFail)
-          .setAuthor("❌ Invalid amount", embedPB)
+          .setAuthor("Trading", embedPB)
+          .setTitle("❌ Invalid amount")
           .setDescription(
             "The specified amount is not a number or invalid.\nPlease try again."
           )
@@ -1868,7 +1875,8 @@ client.on("message", async (message) => {
         if (amount > usr.eth) {
           msg = new Discord.MessageEmbed()
             .setColor(embedColorFail)
-            .setAuthor("❌ Invalid amount", embedPB)
+            .setAuthor("Trading", embedPB)
+            .setTitle("❌ Invalid amount")
             .setDescription(
               "The specified amount is too high or your balance is to low."
             )
@@ -1892,7 +1900,8 @@ client.on("message", async (message) => {
 
           msg = new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
-            .setAuthor("✅ Transaction confirmed!", embedPB)
+            .setAuthor("Trading", embedPB)
+            .setTitle("✅ Transaction confirmed!")
             .setDescription("This is your balance now:")
             .addFields(
               {
@@ -1920,7 +1929,8 @@ client.on("message", async (message) => {
       message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
-          .setAuthor("❌ Syntax error!", embedPB)
+          .setAuthor("Trading", embedPB)
+          .setTitle("❌ Syntax error!")
           .setDescription("There are multiple subcommands:")
           .addFields(
             { name: "eth stats", value: "Displays the current Ethereum stats" },
@@ -2184,6 +2194,7 @@ client.on("message", async (message) => {
       topEthField = "",
       usrCheck;
 
+    // FIXME PLEASE COMMENT THIS SHIT FFS!!!!!!!!!!!!!!!!
     topMoney.forEach((u, i) => {
       if (u.money == 0) {
         topMoneyField += "\n";
@@ -2241,7 +2252,8 @@ client.on("message", async (message) => {
       message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
-          .setAuthor("❌ Invalid side!", embedPB)
+          .setAuthor("Coinflip", embedPB)
+          .setTitle("❌ Invalid side!")
           .setDescription(
             "The side must be either \"heads\" or \"tails\". Please check your syntax and try again.\n\n*Usage: " + prefix + "coinflip <{heads | tails}> <bet>*"
           )
@@ -2256,7 +2268,8 @@ client.on("message", async (message) => {
       message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
-          .setAuthor("❌ Invalid amount!", embedPB)
+          .setAuthor("Coinflip", embedPB)
+          .setTitle("❌ Invalid amount!")
           .setDescription(
             "The specified amount is not a number or invalid.\nPlease try again."
           )
@@ -2270,7 +2283,8 @@ client.on("message", async (message) => {
       message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
-          .setAuthor("❌ Invalid amount", embedPB)
+          .setAuthor("Coinflip", embedPB)
+          .setTitle("❌ Invalid amount")
           .setDescription(
             "The specified amount is too high or your balance is to low."
           )
@@ -2342,6 +2356,7 @@ client.on("message", async (message) => {
 
   //// MOD SECTION
   // old user removal
+  // TODO comment this, it is highly retarded
   else if (message.content.startsWith(`${prefix}clearOldUsers`)) {
     if (!message.member.roles.cache.some((role) => modroles.includes(role.id)))
       return;
@@ -2364,7 +2379,7 @@ client.on("message", async (message) => {
     await message.channel.send(
       new Discord.MessageEmbed()
         .setColor(embedColorProcessing)
-        .setAuthor("The inactive User vacuum of ", embedPB)
+        .setAuthor("The inactive User vacuum!", embedPB)
         .setTitle("REMOVED OLD USERS")
         .setDescription("Removed [**" + (_count || "0") + "**] Users from database")
         .setTimestamp()
@@ -2387,7 +2402,7 @@ client.on("message", async (message) => {
       let sent = await message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorProcessing)
-          .setAuthor("VS Check", embedPB)
+          .setAuthor("VS Check", "https://botdata.ryzetech.live/perma/virgin.png")
           .setTitle("Hold on!")
           .setDescription(
             "I'm asking Virgin Slayer about the ban status of this user, give me a second..."
@@ -2407,7 +2422,7 @@ client.on("message", async (message) => {
         sent.edit(
           new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
-            .setAuthor("VS Check", embedPB)
+            .setAuthor("VS Check", "https://botdata.ryzetech.live/perma/virgin.png")
             .setTitle("User is not banned!")
             .setDescription("This user is unknown to our global database.")
             .addFields(
@@ -2430,7 +2445,7 @@ client.on("message", async (message) => {
         sent.edit(
           new Discord.MessageEmbed()
             .setColor(embedColorWarn)
-            .setAuthor("VS Check", embedPB)
+            .setAuthor("VS Check", "https://botdata.ryzetech.live/perma/virgin.png")
             .setTitle("User is banned!")
             .setDescription(
               "This user is known to us for inappropriate behaviour."
@@ -2457,7 +2472,7 @@ client.on("message", async (message) => {
       message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
-          .setAuthor("VS Check", embedPB)
+          .setAuthor("VS Check", "https://botdata.ryzetech.live/perma/virgin.png")
           .setTitle("❌ Insufficent Permissions!")
           .setDescription("This command is reserved for mods and admins!")
           .setTimestamp()
