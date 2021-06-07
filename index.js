@@ -992,7 +992,7 @@ client.on("message", async (message) => {
     let msg = await message.channel.send(
       new Discord.MessageEmbed()
         .setColor(embedColorProcessing)
-        .setAuthor("HackerNews", embedPB)
+        .setAuthor("HackerNews", "https://botdata.ryzetech.live/perma/ycomb.png")
         .setTitle("Hold on!")
         .setDescription("I'm fetching data right now, give me a second...")
         .setTimestamp()
