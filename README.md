@@ -6,7 +6,7 @@ This bot provides games and useful information to the FITB Discord server. It pr
 #### Currently planned:
  - [ ] FitB Service integration
  - [ ] age verification system
- - [ ] NASA API access
+ - [x] NASA API access
  - [ ] Channel purging
  - [ ] proper command handling
 
