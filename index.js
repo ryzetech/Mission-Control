@@ -2063,6 +2063,15 @@ client.on("message", async (message) => {
 
     // calc fee
     const fee = Math.round(amount * 0.05);
+
+    // add fee to pot
+    stats = await prisma.stat.update({
+      where: { id: 0 },
+      data: {
+        casinoPot: { increment: fee }
+      }
+    });
+
     // transaction
     userFrom = await prisma.user.update({
       where: { id: userFrom.id },
