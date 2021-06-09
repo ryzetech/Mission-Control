@@ -2538,10 +2538,16 @@ client.on("message", async (message) => {
     }
 
     message.channel.send(
-      "``` ------ LOCAL VARS ------\nmessageCounter = " + messageCounter +
+      "```--- LOCAL VARS ---\nmessageCounter = " + messageCounter +
       "\njoinCounter = " + joinCounter +
       "\nprice = " + price +
       "\nnasa_rate = " + nasa_rate +
+      "\n\n--- STATS DB ENTRY ---\nmessagesRead = " + stats.messagesRead +
+      "\nusersGreeted = " + stats.usersGreeted +
+      "\necoPayoutTotal = " + stats.ecoPayoutTotal +
+      "\ncasinoWinnings = " + stats.casinoWinnings +
+      "\ncasinoLosses = " + stats.casinoLosses +
+      "\ncasinoPot = " + stats.casinoPot +
       "```"
       );
   }
