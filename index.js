@@ -184,6 +184,12 @@ client.on("ready", () => {
 client.on("guildMemberAdd", async (member) => {
   joinCounter++;
 
+  // stats tracking
+  let stats = await prisma.stat.update({
+    where: { id: 0 },
+    data: { usersGreeted: { increment: 1 } }
+  });
+
   let channel = member.guild.channels.cache.get(welcomeChannelID);
 
   // ask Virgin Slayer if the user is banned on the global network
@@ -243,6 +249,12 @@ client.on("guildMemberAdd", async (member) => {
 client.on("message", async (message) => {
   // some tasks need the time of execution
   let exectime = new Date().getTime();
+
+  // stats tracking
+  let stats = await prisma.stat.update({
+    where: { id: 0 },
+    data: { messagesRead: { increment: 1 } }
+  });
 
   // preventing database checks on bots
   if (!message.author.bot) {
@@ -2125,6 +2137,12 @@ client.on("message", async (message) => {
         },
       });
 
+      // stats tracking
+      stats = await prisma.stat.update({
+        where: { id: 0 },
+        data: { ecoPayoutTotal: { increment: amount } }
+      });
+
       // display the data
       msg = new Discord.MessageEmbed()
         .setColor(embedColorConfirm)
@@ -2339,6 +2357,12 @@ client.on("message", async (message) => {
         },
       });
 
+      // stats tracking
+      stats = await prisma.stat.update({
+        where: { id: 0 },
+        data: { casinoWinnings: { increment: amount*coinflip_multiplicator } }
+      });
+
       msg
         .setColor(embedColorConfirm)
         .setTitle("🏆 YOU WON!")
@@ -2346,6 +2370,15 @@ client.on("message", async (message) => {
       sent.edit(msg);
     }
     else {
+      // stats tracking
+      stats = await prisma.stat.update({
+        where: { id: 0 },
+        data: {
+          casinoLosses: { increment: amount },
+          casinoPot: { increment: amount }
+        }
+      });
+
       msg
         .setColor(embedColorFail)
         .setTitle("❌ YOU LOST!")
