@@ -1333,7 +1333,7 @@ client.on("message", async (message) => {
 
       // define cams
       let available_cams;
-      rover == "curiosity" ? available_cams = ["mast", "chemcam", "mahli", "mardi", "navcam"] : available_cams = ["pancam", "minites"];
+      rover == "curiosity" ? available_cams = ["mast", "chemcam", "mahli", "mardi"] : available_cams = ["pancam", "minites"];
       available_cams.push("fhaz", "rhaz", "navcam", "random"); // those cams are available on all three rovers, therefore we can add them every time
 
       // when the rover is randomly chosen, it doesn't make sense to choose the camera
