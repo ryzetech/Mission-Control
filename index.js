@@ -1485,7 +1485,7 @@ client.on("message", async (message) => {
               .chs("999x500");                                            // image size
 
             // save the image | don't worry about disk space, old images will be cleaned up by cron
-            img.toFile(`/usr/services/Mission-Control/data/graph_ban_${exectime}.png`);
+            img.toFile(`/usr/services/Mission-Control/data/temp/graph_ban_${exectime}.png`);
 
             message.channel.send(
               new Discord.MessageEmbed()
@@ -1599,7 +1599,7 @@ client.on("message", async (message) => {
             .chd(plotdata)                                              // data
             .chs("999x500");                                            // image size
 
-          img.toFile(`/usr/services/Mission-Control/data/graph_eth_${exectime}.png`);
+          img.toFile(`/usr/services/Mission-Control/data/temp/graph_eth_${exectime}.png`);
 
           message.channel.send(
             new Discord.MessageEmbed()
