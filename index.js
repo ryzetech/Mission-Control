@@ -1475,7 +1475,7 @@ client.on("message", async (message) => {
               .chf("bg,s,2f313600")                                       // background (alpha set to 0, can be changed later)
               .chxt("y")                                                  // visible axis
               .chxs("0,FFFFFF")                                           // axis color
-              .chxr("0," + lowest.toFixed(3) + "," + highest.toFixed(3))  // axis range
+              .chxr("0," + lowest.toFixed(4) + "," + highest.toFixed(4))  // axis range
               .chg("0,50,1,1,FFFFFF")                                     // grid style
               .chtt("Banano 24h €")                                       // title
               .chts("FFFFFF,25")                                          // title style
@@ -1590,7 +1590,7 @@ client.on("message", async (message) => {
             .chf("bg,s,2f313600")                                       // background (alpha set to 0, can be changed later)
             .chxt("y")                                                  // visible axis
             .chxs("0,FFFFFF")                                           // axis color
-            .chxr("0," + lowest.toFixed(3) + "," + highest.toFixed(3))  // axis range
+            .chxr("0," + Math.floor(lowest) + "," + Math.ceil(highest)) // axis range
             .chg("0,50,1,1,FFFFFF")                                     // grid style
             .chtt("Ethereum 24h €")                                     // title
             .chts("FFFFFF,25")                                          // title style
