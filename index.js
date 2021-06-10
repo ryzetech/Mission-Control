@@ -1495,7 +1495,7 @@ client.on("message", async (message) => {
                 .setURL("https://www.coingecko.com/en/coins/banano")
                 .setThumbnail(ban_img)
                 .setImage(
-                  `https://botdata.ryzetech.live/graph_ban_${exectime}.png`
+                  `https://botdata.ryzetech.live/temp/graph_ban_${exectime}.png`
                 )
                 .setDescription(
                   "*Note: The data displayed here can be delayed by up to five minutes.*"
@@ -1609,7 +1609,7 @@ client.on("message", async (message) => {
               .setURL("https://www.coingecko.com/en/coins/ethereum")
               .setThumbnail(eth_badge)
               .setImage(
-                `https://botdata.ryzetech.live/graph_eth_${exectime}.png`
+                `https://botdata.ryzetech.live/temp/graph_eth_${exectime}.png`
               )
               .setDescription(
                 "*Note: The data displayed here can be delayed by up to five minutes. However, you will always play around with this dataset!*"
