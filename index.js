@@ -1100,7 +1100,7 @@ client.on("message", async (message) => {
       return message.channel.send(
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
-          .setAuthor("❌ Syntax error!", embedPB)
+          .setAuthor("❌ Syntax error!", "https://botdata.ryzetech.live/perma/elon.png")
           .setDescription("There are multiple subcommands:")
           .addFields(
             {
@@ -1124,7 +1124,7 @@ client.on("message", async (message) => {
     // prebake the embed for funny stuff
     let embed = new Discord.MessageEmbed()
       .setColor(embedColorStandard)
-      .setAuthor("SpaceX - Launch", embedPB)
+      .setAuthor("SpaceX - Launch", "https://botdata.ryzetech.live/perma/elon.png")
       .setTitle(mission_json.name)
       .setThumbnail(
         mission_json.links.patch.small
