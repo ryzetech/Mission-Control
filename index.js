@@ -1298,7 +1298,7 @@ client.on("message", async (message) => {
         .setFooter(`Requested by ${message.author.tag}`);
 
       if (apod_json.media_type === "video") {
-        embed.setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*\n\n=> [VIDEO](${apod_json.url}) <=`)
+        embed.setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*\n\n**=> [VIDEO](${apod_json.url}) <=**`)
       }
 
       return message.channel.send(embed);
