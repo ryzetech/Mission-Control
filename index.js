@@ -1289,16 +1289,19 @@ client.on("message", async (message) => {
         }
       }
 
-      return message.channel.send(
-        new Discord.MessageEmbed()
-          .setColor("#0b3d91")
-          .setAuthor("NASA APOD", "https://botdata.ryzetech.live/perma/NASA.png")
-          .setTitle(`"${apod_json.title}"`)
-          .setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*`)
-          .setImage(apod_json.hdurl)
-          .setTimestamp()
-          .setFooter(`Requested by ${message.author.tag}`)
-      );
+      let embed = new Discord.MessageEmbed()
+        .setColor("#0b3d91")
+        .setAuthor("NASA APOD", "https://botdata.ryzetech.live/perma/NASA.png")
+        .setTitle(`"${apod_json.title}"`)
+        .setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*`)
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`);
+
+      if (apod_json.media_type === "video") {
+        embed.setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*\n\n=> [VIDEO](${apod_json.url}) <=`)
+      }
+
+      return message.channel.send(embed);
     }
 
     // rover info
