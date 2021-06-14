@@ -1289,6 +1289,9 @@ client.on("message", async (message) => {
         }
       }
 
+      // check if copyright is undefined
+      if (apod_json.copyright === undefined) apod_json.copyright = "None / Public Domain";
+
       let embed = new Discord.MessageEmbed()
         .setColor("#0b3d91")
         .setAuthor("NASA APOD", "https://botdata.ryzetech.live/perma/NASA.png")
@@ -1297,8 +1300,13 @@ client.on("message", async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
 
+      // add video link instead of embedding it (because I can't, fuck you Discord)
       if (apod_json.media_type === "video") {
         embed.setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*\n\n**=> [VIDEO](${apod_json.url}) <=**`)
+      }
+      // adding image link
+      else if (apod_json.media_type === "image") {
+        embed.setImage(apod_json.hdurl);
       }
 
       return message.channel.send(embed);
