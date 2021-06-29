@@ -247,6 +247,10 @@ client.on("guildMemberAdd", async (member) => {
 // MESSAGE HANDLER
 // TODO this is a big ugly mess! we should switch to caveats => https://discordjs.guide/creating-your-bot/commands-with-user-input.html#caveats
 client.on("message", async (message) => {
+
+  // check if message is from a server, NOT from dms or groups
+  if (message.guild === null) return;
+
   // some tasks need the time of execution
   let exectime = new Date().getTime();
 
@@ -288,7 +292,7 @@ client.on("message", async (message) => {
         .setDescription(
           "Prefix: " +
           prefix +
-          "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but are not required.\noh and please leave out the brackets"
+          "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but is not required.\noh and please leave out the brackets"
         )
         .setThumbnail(embedPB)
         .addFields(
@@ -336,10 +340,6 @@ client.on("message", async (message) => {
             value:
               "Shows some information on a player in Minecraft.",
             inline: true
-          },
-          {
-            name: "meme",
-            value: "random laugh stuff"
           },
           { name: "\u200b", value: "\u200b" },
           {
@@ -571,24 +571,6 @@ client.on("message", async (message) => {
       );
     }
   }
-
-  // MEME
-  else if (message.content.startsWith(`${prefix}meme`)) {
-    message.channel.startTyping();
-
-    let res = await fetch("https://some-random-api.ml/meme");
-    let json = await res.json();
-    message.channel.send(
-      new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("a random meme", embedPB)
-        .setTitle(json.caption)
-        .setImage(json.image)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
-    );
-    message.channel.stopTyping();
-  } // TODO we should use the reddit api to get a post from a passed subreddit and fall back to this if nothing is passed
 
   // POKEDEX / POKEMON
   else if (
