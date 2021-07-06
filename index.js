@@ -98,6 +98,12 @@ function userident(msg) {
 
 // get difference between to timestamps as text
 function timediff(timestamp1ornow, timestamp2, short) {
+  let negative = false;
+  if (timestamp2 > timestamp1ornow) {
+    [timestamp1ornow, timestamp2] = [timestamp2, timestamp1ornow];
+    negative = true;
+  }
+
   let diff = timestamp1ornow - timestamp2;
 
   let days = Math.floor(diff / 1000 / 60 / 60 / 24);
@@ -108,9 +114,9 @@ function timediff(timestamp1ornow, timestamp2, short) {
   diff -= minutes * 1000 * 60;
   let seconds = Math.floor(diff / 1000);
 
-  if (short) return `${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
+  if (short) return `${negative ? "-" : ""}${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
   else
-    return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
+    return `${negative ? "-" : ""}${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
 }
 
 // Check if user is still on server, if not remove from db
@@ -1320,7 +1326,7 @@ client.on("message", async (message) => {
 
       // choose random rover
       if (rover === "random") {
-        rover = available_rovers[Math.floor(Math.random() * (available_rovers.length-1))];
+        rover = available_rovers[Math.floor(Math.random() * (available_rovers.length - 1))];
         random_rover = true;
       }
 
@@ -1331,7 +1337,7 @@ client.on("message", async (message) => {
 
       // when the rover is randomly chosen, it doesn't make sense to choose the camera
       let cam = args.slice(rover.length + 1);
-      cam = (random_rover || cam.startsWith("random")) ? available_cams[Math.floor(Math.random() * (available_cams.length-1))] : cam ;
+      cam = (random_rover || cam.startsWith("random")) ? available_cams[Math.floor(Math.random() * (available_cams.length - 1))] : cam;
 
       // reject invalid cam
       if (!available_cams.includes(cam)) {
@@ -1353,7 +1359,7 @@ client.on("message", async (message) => {
       let man_json = botCacheStorage.get("nasa-manifest-" + rover);
 
       // if the manifest has not been cached yet:
-      if (!man_json){
+      if (!man_json) {
         let man_res = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${nasa_auth}`);
         man_json = await man_res.json();
 
@@ -2122,7 +2128,7 @@ client.on("message", async (message) => {
     if (new Date(usr.lastearnstamp) < new Date().getTime() - p_cooldown) {
       // check if user is in cooldown defined by "p_cooldown"
       // calc amount
-      let amount = Math.round(Math.random() * 950 + 50);
+      let amount = Math.round(Math.random() * 950 + 50); // FIXME AAAAAAAAAAAAAAAAAAA
 
       // cooldown the user and calculate new amount
       usr = await prisma.user.update({
@@ -2362,7 +2368,7 @@ client.on("message", async (message) => {
       // stats tracking
       stats = await prisma.stat.update({
         where: { id: 0 },
-        data: { casinoWinnings: { increment: amount*coinflip_multiplicator } }
+        data: { casinoWinnings: { increment: amount * coinflip_multiplicator } }
       });
 
       msg
@@ -2542,10 +2548,11 @@ client.on("message", async (message) => {
       "\ncasinoLosses = " + stats.casinoLosses +
       "\ncasinoPot = " + stats.casinoPot +
       "```"
-      );
+    );
   }
 
   // random reward for chatting
+  // FIXME CSPRNG
   else {
     if (Math.round(Math.random() * 4 + 1) === 5 && !message.author.bot) {
       let usr = await prisma.user.update({
