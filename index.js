@@ -46,6 +46,7 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
 const ImageCharts = require('image-charts');
+var randomNumber = require("random-number-csprng");
 // import { PrismaClient } from "@prisma/client";
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
@@ -158,6 +159,10 @@ function setTimeoutPromise(delay) {
   return new Promise((resolve) => {
     setTimeout(() => resolve(), delay);
   });
+}
+
+async function csprng(range1, range2) {
+  return await randomNumber(range1, range2);
 }
 
 //// CLASSES
@@ -2128,7 +2133,7 @@ client.on("message", async (message) => {
     if (new Date(usr.lastearnstamp) < new Date().getTime() - p_cooldown) {
       // check if user is in cooldown defined by "p_cooldown"
       // calc amount
-      let amount = Math.round(Math.random() * 950 + 50); // FIXME AAAAAAAAAAAAAAAAAAA
+      let amount = csprng(50, 999); // Math.round(Math.random() * 950 + 50);
 
       // cooldown the user and calculate new amount
       usr = await prisma.user.update({
@@ -2321,7 +2326,7 @@ client.on("message", async (message) => {
     }
 
     // predeterming if the user has won
-    let won = (Math.floor(Math.random() * 2) == 0);
+    let won = (await csprng(0, 1) == 0);
     // side note: i dont give a shit on what side the user gives me
     // im just determining if they won and display the if the other side if they didnt
     // well, lets hope that nobody will ever look here to verify chances or something...
@@ -2552,14 +2557,13 @@ client.on("message", async (message) => {
   }
 
   // random reward for chatting
-  // FIXME CSPRNG
   else {
     if (Math.round(Math.random() * 4 + 1) === 5 && !message.author.bot) {
       let usr = await prisma.user.update({
         where: { id: message.author.id },
         data: {
           money: {
-            increment: Math.round(Math.random() * 8 + 1) / 100,
+            increment: await csprng(1, 9) / 100,
           },
         },
       });
