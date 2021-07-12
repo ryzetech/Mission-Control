@@ -46,7 +46,7 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
 const ImageCharts = require('image-charts');
-var randomNumber = require("random-number-csprng");
+var crypto = require('crypto');
 // import { PrismaClient } from "@prisma/client";
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
@@ -161,8 +161,32 @@ function setTimeoutPromise(delay) {
   });
 }
 
-async function csprng(range1, range2) {
-  return await randomNumber(range1, range2);
+function csprng(minimum, maximum) {
+  var distance = maximum - minimum;
+
+  if (minimum >= maximum) { // protectng me from my own stupidity
+    console.error('[CSPRNG] maximum <= minimum');
+    return false;
+  } else if (distance > 281474976710655) { // protectng me from my own stupidity again
+    console.err('[CSPRNG] range > 256^6-1');
+    return false;
+  } else if (maximum > Number.MAX_SAFE_INTEGER) { // lol
+    console.error('[CSPRNG] Maximum number should be safe integer limit');
+    return false;
+  } else {
+    var maxBytes = 6;
+    var maxDec = 281474976710656;
+
+    // i have no idea what this does i just copied it
+    var randbytes = parseInt(crypto.randomBytes(maxBytes).toString('hex'), 16);
+    var result = Math.floor(randbytes / maxDec * (maximum - minimum + 1) + minimum);
+
+    if (result > maximum) {
+      result = maximum;
+    }
+
+    return result;
+  }
 }
 
 //// CLASSES
@@ -2326,7 +2350,7 @@ client.on("message", async (message) => {
     }
 
     // predeterming if the user has won
-    let won = (await csprng(0, 1) == 0);
+    let won = (csprng(0, 1) == 0);
     // side note: i dont give a shit on what side the user gives me
     // im just determining if they won and display the if the other side if they didnt
     // well, lets hope that nobody will ever look here to verify chances or something...
@@ -2563,7 +2587,7 @@ client.on("message", async (message) => {
         where: { id: message.author.id },
         data: {
           money: {
-            increment: await csprng(1, 9) / 100,
+            increment: csprng(1, 9) / 100,
           },
         },
       });
