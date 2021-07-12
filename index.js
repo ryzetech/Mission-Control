@@ -46,6 +46,7 @@ const axios = require("axios");
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
 const ImageCharts = require('image-charts');
+var randomNumber = require("random-number-csprng");
 // import { PrismaClient } from "@prisma/client";
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
@@ -98,6 +99,12 @@ function userident(msg) {
 
 // get difference between to timestamps as text
 function timediff(timestamp1ornow, timestamp2, short) {
+  let negative = false;
+  if (timestamp2 > timestamp1ornow) {
+    [timestamp1ornow, timestamp2] = [timestamp2, timestamp1ornow];
+    negative = true;
+  }
+
   let diff = timestamp1ornow - timestamp2;
 
   let days = Math.floor(diff / 1000 / 60 / 60 / 24);
@@ -108,9 +115,9 @@ function timediff(timestamp1ornow, timestamp2, short) {
   diff -= minutes * 1000 * 60;
   let seconds = Math.floor(diff / 1000);
 
-  if (short) return `${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
+  if (short) return `${negative ? "-" : ""}${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
   else
-    return `${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
+    return `${negative ? "-" : ""}${days} Days, ${hours} Hours, ${minutes} Minutes, ${seconds} Seconds`;
 }
 
 // Check if user is still on server, if not remove from db
@@ -152,6 +159,10 @@ function setTimeoutPromise(delay) {
   return new Promise((resolve) => {
     setTimeout(() => resolve(), delay);
   });
+}
+
+async function csprng(range1, range2) {
+  return await randomNumber(range1, range2);
 }
 
 //// CLASSES
@@ -247,6 +258,10 @@ client.on("guildMemberAdd", async (member) => {
 // MESSAGE HANDLER
 // TODO this is a big ugly mess! we should switch to caveats => https://discordjs.guide/creating-your-bot/commands-with-user-input.html#caveats
 client.on("message", async (message) => {
+
+  // check if message is from a server, NOT from dms or groups
+  if (message.guild === null) return;
+
   // some tasks need the time of execution
   let exectime = new Date().getTime();
 
@@ -288,7 +303,7 @@ client.on("message", async (message) => {
         .setDescription(
           "Prefix: " +
           prefix +
-          "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but are not required.\noh and please leave out the brackets"
+          "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but is not required.\noh and please leave out the brackets"
         )
         .setThumbnail(embedPB)
         .addFields(
@@ -336,10 +351,6 @@ client.on("message", async (message) => {
             value:
               "Shows some information on a player in Minecraft.",
             inline: true
-          },
-          {
-            name: "meme",
-            value: "random laugh stuff"
           },
           { name: "\u200b", value: "\u200b" },
           {
@@ -571,24 +582,6 @@ client.on("message", async (message) => {
       );
     }
   }
-
-  // MEME
-  else if (message.content.startsWith(`${prefix}meme`)) {
-    message.channel.startTyping();
-
-    let res = await fetch("https://some-random-api.ml/meme");
-    let json = await res.json();
-    message.channel.send(
-      new Discord.MessageEmbed()
-        .setColor(embedColorStandard)
-        .setAuthor("a random meme", embedPB)
-        .setTitle(json.caption)
-        .setImage(json.image)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
-    );
-    message.channel.stopTyping();
-  } // TODO we should use the reddit api to get a post from a passed subreddit and fall back to this if nothing is passed
 
   // POKEDEX / POKEMON
   else if (
@@ -1338,7 +1331,7 @@ client.on("message", async (message) => {
 
       // choose random rover
       if (rover === "random") {
-        rover = available_rovers[Math.floor(Math.random() * (available_rovers.length-1))];
+        rover = available_rovers[Math.floor(Math.random() * (available_rovers.length - 1))];
         random_rover = true;
       }
 
@@ -1349,7 +1342,7 @@ client.on("message", async (message) => {
 
       // when the rover is randomly chosen, it doesn't make sense to choose the camera
       let cam = args.slice(rover.length + 1);
-      cam = (random_rover || cam.startsWith("random")) ? available_cams[Math.floor(Math.random() * (available_cams.length-1))] : cam ;
+      cam = (random_rover || cam.startsWith("random")) ? available_cams[Math.floor(Math.random() * (available_cams.length - 1))] : cam;
 
       // reject invalid cam
       if (!available_cams.includes(cam)) {
@@ -1371,7 +1364,7 @@ client.on("message", async (message) => {
       let man_json = botCacheStorage.get("nasa-manifest-" + rover);
 
       // if the manifest has not been cached yet:
-      if (!man_json){
+      if (!man_json) {
         let man_res = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${rover}?api_key=${nasa_auth}`);
         man_json = await man_res.json();
 
@@ -2140,7 +2133,7 @@ client.on("message", async (message) => {
     if (new Date(usr.lastearnstamp) < new Date().getTime() - p_cooldown) {
       // check if user is in cooldown defined by "p_cooldown"
       // calc amount
-      let amount = Math.round(Math.random() * 950 + 50);
+      let amount = csprng(50, 999); // Math.round(Math.random() * 950 + 50);
 
       // cooldown the user and calculate new amount
       usr = await prisma.user.update({
@@ -2333,7 +2326,7 @@ client.on("message", async (message) => {
     }
 
     // predeterming if the user has won
-    let won = (Math.floor(Math.random() * 2) == 0);
+    let won = (await csprng(0, 1) == 0);
     // side note: i dont give a shit on what side the user gives me
     // im just determining if they won and display the if the other side if they didnt
     // well, lets hope that nobody will ever look here to verify chances or something...
@@ -2380,7 +2373,7 @@ client.on("message", async (message) => {
       // stats tracking
       stats = await prisma.stat.update({
         where: { id: 0 },
-        data: { casinoWinnings: { increment: amount*coinflip_multiplicator } }
+        data: { casinoWinnings: { increment: amount * coinflip_multiplicator } }
       });
 
       msg
@@ -2560,7 +2553,7 @@ client.on("message", async (message) => {
       "\ncasinoLosses = " + stats.casinoLosses +
       "\ncasinoPot = " + stats.casinoPot +
       "```"
-      );
+    );
   }
 
   // random reward for chatting
@@ -2570,7 +2563,7 @@ client.on("message", async (message) => {
         where: { id: message.author.id },
         data: {
           money: {
-            increment: Math.round(Math.random() * 8 + 1) / 100,
+            increment: await csprng(1, 9) / 100,
           },
         },
       });
