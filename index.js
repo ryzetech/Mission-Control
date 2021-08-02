@@ -85,8 +85,6 @@ var price = 0;
 // nasa api rate limit holder
 var nasa_rate = 1000;
 
-const startDate = new Date();
-
 //// HELP METHODS
 // get user from mentions or return sender
 function userident(msg) {
@@ -161,6 +159,7 @@ function setTimeoutPromise(delay) {
   });
 }
 
+// csp random number generator
 function csprng(minimum, maximum) {
   var distance = maximum - minimum;
 
@@ -189,6 +188,79 @@ function csprng(minimum, maximum) {
   }
 }
 
+// blackjack: generate new shoe
+function shuffleDeck() {
+  shoe = masterdeck; // reset shoe
+
+  let curId = shoe.length;
+
+  while (0 !== curId) {
+
+    let randId = Math.floor(Math.random() * curId);
+    curId -= 1;
+
+    let tmp = shoe[curId];
+    shoe[curId] = shoe[randId];
+    shoe[randId] = tmp;
+  }
+}
+
+// blackjack: calculate value of given hand
+function calculateValue(hand) {
+  let sum = 0;
+  let acecalc = 0;
+
+  hand.forEach(function (card) {
+    if (card.number === "ace") acecalc++;
+    else if (["jack", "queen", "king"].includes(card.number)) sum += 10;
+    else sum += parseInt(card.number);
+  });
+
+  // calculate values for aces
+  for (let i = 0; i < acecalc; i++) {
+    if (sum + 11 > 21) sum++; // if high ace exceeds 21, add 1
+    else sum += 11; // else add high ace
+  }
+
+  return sum;
+}
+
+// blackjack: draw card from shoe
+function drawCard() {
+  let card = shoe.pop();
+
+  if (card.suit == "reset") {
+    shuffleDeck();
+    return drawCard();
+  }
+
+  return card;
+}
+
+async function renderImage(pDealerHand, pPlayerHand) {
+  let imgstack = [];
+  let i = 0;
+
+  pDealerHand.forEach(function (card) {
+    imgstack.push(new Object({input: "./data/perma/blackjack/" + card.suit + card.number + ".png", top: 0, left: 250*i}));
+    i++;
+  });
+
+  i = 0;
+
+  pPlayerHand.forEach(function (card) {
+    imgstack.push(new Object({input: "./data/perma/blackjack/" + card.suit + card.number + ".png", top: 774, left: 250*i}));
+    i++;
+  });
+
+  sharp("./data/perma/blackjack/table.png")
+    .composite(imgstack)
+    .toFile("./data/temp/blackjack_" + exectime + ".png", (err, info) => {
+      if (err !== null) console.log(err);
+      return `https://botdata.ryzetech.live/temp/blackjack_${exectime}.png`
+    });
+}
+
 //// CLASSES
 // help class for easily creating more complex embed fields because i'm an idiot
 class EzField {
@@ -199,9 +271,39 @@ class EzField {
   }
 }
 
+// card class for blackjack
+class Card {
+  constructor(suit, number) {
+    this.suit = suit;
+    this.number = number;
+  }
+  getName() {
+    return this.number.charAt(0).toUpperCase() + this.number.slice(1) + " of " + this.suit.charAt(0).toUpperCase() + this.suit.slice(1);
+  }
+}
+
+//// preparing stuff for blackjack
+var shoe = [];
+
+// generating shoe
+["diamonds", "clubs", "hearts", "spades"].forEach(function (suit) {
+  ["ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king"].forEach(function (number) {
+    shoe.push(new Card(suit, number));
+  });
+});
+
+shoe = shoe.concat(shoe, shoe);
+shoe.push(new Card("reset", "reset"));
+
+// generating master deck
+const masterdeck = shoe;
+shuffleDeck();
+
 //// BOT MANAGEMENT
 // READY EVENT
 client.on("ready", () => {
+  const startDate = new Date();
+
   // set status and info stuff
   client.user.setActivity(prefix + "help | a spacefoxes production");
 
@@ -2421,6 +2523,142 @@ client.on("message", async (message) => {
         .setTitle("❌ YOU LOST!")
         .setDescription("**Side: **" + ((side === "heads") ? "tails" : "heads").toUpperCase() + "\n**Loss: **" + amount + "\n**New Balance:** " + usr.money.toFixed(2));
       sent.edit(msg);
+    }
+  }
+
+  // BLACKJACK
+  else if (message.content.startsWith(`${prefix}blackjack`)) {
+    let amount = parseFloat(args.slice(11).replace(",", "."));
+
+    // check if amount is valid
+    if (isNaN(amount) || amount <= 0) {
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("Blackjack", embedPB)
+          .setTitle("❌ Invalid amount!")
+          .setDescription(
+            "The specified amount is not a number or invalid.\nPlease try again."
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+      return;
+    }
+    
+    // fetch user
+    let usr = await prisma.user.findUnique({
+      where: { id: message.author.id },
+    });
+
+    // check if user has enough money to perform this action
+    if (amount > usr.money) {
+      message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorFail)
+          .setAuthor("Coinflip", embedPB)
+          .setTitle("❌ Invalid amount")
+          .setDescription(
+            "The specified amount is too high or your balance is to low."
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
+      );
+      return;
+    }
+
+    // generate hands
+    let playerHand = [drawCard(), drawCard()];
+    let dealerHand = [drawCard()];
+
+    // render table image
+    let gameimage = await renderImage(dealerHand, playerHand);
+
+    // check for blackjack
+    if (calculateValue(playerHand) === 21) {
+      message.channel.send(
+        new Discord.MessageEmbed()
+        .setColor(embedColorConfirm)
+        .setAuthor("Blackjack", embedPB)
+        .setTitle("👑 BLACKJACK 👑")
+        .setImage(gameimage)
+      );
+      return;
+    }
+
+    // send initial game message
+    let gameMessage = message.channel.send(
+      new Discord.MessageEmbed()
+        .setColor(embedColorProcessing)
+        .setAuthor("Blackjack", embedPB)
+        .setTitle(message.author.tag + "'s game")
+        .setImage(gameImage)
+        .setTimestamp()
+        .setFooter(`Game for ${message.author.tag}`)
+    );
+
+    // TODO check if player has enough money to double
+    let allowedReactions = ["👇","❌", "2️⃣"];
+    
+    while (true) {
+      // allowedReactions = ;
+    
+      await gameMessage.react("👇");
+      await gameMessage.react("❌");
+
+      if (playerHand.length === 2) {
+        if (playerHand[0].number === playerHand[1].number) {
+          allowedReactions.push("↔")
+          await gameMessage.react("↔");
+        }
+      }
+
+      let filter = (reaction, user) => {
+        return allowedReactions.includes(reaction.emoji.name) && user.id === message.author.id;
+      }
+
+      let option;
+      await gameMessage.awaitReactions(filter, {max: 1, time: 30000, errors: ["time"]})
+        .then(collected => { /* TODO leck mich logik */ })
+        .catch(() => { /* TODO leck mich logik 2 */ });
+
+      
+      if (option === "h") {
+        let card = drawCard();
+        playerHand.push(card);
+        console.log("You have drawn: " + card.getName());
+
+        if (calculateValue(playerHand) === 21) {
+          // TODO autostand logik
+          break;
+        } else if (calculateValue(playerHand) > 21) {
+          // exit on bust
+          // TODO bust logic
+          renderImage();
+          return;
+        }
+
+        drawTable();
+      }
+
+      if (option === "d") {
+        // TODO 
+        let card = drawCard();
+        playerHand.push(card);
+        console.log("You have drawn: " + card.getName());
+        
+        if (calculateValue(playerHand) > 21) {
+          // TODO copy bust logic from hit
+          return;
+        }
+
+        break;
+      }
+    
+      if (option === "s") {
+        console.log("You stand.");
+        loopState = false;
+      }
     }
   }
 
