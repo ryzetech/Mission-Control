@@ -133,7 +133,7 @@ async function checkUserIsStillHere(usr, usrCheck, timeOffset = 10) {
 // timed task executor for fetching market data from the CoinGecko API
 function fetchdata() {
   CoinGeckoClient.coins
-    .fetch("ethereum", {})
+    .fetch("ethereum", {localization: "false", tickers: false, community_data: false, developer_data: false, sparkline: false}) // reduce response body
     .then((d) => {
       eth_badge = d.data.image.large;
       market = d.data.market_data;
