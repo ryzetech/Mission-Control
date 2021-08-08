@@ -1035,7 +1035,7 @@ client.on("message", async (message) => {
     if (!value) {
       // get the top stories list
       let res = await fetch(
-        "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
+        "https://hacker-news.firebaseio.com/v0/topstories.json"
       );
       let json = await res.json();
 
@@ -1064,7 +1064,7 @@ client.on("message", async (message) => {
         let link =
           "https://hacker-news.firebaseio.com/v0/item/" +
           encodeURIComponent(value[i]) +
-          ".json?print=pretty";
+          ".json";
 
         // fetch data and parse
         data = await fetch(link);
@@ -1087,9 +1087,9 @@ client.on("message", async (message) => {
         }
       }
 
-      let url = data.url ? "[Link](" + data.url + ")" : "no url available"; // some stories have no url because they are internal
+      data.title = data.url ? "[" + data.title + "](" + data.url + ")" : data.title; // some stories have no url because they are internal
 
-      fields.push(new EzField(data.title, "by " + data.by + " - " + url));
+      fields.push(new EzField(data.title, "🔼 " + data.score + "\n👤 " + data.by + "\n📌 " + data.type));
 
       i++;
     }
