@@ -1087,9 +1087,9 @@ client.on("message", async (message) => {
         }
       }
 
-      let url = data.url ? "🔗 [Link](" + data.url + ")" : ""; // some stories have no url because they are internal
+      let url = data.url ? "[**Link**](" + data.url + ")\n" : ""; // some stories have no url because they are internal
 
-      fields.push(new EzField(data.title, "🔼 " + data.score + "\n👤 " + data.by + "\n" + url));
+      fields.push(new EzField(data.title, url + "**Score:** " + data.score + " Points\n**User:** " + data.by));
 
       i++;
     }
