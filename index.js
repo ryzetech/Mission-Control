@@ -980,7 +980,7 @@ client.on("message", async (message) => {
       msg = new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("AvatarMod", embedPB)
-        .setTitle(`${usr.user.tag}' Avatar`)
+        .setTitle(`${usr.user.tag}'s Avatar`)
         .setDescription("Modifier: LOLICE")
         .setURL(
           `https://some-random-api.ml/canvas/lolice/?avatar=${usr.user.displayAvatarURL(
@@ -1313,7 +1313,6 @@ client.on("message", async (message) => {
         .setColor("#0b3d91")
         .setAuthor("NASA APOD", "https://botdata.ryzetech.live/perma/NASA.png")
         .setTitle(`"${apod_json.title}"`)
-        .setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*`)
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
 
@@ -1323,7 +1322,8 @@ client.on("message", async (message) => {
       }
       // adding image link
       else if (apod_json.media_type === "image") {
-        embed.setImage(apod_json.hdurl);
+        embed.setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*\n\n**=> [Full Resolution](${apod_json.hdurl}) <=`)
+        embed.setImage(apod_json.url);
       }
 
       return message.channel.send(embed);
@@ -2027,9 +2027,9 @@ client.on("message", async (message) => {
   // SEND
   else if (message.content.startsWith(`${prefix}send`)) {
     // Tests for the following pattern and returns search results
-    // prefix + send <@273...132> 123
-    const pattern = new RegExp(prefix + "send <@!(\\d+)> (\\d+)", "s");
-    const regres = pattern.exec(message.content);
+    // prefix + send <@273...132> 123.45
+    const pattern = new RegExp(prefix + "send <@!(\\d+)> (\\d+)\\.?(\\d){1,2}", "s"); // @Arctic xoxo
+    const regres = pattern.exec(message.content.replace(",", "."));
 
     // handle case where pattern fails
     // handle case match is not len 3
@@ -2123,8 +2123,9 @@ client.on("message", async (message) => {
           "You've sent " + amount + " Euros! Please be aware of our 5% fee"
         )
         .addFields(
-          { name: "Amount", value: amount + "€" },
-          { name: "Fee", value: fee + "€" }
+          { name: "**NET Amount (Amount - Fee)**", value: amount-fee + "€" },
+          { name: "Amount", value: amount + "€", inline: true },
+          { name: "Fee", value: fee + "€", inline: true }
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
