@@ -133,7 +133,7 @@ async function checkUserIsStillHere(usr, usrCheck, timeOffset = 10) {
 // timed task executor for fetching market data from the CoinGecko API
 function fetchdata() {
   CoinGeckoClient.coins
-    .fetch("ethereum", {localization: "false", tickers: false, community_data: false, developer_data: false, sparkline: false}) // reduce response body
+    .fetch("ethereum", { localization: "false", tickers: false, community_data: false, developer_data: false, sparkline: false }) // reduce response body
     .then((d) => {
       eth_badge = d.data.image.large;
       market = d.data.market_data;
@@ -870,6 +870,12 @@ client.on("message", async (message) => {
       "red",
       "green",
       "blue",
+      "gay",
+      "jail",
+      "comrade",
+      "simpcard",
+      "horny",
+      "passed"
     ];
 
     if (args === "filters") {
@@ -1996,6 +2002,18 @@ client.on("message", async (message) => {
           .setFooter(`Requested by ${message.author.tag}`)
       );
     }
+
+    // check if values are out of safe range
+    let updateObject = {};
+    if (usr.money < 0.01) updateObject.money = 0;
+    if (usr.eth < 0.0000000000000001) updateObject.eth = 0;
+
+    if (updateObject.eth !== undefined || updateObject.money !== undefined) {
+      usr = prisma.user.update({
+        where: { id: usr.id },
+        data: updateObject
+      });
+    }
   }
 
   // BALANCE
@@ -2123,7 +2141,7 @@ client.on("message", async (message) => {
           "You've sent " + amount + " Euros! Please be aware of our 5% fee"
         )
         .addFields(
-          { name: "**NET Amount (Amount - Fee)**", value: amount-fee + "€" },
+          { name: "**NET Amount (Amount - Fee)**", value: amount - fee + "€" },
           { name: "Amount", value: amount + "€", inline: true },
           { name: "Fee", value: fee + "€", inline: true }
         )
@@ -2135,8 +2153,6 @@ client.on("message", async (message) => {
   // WORK
   else if (message.content.startsWith(`${prefix}work`)) {
     let msg;
-
-    // yes i refractored user to usr whatcha gonna do huh?
 
     // identify user
     let usr = await prisma.user.findUnique({
@@ -2588,7 +2604,7 @@ client.on("message", async (message) => {
         where: { id: message.author.id },
         data: {
           money: {
-            increment: csprng(1, 9) / 100,
+            increment: csprng(1, 99) / 100,
           },
         },
       });
