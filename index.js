@@ -2006,10 +2006,10 @@ client.on("message", async (message) => {
     // check if values are out of safe range
     let updateObject = {};
     if (usr.money < 0.01) updateObject.money = 0;
-    if (usr.eth < 0.0000000000000001) updateObject.eth = 0;
+    if (usr.eth < 1e-16) updateObject.eth = 0;
 
     if (updateObject.eth !== undefined || updateObject.money !== undefined) {
-      usr = prisma.user.update({
+      usr = await prisma.user.update({
         where: { id: usr.id },
         data: updateObject
       });
