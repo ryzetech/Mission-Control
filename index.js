@@ -883,19 +883,8 @@ client.on("message", async (message) => {
         .setColor(embedColorStandard)
         .setAuthor("Avatarmod", embedPB)
         .setTitle("All available filters:")
-        .addFields(
-          { name: "glass", value: "helo i'm behind glass" },
-          { name: "wasted", value: "WASTED! For true GTA fanboys" },
-          { name: "triggered", value: "T R I G G E R E D" },
-          { name: "greyscale", value: "for sad moments" },
-          { name: "invert", value: "wtf" },
-          { name: "invgs", value: "greyscale + invert = holy shit" },
-          { name: "brightness", value: "pls dont" },
-          { name: "threshold", value: "this is cursed" },
-          { name: "sepia", value: '"I was born in 1869!"' },
-          { name: "pixelate", value: "even 144p is luxury" },
-          { name: "lolice", value: "you belong in jail" }
-        )
+        .setDescription(
+          "**brightness**\nlightmode help\n\n**comrade**\nserve the soviet union\n\n**invert**\ninverts colors\n\n**invgs** invert + greyscale\n\n**jail**\nyou are in jail now!\n\n**gay**\nputs a rainbow over your avatar\n\n**glass**\nhelo i am behind glass\n\n**greyscale**\nfor the sad moments\n\n**horny**\nhow to get a horny license\n\n**lolice**\nyou belong in jail\n\n**passed**\nRespect +\n\n**pixelate**\n144p is luxury\n\n**sepia**\nvery old\n\n**simpcard**\nthe license to simp\n\n**threshold**\nits just dark and white\n\n**triggered**\nT R I G G E R E D\n\n**wasted**\nWASTED! (self explanatory)\n\n")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }
@@ -1328,7 +1317,7 @@ client.on("message", async (message) => {
       }
       // adding image link
       else if (apod_json.media_type === "image") {
-        embed.setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*\n\n**=> [Full Resolution](${apod_json.hdurl}) <=`)
+        embed.setDescription(`${apod_json.explanation}\n\n*Date: ${apod_json.date}*\n*© ${apod_json.copyright}*\n\n**=> [Full Resolution](${apod_json.hdurl}) <=**`)
         embed.setImage(apod_json.url);
       }
 
