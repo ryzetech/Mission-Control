@@ -884,7 +884,7 @@ client.on("message", async (message) => {
         .setAuthor("Avatarmod", embedPB)
         .setTitle("All available filters:")
         .setDescription(
-          "**brightness**\nlightmode help\n\n**comrade**\nserve the soviet union\n\n**invert**\ninverts colors\n\n**invgs** invert + greyscale\n\n**jail**\nyou are in jail now!\n\n**gay**\nputs a rainbow over your avatar\n\n**glass**\nhelo i am behind glass\n\n**greyscale**\nfor the sad moments\n\n**horny**\nhow to get a horny license\n\n**lolice**\nyou belong in jail\n\n**passed**\nRespect +\n\n**pixelate**\n144p is luxury\n\n**sepia**\nvery old\n\n**simpcard**\nthe license to simp\n\n**threshold**\nits just dark and white\n\n**triggered**\nT R I G G E R E D\n\n**wasted**\nWASTED! (self explanatory)\n\n")
+          "**brightness**\nlightmode help\n\n**comrade**\nserve the soviet union\n\n**invert**\ninverts colors\n\n**invgs**\ninvert + greyscale\n\n**jail**\nyou are in jail now!\n\n**gay**\nputs a rainbow over your avatar\n\n**glass**\nhelo i am behind glass\n\n**greyscale**\nfor the sad moments\n\n**horny**\nhow to get a horny license\n\n**lolice**\nyou belong in jail\n\n**passed**\nRespect +\n\n**pixelate**\n144p is luxury\n\n**sepia**\nvery old\n\n**simpcard**\nthe license to simp\n\n**threshold**\nits just dark and white\n\n**triggered**\nT R I G G E R E D\n\n**wasted**\nWASTED! (self explanatory)\n\n")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }
