@@ -327,7 +327,7 @@ client.on("message", async (message) => {
         .setDescription(
           "Prefix: " +
           prefix +
-          "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but is not required.\noh and please leave out the brackets"
+          "\nStuff in <spikey brackets> has to be specified\nStuff in [square brackets] CAN be specified, but is not required.\noh and please leave out the brackets"
         )
         .setThumbnail(embedPB)
         .addFields(
@@ -348,7 +348,7 @@ client.on("message", async (message) => {
           {
             name: "avatar [user ping]",
             value:
-              "Takes the avatar of an user (or yours) and delivers it in the chat!",
+              "Takes the avatar of a user (or yours) and delivers it in the chat!",
             inline: true
           },
           {
@@ -380,7 +380,7 @@ client.on("message", async (message) => {
           {
             name: "news",
             value:
-              "Get fresh news from yCombinator! (we can't gurantee freshness)",
+              "Get fresh news from yCombinator! (we can't guarantee freshness)",
             inline: true
           },
           {
@@ -405,17 +405,17 @@ client.on("message", async (message) => {
           {
             name: "send <user ping> <amount>",
             value:
-              "Send the specified amount to the specified user.\n**Note: A fee of 5% per trancaction is applied!**",
+              "Send the specified amount to the specified user.\n**Note: A fee of 5% per transaction is applied!**",
             inline: true
           },
           {
             name: "leaderboard",
             value:
-              "Shows the current leaderboard of all users (cash and eth seperate)."
+              "Shows the current leaderboard of all users (cash and eth separate)."
           },
           {
             name: "coinflip <{heads | tails}> <bet>",
-            value: "Let's you flip a coin. If you're right, you will get your bet back multiplied with a bonus. If you're wrong, you will lose everthing. **Current multiplicator: " + coinflip_multiplicator + "x**"
+            value: "Lets you flip a coin. If you're right, you will get your bet back multiplied with a bonus. If you're wrong, you will lose everything. **Current multiplicator: " + coinflip_multiplicator + "x**"
           },
           { name: "\u200b", value: "\u200b" },
           {
