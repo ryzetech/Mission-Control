@@ -19,7 +19,7 @@
 
   Introduction:
     Hello explorer!
-    This is the holy source code of Mission Control, the bot for the FoxInTheBox Discord ( discord.gg/m46vcrm52b ).
+    This is the holy source code of Mission Control, the bot for the FoxesInBoxes Discord ( discord.gg/m46vcrm52b ).
     The following lines are home to these things:
       - shitty solutions for easy problems
       - amateur code
