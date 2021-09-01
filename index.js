@@ -19,7 +19,7 @@
 
   Introduction:
     Hello explorer!
-    This is the holy source code of Mission Control, the bot for the FoxInTheBox Discord ( discord.gg/m46vcrm52b ).
+    This is the holy source code of Mission Control, the bot for the FoxesInBoxes Discord ( discord.gg/m46vcrm52b ).
     The following lines are home to these things:
       - shitty solutions for easy problems
       - amateur code
@@ -327,7 +327,7 @@ client.on("message", async (message) => {
         .setDescription(
           "Prefix: " +
           prefix +
-          "\nStuff in <spikey brackets> have to be specified\nStuff in [square brackets] CAN be specified, but is not required.\noh and please leave out the brackets"
+          "\nStuff in <spikey brackets> has to be specified\nStuff in [square brackets] CAN be specified, but is not required.\noh and please leave out the brackets"
         )
         .setThumbnail(embedPB)
         .addFields(
@@ -348,7 +348,7 @@ client.on("message", async (message) => {
           {
             name: "avatar [user ping]",
             value:
-              "Takes the avatar of an user (or yours) and delivers it in the chat!",
+              "Takes the avatar of a user (or yours) and delivers it in the chat!",
             inline: true
           },
           {
@@ -380,7 +380,7 @@ client.on("message", async (message) => {
           {
             name: "news",
             value:
-              "Get fresh news from yCombinator! (we can't gurantee freshness)",
+              "Get fresh news from yCombinator! (we can't guarantee freshness)",
             inline: true
           },
           {
@@ -405,17 +405,17 @@ client.on("message", async (message) => {
           {
             name: "send <user ping> <amount>",
             value:
-              "Send the specified amount to the specified user.\n**Note: A fee of 5% per trancaction is applied!**",
+              "Send the specified amount to the specified user.\n**Note: A fee of 5% per transaction is applied!**",
             inline: true
           },
           {
             name: "leaderboard",
             value:
-              "Shows the current leaderboard of all users (cash and eth seperate)."
+              "Shows the current leaderboard of all users (cash and eth separate)."
           },
           {
             name: "coinflip <{heads | tails}> <bet>",
-            value: "Let's you flip a coin. If you're right, you will get your bet back multiplied with a bonus. If you're wrong, you will lose everthing. **Current multiplicator: " + coinflip_multiplicator + "x**"
+            value: "Lets you flip a coin. If you're right, you will get your bet back multiplied with a bonus. If you're wrong, you will lose everything. **Current multiplicator: " + coinflip_multiplicator + "x**"
           },
           { name: "\u200b", value: "\u200b" },
           {
@@ -767,16 +767,16 @@ client.on("message", async (message) => {
             name
             -> date of change
 
-            but there is a problem: the embed description has a limit as well: 2048 chars.
+            but there is a problem: the embed description has a limit as well: 4096 chars.
             let's calculate it:
              
             a nickname can be 16 chars long, plus up to 16 chars for the date and formatting.
             thats 32 chars per name change. we aditionally have to subtract the codebox chars and
-            the initial description (including the uuid), which leaves us with approximately 1970 chars.
-            thats enough for 60 name changes.
+            the initial description (including the uuid), which leaves us with approximately 4020 chars.
+            thats enough for 120 name changes.
 
             thats enough breathing space for MY standards, as somebody would have to change their
-            nickname every month for five years straight.
+            nickname every month for ten years straight.
 
             i mean, even if this fails, we have found one of the oldest players (or one of the
             most determinded) in minecraft, that would be awesome! :D
@@ -884,7 +884,7 @@ client.on("message", async (message) => {
         .setAuthor("Avatarmod", embedPB)
         .setTitle("All available filters:")
         .setDescription(
-          "**brightness**\nlightmode help\n\n**comrade**\nserve the soviet union\n\n**invert**\ninverts colors\n\n**invgs** invert + greyscale\n\n**jail**\nyou are in jail now!\n\n**gay**\nputs a rainbow over your avatar\n\n**glass**\nhelo i am behind glass\n\n**greyscale**\nfor the sad moments\n\n**horny**\nhow to get a horny license\n\n**lolice**\nyou belong in jail\n\n**passed**\nRespect +\n\n**pixelate**\n144p is luxury\n\n**sepia**\nvery old\n\n**simpcard**\nthe license to simp\n\n**threshold**\nits just dark and white\n\n**triggered**\nT R I G G E R E D\n\n**wasted**\nWASTED! (self explanatory)\n\n")
+          "**brightness**\nlightmode help\n\n**comrade**\nserve the soviet union\n\n**invert**\ninverts colors\n\n**invgs**\ninvert + greyscale\n\n**jail**\nyou are in jail now!\n\n**gay**\nputs a rainbow over your avatar\n\n**glass**\nhelo i am behind glass\n\n**greyscale**\nfor the sad moments\n\n**horny**\nhow to get a horny license\n\n**lolice**\nyou belong in jail\n\n**passed**\nRespect +\n\n**pixelate**\n144p is luxury\n\n**sepia**\nvery old\n\n**simpcard**\nthe license to simp\n\n**threshold**\nits just dark and white\n\n**triggered**\nT R I G G E R E D\n\n**wasted**\nWASTED! (self explanatory)\n\n")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }
