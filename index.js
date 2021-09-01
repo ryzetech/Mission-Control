@@ -767,16 +767,16 @@ client.on("message", async (message) => {
             name
             -> date of change
 
-            but there is a problem: the embed description has a limit as well: 2048 chars.
+            but there is a problem: the embed description has a limit as well: 4096 chars.
             let's calculate it:
              
             a nickname can be 16 chars long, plus up to 16 chars for the date and formatting.
             thats 32 chars per name change. we aditionally have to subtract the codebox chars and
-            the initial description (including the uuid), which leaves us with approximately 1970 chars.
-            thats enough for 60 name changes.
+            the initial description (including the uuid), which leaves us with approximately 4020 chars.
+            thats enough for 120 name changes.
 
             thats enough breathing space for MY standards, as somebody would have to change their
-            nickname every month for five years straight.
+            nickname every month for ten years straight.
 
             i mean, even if this fails, we have found one of the oldest players (or one of the
             most determinded) in minecraft, that would be awesome! :D
