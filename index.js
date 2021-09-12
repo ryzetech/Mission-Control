@@ -1535,8 +1535,8 @@ client.on("message", async (message) => {
 
         // create new field for every subpod
         for (let subpod of pod.subpod) {
-          if (subpod.$.title === "") subpod.$.title = "Subresult";
-          embedFields.push(new EzField(subpod.$.title, subpod.plaintext[0]));
+          if (subpod.$.title === "") subpod.$.title = "\u200b";
+          embedFields.push(new EzField(subpod.plaintext[0], subpod.$.title));
         }
 
         embed.addFields(embedFields);
