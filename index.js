@@ -1516,7 +1516,7 @@ client.on("message", async (message) => {
     }
 
     // loop through pods (maximum defined by config)
-    let podcount = parseInt(data.$.numpods) <= wolfram_maxpods ? parseInt(data.$.numpods) : wolfram_maxpods;
+    let podcount = (parseInt(data.$.numpods) <= wolfram_maxpods) ? parseInt(data.$.numpods) : wolfram_maxpods;
 
     for (let i = 0; i < podcount; i++) {
       let pod = data.pod[i];
