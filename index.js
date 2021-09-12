@@ -1500,7 +1500,7 @@ client.on("message", async (message) => {
       let embedFields = [];
 
       // create new field for every assumption
-      for (let ass of data.assumptions) {
+      for (let ass of data.assumptions.assumption) {
         embedFields.push(new EzField(ass.$.type, `${ass.$.word}\n=> ${ass.value[0].$.desc}`))
       }
 
@@ -1526,7 +1526,7 @@ client.on("message", async (message) => {
         .setAuthor("Wolfram|Alpha", embedPB)
         .setTitle(pod.$.title)
         .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag} | Pod ${i}/${podcount}`);
+        .setFooter(`Requested by ${message.author.tag} | Pod ${i}/${podcount+1}`);
 
       // render plaintext subpods except image is only option
       if (pod.subpod[0].plaintext[0] !== "") {
