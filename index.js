@@ -1473,24 +1473,24 @@ client.on("message", async (message) => {
     if (data.$.error === "true") {
       return message.channel.send(
         new Discord.MessageEmbed()
-        .setColor(embedColorFail)
-        .setAuthor("Wolfram|Alpha", embedPB)
-        .setTitle("❌ Error!")
-        .setDescription("An error occured. Please contact the admins if you think that this is a mistake.")
-        .addFields(
-          {
-            name: "Message",
-            value: `\`${data.error[0].msg}\``,
-            inline: true
-          },
-          {
-            name: "Error Code",
-            value: data.error[0].code,
-            inline: true
-          }
-        )
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
+          .setColor(embedColorFail)
+          .setAuthor("Wolfram|Alpha", embedPB)
+          .setTitle("❌ Error!")
+          .setDescription("An error occured. Please contact the admins if you think that this is a mistake.")
+          .addFields(
+            {
+              name: "Message",
+              value: `\`${data.error[0].msg}\``,
+              inline: true
+            },
+            {
+              name: "Error Code",
+              value: data.error[0].code,
+              inline: true
+            }
+          )
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
       );
 
     }
@@ -1506,12 +1506,12 @@ client.on("message", async (message) => {
 
       await message.channel.send(
         new Discord.MessageEmbed()
-        .setColor("#fce63c")
-        .setAuthor("Wolfram|Alpha", embedPB)
-        .setTitle("Assumptions")
-        .addFields(embedFields)
-        .setTimestamp()
-        .setFooter(`Requested by ${message.author.tag}`)
+          .setColor("#fce63c")
+          .setAuthor("Wolfram|Alpha", embedPB)
+          .setTitle("Assumptions")
+          .addFields(embedFields)
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag}`)
       );
     }
 
@@ -1520,24 +1520,32 @@ client.on("message", async (message) => {
 
     for (let i = 0; i < podcount; i++) {
       let pod = data.pod[i];
-      let embedFields = [];
 
-      // create new field for every subpod
-      for (let subpod of pod.subpod) {
-        if (subpod.$.title === "") subpod.$.title = "Subresult";
-        embedFields.push(new EzField(subpod.$.title, subpod.plaintext[0]));
+      let embed = new Discord.MessageEmbed()
+        .setColor(embedColorStandard)
+        .setAuthor("Wolfram|Alpha", embedPB)
+        .setTitle(pod.$.title)
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag} | Pod ${i}/${podcount}`);
+
+      // render plaintext subpods except image is only option
+      if (pod.subpod[0].plaintext !== "") {
+        let embedFields = [];
+
+        // create new field for every subpod
+        for (let subpod of pod.subpod) {
+          if (subpod.$.title === "") subpod.$.title = "Subresult";
+          embedFields.push(new EzField(subpod.$.title, subpod.plaintext[0]));
+        }
+
+        embed.addFields(embedFields);
+      }
+      else {
+        embed.setImage(pod.subpod[0].img[0].$.src)
       }
 
-      // create new message for every pod
-      await message.channel.send(
-        new Discord.MessageEmbed()
-          .setColor(embedColorStandard)
-          .setAuthor("Wolfram|Alpha", embedPB)
-          .setTitle(pod.$.title)
-          .addFields(embedFields)
-          .setTimestamp()
-          .setFooter(`Requested by ${message.author.tag} | Pod ${i}/${podcount}`)
-      );
+      // send message
+      await message.channel.send(embed);
     }
   }
 
