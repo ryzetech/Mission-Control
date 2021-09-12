@@ -1500,7 +1500,7 @@ client.on("message", async (message) => {
       let embedFields = [];
 
       // create new field for every assumption
-      for (let ass of data.assumptions.assumption) {
+      for (let ass of data.assumptions) {
         embedFields.push(new EzField(ass.$.type, `${ass.$.word}\n=> ${ass.value[0].$.desc}`))
       }
 
