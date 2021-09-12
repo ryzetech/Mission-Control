@@ -6,6 +6,8 @@ dvs.js
 node_modules/
 config.json
 
+data/
+
 yarn.lock
 yarn-error.*
 .yarn/
