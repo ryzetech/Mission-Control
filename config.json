@@ -15,7 +15,7 @@
     "ycomb_story_amount": 5,
     "wolfram_maxpods": 5,
 
-    "coinflip_multiplicator": 1.5,
+    "coinflip_multiplicator": 2,
 
     "embedColorStandard": "#75d3fc",
     "embedColorProcessing": "#8c8c8c",
