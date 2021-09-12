@@ -1540,7 +1540,7 @@ client.on("message", async (message) => {
           embedFields.push(new EzField(ass.$.type, `${ass.$.word}\n=> ${ass.value[0].$.desc}`))
         }
 
-        await message.channel.send(
+        message.channel.send(
           new Discord.MessageEmbed()
             .setColor("#fce63c")
             .setAuthor("Wolfram|Alpha", embedPB)
@@ -1564,7 +1564,7 @@ client.on("message", async (message) => {
         }
 
         // create new message for every pod
-        await message.channel.send(
+        message.channel.send(
           new Discord.MessageEmbed()
             .setColor(embedColorStandard)
             .setAuthor("Wolfram|Alpha", embedPB)
