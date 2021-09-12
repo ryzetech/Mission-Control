@@ -13,6 +13,7 @@
 
     "p_cooldown": 43200000,
     "ycomb_story_amount": 5,
+    "wolfram_maxpods": 5,
 
     "coinflip_multiplicator": 1.5,
 

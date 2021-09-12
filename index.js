@@ -42,11 +42,12 @@ const si = require("systeminformation");
 const CoinGecko = require("coingecko-api");
 const CoinGeckoClient = new CoinGecko();
 const fetch = require("node-fetch");
-const axios = require("axios");
+const axios = require("axios").default;
 const NodeCache = require("node-cache");
 const botCacheStorage = new NodeCache();
 const ImageCharts = require('image-charts');
 var crypto = require('crypto');
+const xml2js = require('xml2js');
 // import { PrismaClient } from "@prisma/client";
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient({
@@ -64,6 +65,7 @@ const {
   p_cooldown,
   ycomb_story_amount,
   coinflip_multiplicator,
+  wolfram_maxpods,
   embedColorStandard,
   embedColorProcessing,
   embedColorConfirm,
@@ -71,7 +73,7 @@ const {
   embedColorFail,
   embedPB,
 } = require("./config.json");
-const { token, nasa_auth } = require("./token.json");
+const { token, nasa_auth, wolfram_auth } = require("./token.json");
 const { join } = require("@prisma/client/runtime");
 
 // funny counters for fun lol
@@ -1451,6 +1453,88 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+  }
+
+  // WOLFRAM
+  else if (message.content.startsWith(`${prefix}wolfram`)) {
+    let input = message.content.slice(9);
+
+    message.channel.startTyping();
+
+    let res = await axios.get(`https://api.wolframalpha.com/v2/query?input=${encodeURIComponent(input)}&appid=${wolfram_auth}`);
+    let data = await xml2js.parseStringPromise(res.data).queryresult;
+
+    message.channel.stopTyping();
+
+    // catch errors
+    if (data.$.error === "true") {
+      return message.channel.send(
+        new Discord.MessageEmbed()
+        .setColor(embedColorFail)
+        .setAuthor("Wolfram|Alpha", embedPB)
+        .setTitle("❌ Error!")
+        .setDescription("You can't get salary at the moment!")
+        .addFields(
+          {
+            name: "Message",
+            value: `\`${data.error[0].msg}\``,
+            inline: true
+          },
+          {
+            name: "Error Code",
+            value: data.error[0].code,
+            inline: true
+          }
+        )
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+
+    }
+
+    // loop through assumptions (if defined)
+    if (data.assumptions !== undefined) {
+      let embedFields = [];
+
+      // create new field for every assumption
+      for (let ass of data.assumptions) {
+        embedFields.push(new EzField(ass.$.type, `${ass.$.word}\n=> ${ass.value[0].$.desc}`))
+      }
+
+      await message.channel.send(
+        new Discord.MessageEmbed()
+        .setColor("#fce63c")
+        .setAuthor("Wolfram|Alpha", embedPB)
+        .setTitle("Assumptions")
+        .addFields(embedFields)
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
+    }
+
+    // loop through pods (maximum defined by config)
+    let podcount = parseInt(data.$.numpods) <= wolfram_maxpods ? parseInt(data.$.numpods) : wolfram_maxpods;
+
+    for (let i = 0; i < podcount; i++) {
+      let pod = data.pod[i];
+      let embedFields = [];
+
+      // create new field for every subpod
+      for (let subpod of pod.subpod) {
+        embedFields.push(new EzField(subpod.$.title, subpod.plaintext[0]));
+      }
+
+      // create new message for every pod
+      await message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor(embedColorStandard)
+          .setAuthor("Wolfram|Alpha", embedPB)
+          .setTitle(pod.$.title)
+          .addFields(embedFields)
+          .setTimestamp()
+          .setFooter(`Requested by ${message.author.tag} | Pod ${i}/${podcount}`)
       );
     }
   }
