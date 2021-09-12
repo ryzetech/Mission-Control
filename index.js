@@ -1529,7 +1529,7 @@ client.on("message", async (message) => {
         .setFooter(`Requested by ${message.author.tag} | Pod ${i}/${podcount}`);
 
       // render plaintext subpods except image is only option
-      if (pod.subpod[0].plaintext !== "") {
+      if (pod.subpod[0].plaintext[0] !== "") {
         let embedFields = [];
 
         // create new field for every subpod
