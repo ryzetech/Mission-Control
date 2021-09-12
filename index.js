@@ -1476,7 +1476,7 @@ client.on("message", async (message) => {
         .setColor(embedColorFail)
         .setAuthor("Wolfram|Alpha", embedPB)
         .setTitle("❌ Error!")
-        .setDescription("You can't get salary at the moment!")
+        .setDescription("An error occured. Please contact the admins if you think that this is a mistake.")
         .addFields(
           {
             name: "Message",
