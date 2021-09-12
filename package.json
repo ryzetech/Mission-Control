@@ -4,7 +4,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@prisma/client": "2.19.0",
+    "@prisma/client": "^3.0.2",
     "axios": "^0.21.1",
     "coingecko-api": "^1.0.10",
     "discord.js": "^12.5.1",
@@ -15,7 +15,7 @@
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
-    "prisma": "2.19.0"
+    "prisma": "^3.0.2"
   },
   "packageManager": "yarn@3.0.1"
 }
