@@ -1463,7 +1463,7 @@ client.on("message", async (message) => {
 
     message.channel.startTyping();
 
-    let res = await axios.get(`https://api.wolframalpha.com/v2/query?input=${input}&appid=${wolfram_auth}`);
+    let res = await axios.get(`https://api.wolframalpha.com/v2/query?input=${encodeURIComponent(input)}&appid=${wolfram_auth}`);
     let data = await xml2js.parseStringPromise(res.data).queryresult;
 
     message.channel.stopTyping();
