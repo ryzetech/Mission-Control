@@ -1499,8 +1499,7 @@ client.on("message", async (message) => {
       let embedFields = [];
 
       // create new field for every assumption
-      for (let i = 0; i < parseInt(data.assumptions.$.count); i++) {
-        let ass = data.assumptions.assumption[i];
+      for (let ass of data.assumptions) {
         embedFields.push(new EzField(ass.$.type, `${ass.$.word}\n=> ${ass.value[0].$.desc}`))
       }
 
@@ -1523,8 +1522,8 @@ client.on("message", async (message) => {
       let embedFields = [];
 
       // create new field for every subpod
-      for (let j = 0; j < parseInt(pod[i].$.numsubpods); j++) {
-        embedFields.push(new EzField(pod.subpod[j].$.title, pod.subpod[j].plaintext[0]));
+      for (let subpod of pod.subpod) {
+        embedFields.push(new EzField(subpod.$.title, subpod.plaintext[0]));
       }
 
       // create new message for every pod
