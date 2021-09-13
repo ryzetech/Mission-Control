@@ -74,7 +74,6 @@ const {
   embedPB,
 } = require("./config.json");
 const { token, nasa_auth, wolfram_auth } = require("./token.json");
-const { join } = require("@prisma/client/runtime");
 
 // funny counters for fun lol
 var messageCounter = 0;
