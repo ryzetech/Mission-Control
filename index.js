@@ -1495,6 +1495,8 @@ client.on("message", async (message) => {
 
     }
 
+    let messageSent = false;
+
     // loop through assumptions (if defined)
     if (data.assumptions !== undefined) {
       let embedFields = [];
@@ -1536,7 +1538,7 @@ client.on("message", async (message) => {
         // create new field for every subpod
         for (let subpod of pod.subpod) {
           if (subpod.$.title === "") subpod.$.title = "\u200b";
-          embedFields.push(new EzField(subpod.plaintext[0], subpod.$.title));
+          embedFields.push(new EzField(subpod.$.title, "**" + subpod.plaintext[0] + "**"));
         }
 
         embed.addFields(embedFields);
@@ -1547,6 +1549,21 @@ client.on("message", async (message) => {
 
       // send message
       await message.channel.send(embed);
+      messageSent = true;
+    }
+
+    if (!messageSent) {
+      message.channel.send(
+        new Discord.MessageEmbed()
+        .setColor(embedColorFail)
+        .setAuthor("Wolfram|Alpha", embedPB)
+        .setTitle("Unprocessed response")
+        .setDescription("During the processing of the response, no useful output has been produced." +
+        "\nThis can be the case if the structure of the response is invalid or if too many input fields make displaying the response impossible." +
+        "\nPlease enter your query directly at [Wolfram|Alpha](www.wolframalpha.com).")
+        .setTimestamp()
+        .setFooter(`Requested by ${message.author.tag}`)
+      );
     }
   }
 
