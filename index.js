@@ -329,110 +329,28 @@ client.on("message", async (message) => {
         .setDescription(
           "Prefix: " +
           prefix +
-          "\nStuff in <spikey brackets> has to be specified\nStuff in [square brackets] CAN be specified, but is not required.\noh and please leave out the brackets"
+          "\nStuff in <spikey brackets> has to be specified\nStuff in [square brackets] CAN be specified, but is not required.\noh and please leave out the brackets" +
+          "\n\n```" +
+          "ping\n  Pong! (please don't spam this command, even if you like ping-pong)" +
+          "\n\ninfo\n  Shows some information on the bot" +
+          "\n\navatar [user ping]\n  Takes the avatar of a user (or yours) and delivers it in the chat!" +
+          "\n\navmod <filter> [user ping]\n  Modifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with => avmod filters <=" +
+          "\n\nanimal <animal>\n  We have all the animals! With every execution, a new picture and a nice fact are thrown at your face.\nYou can get a list of all supported animals with => animal list <=" +
+          "\n\npokedex <name>\n  bruh it's a pokédex, what did you expect" +
+          "\n\nmc <username>\n  Shows some information on a player in Minecraft" +
+          "\n\nnews\n  Get fresh news from yCombinator! (we can't guarantee freshness)" +
+          "\n\nspacex\n  Read more about the latest or next launch by SpaceX" +
+          "\n\nnasa\n  Access official NASA resources! Execute this command to get more info on what you can do with it." +
+          "\n\nwolfram <query>\n  Ask the Wolfram|Alpha engine anything!" +
+          "\n\nwork\n  You can get free money every 12 hours!" +
+          "\n\nbalance [user ping]\n  Shows how much money is in your pocket (or in the pocket of the pinged user)" +
+          "\n\nsend <user ping> <amount>\n  Send a specified amount to the pinged user. Please note that we apply a 5% transaction fee!" +
+          "\n\nleaderboard\n  Shows the current leaderboard of all users (cash and eth separate)" +
+          "\n\ncoinflip <{heads | tails}> <bet>\n  Lets you flip a coin. If you're right, you will get your bet back multiplied with a bonus. If you're wrong, you will lose everything. => Current multiplicator: " + coinflip_multiplicator + "x <=" +
+          "\n\neth\n  You can trade Ethereum in a simulated environment. Execute this command to get more info on what you can do with it." +
+          "```"
         )
         .setThumbnail(embedPB)
-        .addFields(
-          { name: "\u200b", value: "\u200b" },
-          {
-            name: "ping",
-            value:
-              "Pong! (please don't spam this command, even if you like ping-pong)",
-            inline: true
-          },
-          {
-            name: "info",
-            value:
-              "Shows some information on the bot",
-            inline: true
-          },
-          { name: "\u200b", value: "\u200b" },
-          {
-            name: "avatar [user ping]",
-            value:
-              "Takes the avatar of a user (or yours) and delivers it in the chat!",
-            inline: true
-          },
-          {
-            name: "avmod <filter> [user ping]",
-            value:
-              "Modifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with **avmod filters**.",
-            inline: true
-          },
-          { name: "\u200b", value: "\u200b", inline: true },
-          {
-            name: "animal <animal>",
-            value:
-              "We have all the animals! With every execution, a new picture and a nice fact are thrown at your face.\nYou can get a list of all supported animals with **animal list**.",
-            inline: true
-          },
-          {
-            name: "pokedex <name>",
-            value:
-              "bruh it's a pokédex, what did you expect",
-            inline: true
-          },
-          {
-            name: "mc <username>",
-            value:
-              "Shows some information on a player in Minecraft.",
-            inline: true
-          },
-          { name: "\u200b", value: "\u200b" },
-          {
-            name: "news",
-            value:
-              "Get fresh news from yCombinator! (we can't guarantee freshness)",
-            inline: true
-          },
-          {
-            name: "spacex",
-            value:
-              "Read more about the latest or next launch by SpaceX",
-            inline: true
-          },
-          { name: "\u200b", value: "\u200b" },
-          {
-            name: "work",
-            value:
-              "You can get free money every 12 hours!",
-            inline: true
-          },
-          {
-            name: "balance [user ping]",
-            value:
-              "Shows how much money is in your pocket (or in the pocket of the pinged user).",
-            inline: true
-          },
-          {
-            name: "send <user ping> <amount>",
-            value:
-              "Send the specified amount to the specified user.\n**Note: A fee of 5% per transaction is applied!**",
-            inline: true
-          },
-          {
-            name: "leaderboard",
-            value:
-              "Shows the current leaderboard of all users (cash and eth separate)."
-          },
-          {
-            name: "coinflip <{heads | tails}> <bet>",
-            value: "Lets you flip a coin. If you're right, you will get your bet back multiplied with a bonus. If you're wrong, you will lose everything. **Current multiplicator: " + coinflip_multiplicator + "x**"
-          },
-          { name: "\u200b", value: "\u200b" },
-          {
-            name: "eth",
-            value:
-              "You can trade Ethereum in a simulated environment. Execute this command to get more info on what you can do with it.",
-            inline: true
-          },
-          {
-            name: "banano",
-            value:
-              "BANANO STONK (get info about banano token)",
-            inline: true
-          },
-        )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
     );
