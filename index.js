@@ -331,23 +331,23 @@ client.on("message", async (message) => {
           prefix +
           "\nStuff in <spikey brackets> has to be specified\nStuff in [square brackets] CAN be specified, but is not required.\noh and please leave out the brackets" +
           "\n\n```" +
-          "ping\n  Pong! (please don't spam this command, even if you like ping-pong)" +
-          "\n\ninfo\n  Shows some information on the bot" +
-          "\n\navatar [user ping]\n  Takes the avatar of a user (or yours) and delivers it in the chat!" +
-          "\n\navmod <filter> [user ping]\n  Modifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with => avmod filters <=" +
-          "\n\nanimal <animal>\n  We have all the animals! With every execution, a new picture and a nice fact are thrown at your face.\nYou can get a list of all supported animals with => animal list <=" +
-          "\n\npokedex <name>\n  bruh it's a pokédex, what did you expect" +
-          "\n\nmc <username>\n  Shows some information on a player in Minecraft" +
-          "\n\nnews\n  Get fresh news from yCombinator! (we can't guarantee freshness)" +
-          "\n\nspacex\n  Read more about the latest or next launch by SpaceX" +
-          "\n\nnasa\n  Access official NASA resources! Execute this command to get more info on what you can do with it." +
-          "\n\nwolfram <query>\n  Ask the Wolfram|Alpha engine anything!" +
-          "\n\nwork\n  You can get free money every 12 hours!" +
-          "\n\nbalance [user ping]\n  Shows how much money is in your pocket (or in the pocket of the pinged user)" +
-          "\n\nsend <user ping> <amount>\n  Send a specified amount to the pinged user. Please note that we apply a 5% transaction fee!" +
-          "\n\nleaderboard\n  Shows the current leaderboard of all users (cash and eth separate)" +
-          "\n\ncoinflip <{heads | tails}> <bet>\n  Lets you flip a coin. If you're right, you will get your bet back multiplied with a bonus. If you're wrong, you will lose everything. => Current multiplicator: " + coinflip_multiplicator + "x <=" +
-          "\n\neth\n  You can trade Ethereum in a simulated environment. Execute this command to get more info on what you can do with it." +
+          "\n\n>  ping\nPong! (please don't spam this command, even if you like ping-pong)" +
+          "\n\n>  info\nShows some information on the bot" +
+          "\n\n>  avatar [user ping]\nTakes the avatar of a user (or yours) and delivers it in the chat!" +
+          "\n\n>  avmod <filter> [user ping]\nModifies your avatar or the avatar of the pinged user.\nYou can get a list of all filters with => avmod filters <=" +
+          "\n\n>  animal <animal>\nWe have all the animals! With every execution, a new picture and a nice fact are thrown at your face.\nYou can get a list of all supported animals with => animal list <=" +
+          "\n\n>  pokedex <name>\nbruh it's a pokédex, what did you expect" +
+          "\n\n>  mc <username>\nShows some information on a player in Minecraft" +
+          "\n\n>  news\nGet fresh news from yCombinator! (we can't guarantee freshness)" +
+          "\n\n>  spacex\nRead more about the latest or next launch by SpaceX" +
+          "\n\n>  nasa\nAccess official NASA resources! Execute this command to get more info on what you can do with it." +
+          "\n\n>  wolfram <query>\nAsk the Wolfram|Alpha engine anything!" +
+          "\n\n>  work\nYou can get free money every 12 hours!" +
+          "\n\n>  balance [user ping]\nShows how much money is in your pocket (or in the pocket of the pinged user)" +
+          "\n\n>  send <user ping> <amount>\nSend a specified amount to the pinged user. Please note that we apply a 5% transaction fee!" +
+          "\n\n>  leaderboard\nShows the current leaderboard of all users (cash and eth separate)" +
+          "\n\n>  coinflip <{heads | tails}> <bet>\nLets you flip a coin. If you're right, you will get your bet back multiplied with a bonus. If you're wrong, you will lose everything. => Current multiplicator: " + coinflip_multiplicator + "x <=" +
+          "\n\n>  eth\nYou can trade Ethereum in a simulated environment. Execute this command to get more info on what you can do with it." +
           "```"
         )
         .setThumbnail(embedPB)
