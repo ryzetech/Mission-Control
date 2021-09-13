@@ -1246,42 +1246,14 @@ client.on("message", async (message) => {
 
     // rover info
     else if (args.startsWith("rover")) {
-      args = args.slice(6);
+      let cam = args.slice(6);
 
-      // define rovers, including random
-      let available_rovers = ["curiosity", "opportunity", "spirit", "random"];
-      let random_rover = false;
-
-      // get rover
-      let rover = startsWithInArray(args, available_rovers);
-
-      // reject invalid rover
-      if (!rover) {
-        return message.channel.send(
-          new Discord.MessageEmbed()
-            .setColor(embedColorFail)
-            .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
-            .setTitle("❌ Invalid Rover!")
-            .setDescription(`You can choose between **Curiosity, Opportunity** and **Spirit**.\n*Syntax: ${prefix}nasa rover <rover> <cam>*`)
-            .setTimestamp()
-            .setFooter(`Requested by ${message.author.tag}`)
-        );
-      }
-
-      // choose random rover
-      if (rover === "random") {
-        rover = available_rovers[Math.floor(Math.random() * (available_rovers.length - 1))];
-        random_rover = true;
-      }
+      let rover = "curiosity";
 
       // define cams
-      let available_cams;
-      rover == "curiosity" ? available_cams = ["mast", "chemcam", "mahli", "mardi"] : available_cams = ["pancam", "minites"];
-      available_cams.push("fhaz", "rhaz", "navcam", "random"); // those cams are available on all three rovers, therefore we can add them every time
+      let available_cams = ["mast", "chemcam", "mahli", "mardi", "fhaz", "rhaz", "navcam", "random"];
 
-      // when the rover is randomly chosen, it doesn't make sense to choose the camera
-      let cam = args.slice(rover.length + 1);
-      cam = (random_rover || cam.startsWith("random")) ? available_cams[Math.floor(Math.random() * (available_cams.length - 1))] : cam;
+      cam = (cam.startsWith("random")) ? available_cams[Math.floor(Math.random() * (available_cams.length - 1))] : cam;
 
       // reject invalid cam
       if (!available_cams.includes(cam)) {
@@ -1290,7 +1262,7 @@ client.on("message", async (message) => {
             .setColor(embedColorFail)
             .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
             .setTitle("❌ Invalid Cam!")
-            .setDescription(`A matrix of available cams per rover is displayed below. Use the abbreviations!\n*Syntax: ${prefix}nasa rover <rover> <cam>*`)
+            .setDescription(`A list of Curiositiy's cams is down below. Use the abbreviations!\n*Syntax: ${prefix}nasa rover <cam>*`)
             .setImage("https://botdata.ryzetech.live/perma/nasarovercams.png")
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`)
@@ -1365,8 +1337,8 @@ client.on("message", async (message) => {
               value: "Get the Astronomic Picture of the Day"
             },
             {
-              name: "nasa rover <rover> <cam>",
-              value: "Get the lastest picture of a rover cam on Mars!"
+              name: "nasa rover <cam>",
+              value: "Get the lastest picture of a Curiosity rover cam on Mars"
             }
           )
           .setTimestamp()
