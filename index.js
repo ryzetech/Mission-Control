@@ -256,7 +256,7 @@ client.on("guildMemberAdd", async (member) => {
     let date = new Date(res.data.Timestamp);
 
     // send a message with the provided data
-    channel.send(
+    channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorWarn)
         .setAuthor("Banned User Alert", embedPB)
@@ -276,7 +276,7 @@ client.on("guildMemberAdd", async (member) => {
         )
         .setTimestamp()
         .setFooter(`This Message was sent automagically`)
-    );
+        ]});
   }
 });
 
@@ -321,7 +321,7 @@ client.on("message", async (message) => {
   //// GENERAL SECTION
   // HELP
   if (message.content.startsWith(`${prefix}help`)) {
-    message.channel.send(
+    message.channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("Help", embedPB)
@@ -352,7 +352,7 @@ client.on("message", async (message) => {
         .setThumbnail(embedPB)
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+        ]});
   }
 
   // PING
@@ -366,10 +366,11 @@ client.on("message", async (message) => {
       .setTimestamp()
       .setFooter(`Requested by ${message.author.tag}`);
 
-    let sent = await message.channel.send(embed);
+    let sent = await message.channel.send({ embeds: [embed]});
 
     let diff = sent.createdTimestamp - timestamp;
-    sent.edit(
+
+    sent.edit({ embeds: [
       embed.setTitle("🏓 Pong!").addFields(
         { name: "Response Time", value: `${diff}ms` },
         { name: "Status", value: "Service is healthy" },
@@ -380,7 +381,7 @@ client.on("message", async (message) => {
         },
         { name: "Joins since bot start", value: `${joinCounter} Users` }
       )
-    );
+      ]});
     // i made this ten lines shorter but now "loading in" the info is fucking ugly
   }
 
@@ -397,7 +398,7 @@ client.on("message", async (message) => {
     let ping = await si.inetLatency("1.1.1.1");
     ping = (await Math.floor(ping)) + "ms";
 
-    message.channel.send(
+    message.channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("Info and Credits", embedPB)
@@ -436,7 +437,7 @@ client.on("message", async (message) => {
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+        ]});
   }
 
   // AVATAR
@@ -444,7 +445,7 @@ client.on("message", async (message) => {
     // identify user
     let argument = userident(message);
 
-    message.channel.send(
+    message.channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("Avatar Fetch", embedPB)
@@ -453,7 +454,7 @@ client.on("message", async (message) => {
         .setImage(argument.user.displayAvatarURL({ dynamic: true, size: 1024 }))
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+    ]});
 
     // bruh what did you expect? there is literally nothing to see here
   }
@@ -469,7 +470,7 @@ client.on("message", async (message) => {
       message.channel.startTyping();
       let res = await fetch("https://some-random-api.ml/animal/" + arg);
       let json = await res.json();
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
           .setAuthor("Animal Fetch: " + arg, embedPB)
@@ -477,40 +478,40 @@ client.on("message", async (message) => {
           .setImage(json.image)
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+      ]});
       message.channel.stopTyping();
     } else if (arg.startsWith("red panda")) {
       // handling red panda seperately because i'm stupid
       message.channel.startTyping();
       let res = await fetch("https://some-random-api.ml/img/red_panda");
       let json = await res.json();
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
           .setAuthor("Animal Fetch: red panda", embedPB)
           .setImage(json.link)
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+      ]});
       message.channel.stopTyping();
     } else if (arg.startsWith("list")) {
       let foo = "";
       for (let i in animals) foo += i == 0 ? animals[i] : ", " + animals[i];
       foo += ", red panda";
 
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
           .setAuthor("Animal Fetch", embedPB)
           .setDescription("Available:\n" + foo)
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+      ]});
     }
 
     // people are idiots
     else {
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Animal Fetch", embedPB)
@@ -522,7 +523,7 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+      ]});
     }
   }
 
@@ -573,7 +574,7 @@ client.on("message", async (message) => {
           eggGroups += i == 0 ? json.egg_groups[i] : ", " + json.egg_groups[i];
 
         // sending the stuffz
-        message.channel.send(
+        message.channel.send({ embeds: [
           new Discord.MessageEmbed()
             .setColor(embedColorStandard)
             .setAuthor("Pokédex", "https://botdata.ryzetech.live/perma/pokeball.png")
@@ -613,12 +614,12 @@ client.on("message", async (message) => {
             )
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`)
-        );
+            ]});
       }
 
       // api error handling
       else {
-        message.channel.send(
+        message.channel.send({ embeds: [
           new Discord.MessageEmbed()
             .setColor(embedColorFail)
             .setAuthor("Pokédex", "https://botdata.ryzetech.live/perma/pokeball.png")
@@ -629,13 +630,13 @@ client.on("message", async (message) => {
             .setDescription("Error Message: *" + json.error + "*")
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`)
-        );
+            ]});
       }
     } catch (error) {
       // fetch error handling
-      message.channel.send(
+      message.channel.send({ embeds: [
         "Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message
-      );
+      ]});
       console.error(
         'ERR [EXEC] "' +
         message.content +
@@ -740,12 +741,12 @@ client.on("message", async (message) => {
         }
 
         // sending the embed
-        message.channel.send(msg);
+        message.channel.send({ embeds: [msg]});
       }
 
       // api error handling
       else {
-        message.channel.send(
+        message.channel.send({ embeds: [
           new Discord.MessageEmbed()
             .setColor(embedColorFail)
             .setAuthor("MC Fetch", "https://botdata.ryzetech.live/perma/grassblock.png")
@@ -753,13 +754,13 @@ client.on("message", async (message) => {
             .setDescription("Error Message: *" + json.error + "*")
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`)
-        );
+        ]});
       }
     } catch (error) {
       // fetch error handling
-      message.channel.send(
+      message.channel.send({ embeds: [
         "Something went terribly wrong. Sry :(\n\nERRMSG:\n" + error.message
-      );
+      ]});
       console.error(
         'ERR [EXEC] "' +
         message.content +
@@ -925,14 +926,14 @@ client.on("message", async (message) => {
         .setFooter(`Requested by ${message.author.tag}`);
     }
 
-    message.channel.send(msg);
+    message.channel.send({ embeds: [msg]});
   }
 
   // GENERAL INFO SECTION
   // HACKER NEWS
   else if (message.content.startsWith(`${prefix}news`)) {
     // displaying procesing message due to long fetch times
-    let msg = await message.channel.send(
+    let msg = await message.channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorProcessing)
         .setAuthor("HackerNews", "https://botdata.ryzetech.live/perma/ycomb.png")
@@ -940,7 +941,7 @@ client.on("message", async (message) => {
         .setDescription("I'm fetching data right now, give me a second...")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+    ]});
 
     let i = 0;
     let fields = [];
@@ -1009,7 +1010,7 @@ client.on("message", async (message) => {
     }
 
     // edit the processing message to display the news
-    msg.edit(
+    msg.edit({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("HackerNews", "https://botdata.ryzetech.live/perma/ycomb.png")
@@ -1017,7 +1018,7 @@ client.on("message", async (message) => {
         .addFields(fields)
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+    ]});
   }
 
   // SPACEX INFO
@@ -1028,7 +1029,7 @@ client.on("message", async (message) => {
     if (args.startsWith("next")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/next");
     else if (args.startsWith("latest")) mission_res = await fetch("https://api.spacexdata.com/v4/launches/latest");
     else {
-      return message.channel.send(
+      return message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
           .setAuthor("❌ Syntax error!", "https://botdata.ryzetech.live/perma/elon.png")
@@ -1045,7 +1046,7 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
     }
     let mission_json = await mission_res.json();
 
@@ -1192,7 +1193,7 @@ client.on("message", async (message) => {
 
     // god i hate this notation, NEVER USE IT AGAIN!
 
-    message.channel.send(embed);
+    message.channel.send({ embeds: [embed]});
   }
 
   // NASA INFO
@@ -1240,7 +1241,7 @@ client.on("message", async (message) => {
         embed.setImage(apod_json.url);
       }
 
-      return message.channel.send(embed);
+      return message.channel.send({ embeds: [embed]});
     }
 
     // rover info
@@ -1256,7 +1257,7 @@ client.on("message", async (message) => {
 
       // reject invalid cam
       if (!available_cams.includes(cam)) {
-        return message.channel.send(
+        return message.channel.send({ embeds: [
           new Discord.MessageEmbed()
             .setColor(embedColorFail)
             .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
@@ -1265,7 +1266,7 @@ client.on("message", async (message) => {
             .setImage("https://botdata.ryzetech.live/perma/nasarovercams.png")
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`)
-        );
+        ]});
       }
 
       message.channel.startTyping();
@@ -1312,7 +1313,7 @@ client.on("message", async (message) => {
 
       nasa_rate = parseInt(sol_res.headers.raw()["x-ratelimit-remaining"][0]);
 
-      return message.channel.send(
+      return message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor("#0b3d91")
           .setAuthor("NASA Rover", "https://botdata.ryzetech.live/perma/NASA.png")
@@ -1320,11 +1321,11 @@ client.on("message", async (message) => {
           .setImage(img)
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+      ]});
     }
 
     else {
-      return message.channel.send(
+      return message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("NASA", "https://botdata.ryzetech.live/perma/NASA.png")
@@ -1342,7 +1343,7 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
     }
   }
 
@@ -1360,7 +1361,7 @@ client.on("message", async (message) => {
 
     // catch errors
     if (data.$.error === "true") {
-      return message.channel.send(
+      return message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Wolfram|Alpha", embedPB)
@@ -1380,7 +1381,7 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
 
     }
 
@@ -1396,7 +1397,7 @@ client.on("message", async (message) => {
         embedFields.push(new EzField(ass.$.type, `${ass.$.word}\n=> ${ass.value[0].$.desc}`))
       }
 
-      await message.channel.send(
+      await message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor("#fce63c")
           .setAuthor("Wolfram|Alpha", embedPB)
@@ -1404,7 +1405,7 @@ client.on("message", async (message) => {
           .addFields(embedFields)
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+      ]});
     }
 
     // loop through pods (maximum defined by config)
@@ -1437,12 +1438,12 @@ client.on("message", async (message) => {
       }
 
       // send message
-      await message.channel.send(embed);
+      await message.channel.send({ embeds: [embed]});
       messageSent = true;
     }
 
     if (!messageSent) {
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
         .setColor(embedColorFail)
         .setAuthor("Wolfram|Alpha", embedPB)
@@ -1452,7 +1453,7 @@ client.on("message", async (message) => {
         "\nPlease enter your query directly at [Wolfram|Alpha](www.wolframalpha.com).")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-      );
+      ]});
     }
   }
 
@@ -1511,7 +1512,7 @@ client.on("message", async (message) => {
             // save the image | don't worry about disk space, old images will be cleaned up by cron
             img.toFile(`/usr/services/Mission-Control/data/temp/graph_ban_${exectime}.png`);
 
-            message.channel.send(
+            message.channel.send({ embeds: [
               new Discord.MessageEmbed()
                 .setColor(embedColorStandard)
                 .setAuthor("Crypto Info", "https://botdata.ryzetech.live/perma/CoinGecko.png")
@@ -1546,7 +1547,7 @@ client.on("message", async (message) => {
                 )
                 .setTimestamp()
                 .setFooter(`Requested by ${message.author.tag}`)
-            );
+                ]});
           })
           .catch((error) => {
             console.error(
@@ -1625,7 +1626,7 @@ client.on("message", async (message) => {
 
           img.toFile(`/usr/services/Mission-Control/data/temp/graph_eth_${exectime}.png`);
 
-          message.channel.send(
+          message.channel.send({ embeds: [
             new Discord.MessageEmbed()
               .setColor(embedColorStandard)
               .setAuthor("Crypto Info", "https://botdata.ryzetech.live/perma/CoinGecko.png")
@@ -1660,7 +1661,7 @@ client.on("message", async (message) => {
               )
               .setTimestamp()
               .setFooter(`Requested by ${message.author.tag}`)
-          );
+              ]});
         })
         .catch((error) => {
           console.error(
@@ -1741,7 +1742,7 @@ client.on("message", async (message) => {
         }
       }
 
-      message.channel.send(msg);
+      message.channel.send({ embeds: [msg]});
     }
 
     // BUY AMOUNT
@@ -1813,7 +1814,7 @@ client.on("message", async (message) => {
         }
       }
 
-      message.channel.send(msg);
+      message.channel.send({ embeds: [msg]});
     }
 
     // SELL FOR AMOUNT
@@ -1885,7 +1886,7 @@ client.on("message", async (message) => {
         }
       }
 
-      message.channel.send(msg);
+      message.channel.send({ embeds: [msg]});
     }
 
     // SELL AMOUNT
@@ -1957,12 +1958,12 @@ client.on("message", async (message) => {
         }
       }
 
-      message.channel.send(msg);
+      message.channel.send({ embeds: [msg]});
     }
 
     // fallback to help message
     else {
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorStandard)
           .setAuthor("Trading", embedPB)
@@ -1990,7 +1991,7 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
     }
 
     // check if values are out of safe range
@@ -2014,7 +2015,7 @@ client.on("message", async (message) => {
       where: { id: argument.id },
     });
 
-    message.channel.send(
+    message.channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("Coin System", embedPB)
@@ -2029,7 +2030,7 @@ client.on("message", async (message) => {
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+        ]});
   }
 
   // SEND
@@ -2042,7 +2043,7 @@ client.on("message", async (message) => {
     // handle case where pattern fails
     // handle case match is not len 3
     if (regres == null || regres.length !== 3) {
-      return message.channel.send(
+      return message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Coin System", embedPB)
@@ -2057,7 +2058,7 @@ client.on("message", async (message) => {
           .addField("`amount`:", "The amount you want to send to that user")
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
     }
 
     // extract the values
@@ -2070,7 +2071,7 @@ client.on("message", async (message) => {
     let userTo = await prisma.user.findUnique({ where: { id: userid } });
     // Check if any value is not initilized
     if (!userTo || !amount || !userFrom) {
-      return message.channel.send(
+      return message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Coin System", embedPB)
@@ -2080,11 +2081,11 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
     }
     // check if balance is ok
     if (userFrom.money < amount) {
-      return message.channel.send(
+      return message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Coin System", embedPB)
@@ -2094,7 +2095,7 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
     }
 
     // calc fee
@@ -2122,7 +2123,7 @@ client.on("message", async (message) => {
       data: { money: { increment: amount - fee } },
     });
     // message after transaction is done
-    message.channel.send(
+    message.channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorConfirm)
         .setAuthor("Coin System", embedPB)
@@ -2137,7 +2138,7 @@ client.on("message", async (message) => {
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+        ]});
   }
 
   // WORK
@@ -2227,19 +2228,19 @@ client.on("message", async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
     }
-    message.channel.send(msg);
+    message.channel.send({ embeds: [msg]});
   }
 
   // LEADERBOARD
   else if (message.content.startsWith(`${prefix}leaderboard`)) {
-    let sent = await message.channel.send(
+    let sent = await message.channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorProcessing)
         .setAuthor("Leaderboard", embedPB)
         .setTitle("Fetching Data...")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+    ]});
 
     // i am too stupid to create a leaderboard for combined stats, so i need to split it into cash and eth
     let topMoney = await prisma.user.findMany({
@@ -2281,7 +2282,7 @@ client.on("message", async (message) => {
     if (!topEthField || topEthField == "\n") topEthField = "[NO DATA]";
     if (!topMoneyField || topMoneyField == "\n") topMoneyField = "[NO DATA]";
 
-    sent.edit(
+    sent.edit({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorStandard)
         .setAuthor("Leaderboard", embedPB)
@@ -2292,7 +2293,7 @@ client.on("message", async (message) => {
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+        ]});
   }
 
   // COINFLIP
@@ -2311,7 +2312,7 @@ client.on("message", async (message) => {
 
     // check if side is valid
     if (!sides.includes(side)) {
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Coinflip", embedPB)
@@ -2321,13 +2322,13 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
       return;
     }
 
     // check if amount is valid
     if (isNaN(amount) || amount <= 0) {
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Coinflip", embedPB)
@@ -2337,12 +2338,12 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
       return;
     }
     // check if user has enough money to perform this action
     if (amount > usr.money) {
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Coinflip", embedPB)
@@ -2352,7 +2353,7 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
       return;
     }
 
@@ -2371,7 +2372,7 @@ client.on("message", async (message) => {
       },
     });
 
-    let sent = await message.channel.send(
+    let sent = await message.channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorProcessing)
         .setAuthor("Coinflip", embedPB)
@@ -2380,7 +2381,7 @@ client.on("message", async (message) => {
         .setDescription("**AT RISK:** " + amount + "\n**POSSIBLE WIN:** " + (amount * coinflip_multiplicator))
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+    ]});
 
 
     await setTimeoutPromise(3500);
@@ -2411,7 +2412,7 @@ client.on("message", async (message) => {
         .setColor(embedColorConfirm)
         .setTitle("🏆 YOU WON!")
         .setDescription("**Side: **" + side.toUpperCase() + "\n**Payout:** " + amount * coinflip_multiplicator + "\n**New Balance:** " + usr.money.toFixed(2));
-      sent.edit(msg);
+      sent.edit({ embeds: [msg]});
     }
     else {
       // stats tracking
@@ -2427,7 +2428,7 @@ client.on("message", async (message) => {
         .setColor(embedColorFail)
         .setTitle("❌ YOU LOST!")
         .setDescription("**Side: **" + ((side === "heads") ? "tails" : "heads").toUpperCase() + "\n**Loss: **" + amount + "\n**New Balance:** " + usr.money.toFixed(2));
-      sent.edit(msg);
+      sent.edit({ embeds: [msg]});
     }
   }
 
@@ -2453,7 +2454,7 @@ client.on("message", async (message) => {
       }
     })
 
-    await message.channel.send(
+    await message.channel.send({ embeds: [
       new Discord.MessageEmbed()
         .setColor(embedColorProcessing)
         .setAuthor("The inactive User vacuum!", embedPB)
@@ -2461,7 +2462,7 @@ client.on("message", async (message) => {
         .setDescription("Removed [**" + (_count || "0") + "**] Users from database")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`)
-    );
+    ]});
   }
 
   // VS CHECK
@@ -2476,7 +2477,7 @@ client.on("message", async (message) => {
       else usrid = message.mentions.members.first().user.id;
 
       // send processing message
-      let sent = await message.channel.send(
+      let sent = await message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorProcessing)
           .setAuthor("VS Check", "https://botdata.ryzetech.live/perma/virgin.png")
@@ -2486,7 +2487,7 @@ client.on("message", async (message) => {
           )
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+          ]});
 
       // ask Virgin Slayer if the user is banned on the global network
       let response = await axios.post("https://dvs.stefftek.de/api/bans", {
@@ -2496,7 +2497,7 @@ client.on("message", async (message) => {
 
       // if the user is unknown to Virgin Slayer:
       if (res.status === "error" && res.msg === "api.error.notBanned") {
-        sent.edit(
+        sent.edit({ embeds: [
           new Discord.MessageEmbed()
             .setColor(embedColorConfirm)
             .setAuthor("VS Check", "https://botdata.ryzetech.live/perma/virgin.png")
@@ -2510,7 +2511,7 @@ client.on("message", async (message) => {
             )
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`)
-        );
+            ]});
       }
 
       // if the user is known to Virgin Slayer:
@@ -2519,7 +2520,7 @@ client.on("message", async (message) => {
         let date = new Date(res.data.Timestamp);
 
         // send a message with the provided data
-        sent.edit(
+        sent.edit({ embeds: [
           new Discord.MessageEmbed()
             .setColor(embedColorWarn)
             .setAuthor("VS Check", "https://botdata.ryzetech.live/perma/virgin.png")
@@ -2543,10 +2544,10 @@ client.on("message", async (message) => {
             )
             .setTimestamp()
             .setFooter(`Requested by ${message.author.tag}`)
-        );
+            ]});
       }
     } else {
-      message.channel.send(
+      message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("VS Check", "https://botdata.ryzetech.live/perma/virgin.png")
@@ -2554,14 +2555,14 @@ client.on("message", async (message) => {
           .setDescription("This command is reserved for mods and admins!")
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+      ]});
     }
   }
 
   // EVALUATE LOCAL VARS
   else if (message.content.startsWith(`${prefix}localvars`)) {
     if (!message.member.roles.cache.some((role) => modroles.includes(role.id))) {
-      return message.channel.send(
+      return message.channel.send({ embeds: [
         new Discord.MessageEmbed()
           .setColor(embedColorFail)
           .setAuthor("Debug", embedPB)
@@ -2569,10 +2570,10 @@ client.on("message", async (message) => {
           .setDescription("This command is reserved for mods and admins!")
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
-      );
+      ]});
     }
 
-    message.channel.send(
+    message.channel.send({ embeds: [
       "```--- LOCAL VARS ---\nmessageCounter = " + messageCounter +
       "\njoinCounter = " + joinCounter +
       "\nprice = " + price +
@@ -2584,7 +2585,7 @@ client.on("message", async (message) => {
       "\ncasinoLosses = " + stats.casinoLosses +
       "\ncasinoPot = " + stats.casinoPot +
       "```"
-    );
+    ]});
   }
 
   // random reward for chatting
