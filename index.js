@@ -829,6 +829,7 @@ client.on("message", async (message) => {
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
+      return message.channel.send({ embeds: [msg]});
     } // side note: this mess saves us approx 90 lines, fuck yeah!
 
     else if (args.startsWith("invgs")) {
@@ -849,6 +850,7 @@ client.on("message", async (message) => {
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
+      return message.channel.send({ embeds: [msg]});
     }
 
     // special attachment treatment for the last two because sra is kinda slow on these endpoints and (i think) discord has a timeout on embed image requests
@@ -873,12 +875,12 @@ client.on("message", async (message) => {
             { format: "png" }
           )}`
         )
-        .attachFiles(att)
         .setImage("attachment://a.gif")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
 
       message.channel.stopTyping();
+      message.channel.send({ embeds: [msg], files: [att]});
     }
 
     // lolice endpoint
@@ -902,12 +904,12 @@ client.on("message", async (message) => {
             { format: "png" }
           )}`
         )
-        .attachFiles(att)
         .setImage("attachment://a.png")
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
 
       message.channel.stopTyping();
+      message.channel.send({ embeds: [msg], files: [att]});
     }
 
     // arg error handling
@@ -924,9 +926,9 @@ client.on("message", async (message) => {
         )
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
+        
+      return message.channel.send({ embeds: [msg]});
     }
-
-    message.channel.send({ embeds: [msg]});
   }
 
   // GENERAL INFO SECTION
