@@ -7,7 +7,7 @@
     "@prisma/client": "^3.0.2",
     "axios": "^0.21.1",
     "coingecko-api": "^1.0.10",
-    "discord.js": "^12.5.1",
+    "discord.js": "^13.2.0",
     "image-charts": "^5.6.17",
     "node-cache": "^5.1.2",
     "node-fetch": "^2.6.1",
@@ -17,5 +17,5 @@
   "devDependencies": {
     "prisma": "^3.0.2"
   },
-  "packageManager": "yarn@3.0.1"
+  "packageManager": "yarn@3.0.2"
 }
