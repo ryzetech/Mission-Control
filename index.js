@@ -243,7 +243,7 @@ client.on("guildMemberAdd", async (member) => {
     );
 
     // and delete it after "autodelete" seconds to keep the chat clean
-    await sent.delete({ timeout: autodelete });
+    await setTimeout(() => sent.delete(), autodelete);
   }
 
   // if the user is known to Virgin Slayer:
@@ -282,7 +282,7 @@ client.on("guildMemberAdd", async (member) => {
 
 // MESSAGE HANDLER
 // TODO this is a big ugly mess! we should switch to caveats => https://discordjs.guide/creating-your-bot/commands-with-user-input.html#caveats
-client.on("message", async (message) => {
+client.on("messageCreate", async (message) => {
 
   // check if message is from a server, NOT from dms or groups
   if (message.guild === null) return;
@@ -467,7 +467,7 @@ client.on("message", async (message) => {
     let arg = message.content.slice(8).toLocaleLowerCase();
 
     if (animals.includes(arg)) {
-      message.channel.startTyping();
+      message.channel.sendTyping();
       let res = await fetch("https://some-random-api.ml/animal/" + arg);
       let json = await res.json();
       message.channel.send({ embeds: [
@@ -479,10 +479,9 @@ client.on("message", async (message) => {
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
       ]});
-      message.channel.stopTyping();
     } else if (arg.startsWith("red panda")) {
       // handling red panda seperately because i'm stupid
-      message.channel.startTyping();
+      message.channel.sendTyping();
       let res = await fetch("https://some-random-api.ml/img/red_panda");
       let json = await res.json();
       message.channel.send({ embeds: [
@@ -493,7 +492,6 @@ client.on("message", async (message) => {
           .setTimestamp()
           .setFooter(`Requested by ${message.author.tag}`)
       ]});
-      message.channel.stopTyping();
     } else if (arg.startsWith("list")) {
       let foo = "";
       for (let i in animals) foo += i == 0 ? animals[i] : ", " + animals[i];
@@ -533,7 +531,7 @@ client.on("message", async (message) => {
     message.content.startsWith(`${prefix}pokemon`)
   ) {
     let arg = message.content.slice(9);
-    message.channel.startTyping(); // do this because this might take a while, people hate it when the bot is sitting around doing seemingly nothing
+    message.channel.sendTyping(); // do this because this might take a while, people hate it when the bot is sitting around doing seemingly nothing
 
     try {
       let res = await fetch(
@@ -646,13 +644,12 @@ client.on("message", async (message) => {
         encodeURIComponent(arg)
       );
     }
-    message.channel.stopTyping();
   }
 
   // MC
   else if (message.content.startsWith(`${prefix}mc`)) {
     let arg = message.content.slice(4);
-    message.channel.startTyping(); // i'm not going to explain this a second time!
+    message.channel.sendTyping(); // i'm not going to explain this a second time!
 
     try {
       let res = await fetch(
@@ -770,7 +767,6 @@ client.on("message", async (message) => {
         encodeURIComponent(arg)
       );
     }
-    message.channel.stopTyping();
   }
 
   // AVATAR MOD
@@ -856,7 +852,7 @@ client.on("message", async (message) => {
     // special attachment treatment for the last two because sra is kinda slow on these endpoints and (i think) discord has a timeout on embed image requests
     // triggered endpoint
     else if (args.startsWith("triggered")) {
-      message.channel.startTyping();
+      message.channel.sendTyping();
 
       let att = new Discord.MessageAttachment(
         `https://some-random-api.ml/canvas/triggered/?avatar=${usr.user.displayAvatarURL(
@@ -879,13 +875,12 @@ client.on("message", async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
 
-      message.channel.stopTyping();
       message.channel.send({ embeds: [msg], files: [att]});
     }
 
     // lolice endpoint
     else if (args.startsWith("lolice")) {
-      message.channel.startTyping();
+      message.channel.sendTyping();
 
       let att = new Discord.MessageAttachment(
         `https://some-random-api.ml/canvas/lolice/?avatar=${usr.user.displayAvatarURL(
@@ -908,7 +903,6 @@ client.on("message", async (message) => {
         .setTimestamp()
         .setFooter(`Requested by ${message.author.tag}`);
 
-      message.channel.stopTyping();
       message.channel.send({ embeds: [msg], files: [att]});
     }
 
@@ -1271,7 +1265,7 @@ client.on("message", async (message) => {
         ]});
       }
 
-      message.channel.startTyping();
+      message.channel.sendTyping();
 
       // get rover manifest
       let man_json = botCacheStorage.get("nasa-manifest-" + rover);
@@ -1310,8 +1304,6 @@ client.on("message", async (message) => {
 
       // get last image
       let img = sol_json.photos[sol_json.photos.length - 1].img_src;
-
-      message.channel.stopTyping();
 
       nasa_rate = parseInt(sol_res.headers.raw()["x-ratelimit-remaining"][0]);
 
@@ -1353,13 +1345,11 @@ client.on("message", async (message) => {
   else if (message.content.startsWith(`${prefix}wolfram`)) {
     let input = message.content.slice(9);
 
-    message.channel.startTyping();
+    message.channel.sendTyping();
 
     let res = await axios.get(`https://api.wolframalpha.com/v2/query?input=${encodeURIComponent(input)}&appid=${wolfram_auth}`);
     let data = await xml2js.parseStringPromise(res.data);
     data = data.queryresult;
-
-    message.channel.stopTyping();
 
     // catch errors
     if (data.$.error === "true") {
@@ -1462,7 +1452,7 @@ client.on("message", async (message) => {
   //// ECONOMY SECTION
   // BANANO
   else if (message.content.startsWith(`${prefix}banano`)) {
-    message.channel.startTyping();
+    message.channel.sendTyping();
 
     CoinGeckoClient.coins
       .fetch("banano", {})
@@ -1568,8 +1558,6 @@ client.on("message", async (message) => {
             );
           });
       });
-
-    message.channel.stopTyping();
   }
 
   // ETH
