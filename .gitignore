@@ -11,3 +11,4 @@ data/
 yarn.lock
 yarn-error.*
 .yarn/
+.eslintrc.json
