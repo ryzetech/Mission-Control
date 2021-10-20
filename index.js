@@ -228,6 +228,12 @@ client.on("guildMemberAdd", async (member) => {
 
   let channel = member.guild.channels.cache.get(welcomeChannelID);
 
+  // shut up, fucking linter
+  if (channel.type !== "GUILD_TEXT") {
+    console.error("ERR [EVNT] guildMemberAdd -> couldn't resolve channel (what the fuck djs)");
+    return;
+  }
+
   // ask Virgin Slayer if the user is banned on the global network
   let response = await axios.post("https://dvs.stefftek.de/api/bans", {
     data: { userID: member.user.id },
