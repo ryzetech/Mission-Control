@@ -1,4 +1,5 @@
 # Mission-Control
+## THIS CODEBASE HAS BEEN ARCHIVED!
 ### A handmade bot for FoxesInBoxes
 #### What does it do?
 This bot provides games and useful information to the FIB Discord server. It provides developer utility, economy and news around computers and spaceflight.
